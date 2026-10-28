@@ -17,8 +17,17 @@
 - Position is `entry - distance * forward + lateral * right`; heading is `entry_yaw + heading_offset`.
 - A scripted constant-speed/heading pre-roll fills 16 ego poses and four images per camera. Physics takes over at handover; requested and measured initial states are both saved.
 - Navigation text: `Continue straight through the intersection.` This conditions the model; there is no enforced geometric route or target exit.
-- **Implemented initialization is deterministic:** explicit states or a Cartesian grid. The configured grid has distance `[10, 20, 30] m`, speed `[0, 3, 6] m/s`, heading `[-10, 0, 10]°`, lateral offset `0`: 27 combinations. This full grid has not been run.
-- **Probabilistic sampling is not implemented.** A possible next extension is to sample these initial-state variables from a declared distribution, save the sample and seed, then reuse the existing initialization. The slide example of independent discrete-uniform choices is illustrative, not an experiment already performed.
+- **Original initialization:** explicit states or a Cartesian grid. The configured grid has distance `[10, 20, 30] m`, speed `[0, 3, 6] m/s`, heading `[-10, 0, 10]°`, lateral offset `0`: 27 combinations. This full grid has not been run.
+- **VerifAI sampling is now implemented** on `feature/verifai-rollouts`: `bash local/run_verifai.sh` samples continuous uniform initial-state ranges, saves the exact states and scene seed, and runs the existing batch loop. See the VerifAI section below. The older slide example of independent discrete-uniform choices remains illustrative.
+
+## VerifAI integration — 2026-10-28
+
+- Created the personal fork `https://github.com/abhip02/Carlamayo` as `origin`; retained `aveeslab/Carlamayo` as `upstream`, fetched full history, and created `feature/verifai-rollouts` from the local sharded work. A push dry run succeeded; local experiment commits have not been pushed.
+- Added `local/run_verifai.sh`, `local/configs/verifai.yaml`, and an isolated optional VerifAI 2.2.0 environment under `.runtime/verifai-venv/`. The model environment and rollout/controller implementation are unchanged.
+- The launcher uses VerifAI's random feature sampler for distance, lateral offset, speed, and heading. It launches all samples in one existing batch. `--sample-only` prints a replayable YAML configuration without CARLA/model loading; saved `config.json` files can also be passed directly to `local/run.sh`.
+- This is passive initial-state sampling for the fixed empty intersection. No adaptive monitor, actor generation, or Scenic scenario scripts are implemented.
+- All 16 simulator-free sampling/handoff tests passed. A dedicated GitHub Actions job runs these tests.
+- End-to-end check: `outputs/verifai-integration-smoke/` contains two one-second sampled episodes, with 10 model calls each and one model load total. Both reached the duration limit; each front/overhead video has 11 frames. Episode wall times were 47.4 s and 34.1 s. Saved samples, sampler version, and replay configuration were verified. The dedicated CARLA container was stopped after the test.
 
 ## Runs completed
 

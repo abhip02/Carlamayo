@@ -1,0 +1,28 @@
+# VerifAI samples initial states for the existing empty Town03 intersection.
+map: Town03
+junction_entry:
+  x: -6.094448
+  y: 118.324844
+  z: 0.0
+  yaw: 89.637459
+  junction_id: 103
+  road_id: 184
+  lane_id: -1
+duration_s: 8
+instruction: Continue straight through the intersection.
+# Policy seed; independent of sampling.seed below.
+seed: 42
+overhead:
+  enabled: true
+  height_m: 80
+  center_ahead_m: 15
+  front_inset: true
+sampling:
+  count: 2
+  seed: 42
+  # Independent continuous uniforms; identical bounds hold a value fixed.
+  ranges:
+    distance_before_intersection_m: [20, 25]
+    lateral_offset_m: [0, 0]
+    speed_mps: [3, 4]
+    heading_offset_deg: [-5, 5]

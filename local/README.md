@@ -65,6 +65,75 @@ It ends on a collision or duration limit, then starts the next configuration.
 Infrastructure/model exceptions stop the batch and preserve the failed summary.
 There is no automatic in-episode respawn.
 
+## VerifAI sampling
+
+The optional launcher samples the same four initial-state variables with
+VerifAI 2.2.0, then passes an explicit rollout list to the existing batch runner.
+The model loads once for the whole batch. The scene remains the empty Town03
+intersection described above. This first version uses independent uniform random
+sampling, with no adaptive feedback or Scenic scenario scripts.
+
+After completing the existing local model/CARLA setup, install the sampler once:
+
+```bash
+bash local/setup_verifai.sh
+```
+
+This creates `.runtime/verifai-venv/` with Python 3.12 and the optional dependencies;
+it does not modify the model's `.venv` or the shared ML environment. VerifAI itself
+depends on the Scenic Python package, but this launcher does not use Scenic to
+describe or run scenarios.
+
+Run the example (two eight-second rollouts):
+
+```bash
+bash local/server.sh start
+bash local/run_verifai.sh
+bash local/server.sh stop
+```
+
+Edit `local/configs/verifai.yaml`: `sampling.count` selects the number of episodes,
+`sampling.seed` selects the repeatable sample sequence, and `sampling.ranges`
+contains `[minimum, maximum]` for each initial-state variable. Equal bounds hold a
+value fixed. The example samples distance 20–25 m, speed 3–4 m/s, heading −5° to
++5°, and keeps lateral offset at zero. These are configured test distributions,
+not estimates of real-world traffic probabilities. The top-level `seed` still
+controls the existing policy inference behavior independently.
+
+Inspect samples without CARLA or model inference:
+
+```bash
+bash local/run_verifai.sh --sample-only
+```
+
+Use `--config`, `--limit`, `--duration`, `--output`, `--host`, `--port`, and
+`--checkpoint` to customize a run, for example:
+
+```bash
+bash local/run_verifai.sh --limit 1 --duration 1 --output outputs/verifai-smoke
+```
+
+The usual output `config.json` records the exact `rollouts`, distribution, scene
+seed, and VerifAI version. Replay those states directly, without sampling again:
+
+```bash
+bash local/run.sh --config outputs/verifai-smoke/config.json --output outputs/verifai-replay
+```
+
+The configuration loader accepts JSON as well as YAML. `--sample-only` also prints
+an explicit YAML config that can be saved and passed to `local/run.sh`. Reusing a
+scene seed reproduces samples with the pinned sampler; full physical simulation
+reproducibility is a separate consideration. Only numeric bounds are checked;
+wider ranges may produce invalid spawns or leave the road, and the existing runner
+stops on infrastructure/initialization errors.
+
+Simulator-free checks, also run by GitHub Actions:
+
+```bash
+uv pip install --python .runtime/verifai-venv/bin/python pytest
+.runtime/verifai-venv/bin/python -m pytest -q tests/test_verifai_sampling.py
+```
+
 ## Outputs
 
 `outputs/<UTC timestamp>/` contains the resolved configuration, device map, batch

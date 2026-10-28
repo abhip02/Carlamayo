@@ -77,6 +77,7 @@ Environment setup by following document:
 Data collection, open-loop, closed-loop, and live-open-loop inference:
 
 - [Data Collection and Inference](docs/inference-workflows.md)
+- [Local sharded intersection rollouts and VerifAI sampling](local/README.md#verifai-sampling)
 
 ### Closed-Loop UI Modes
 
