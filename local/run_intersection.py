@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+from contextlib import contextmanager
 import csv
 from datetime import datetime, timezone
 import itertools
@@ -238,6 +239,54 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
     return summary
 
 
+def connect_world(args, config):
+    client = carla.Client(args.host, args.port)
+    client.set_timeout(120)
+    print(f"CARLA server {client.get_server_version()}, client {client.get_client_version()}")
+    world = client.get_world()
+    if world.get_map().name.split("/")[-1] != config["map"]:
+        world = client.load_world(config["map"])
+    print("Junction entry:", json.dumps(config["junction_entry"]))
+    return client, world
+
+
+@contextmanager
+def rollout_session(args, config, output):
+    """Load one model, yield an episode function, and restore the CARLA world."""
+    random.seed(config.get("seed", 42))
+    np.random.seed(config.get("seed", 42))
+    client, world = connect_world(args, config)
+    original_settings = world.get_settings()
+    original_weather = world.get_weather()
+    traffic_lights = [(light, light.get_state(), light.is_frozen())
+                      for light in world.get_actors().filter("traffic.traffic_light")]
+    try:
+        settings = world.get_settings()
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = DT
+        settings.substepping = True
+        settings.max_substep_delta_time = 0.01
+        settings.max_substeps = 10
+        world.apply_settings(settings)
+        world.set_weather(carla.WeatherParameters.ClearNoon)
+        for light, _, _ in traffic_lights:
+            light.set_state(carla.TrafficLightState.Green)
+            light.freeze(True)
+        adapter = Alpamayo15Adapter()
+        model, processor = load_sharded_model(args, adapter)
+        write_json(output / "device-map.json", model.hf_device_map)
+        def episode(spec, out):
+            return run_rollout(client, world, adapter, model, processor,
+                               config, config["junction_entry"], spec, out)
+        yield episode
+    finally:
+        for light, state, frozen in traffic_lights:
+            light.set_state(state)
+            light.freeze(frozen)
+        world.set_weather(original_weather)
+        world.apply_settings(original_settings)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=ROOT / "local/configs/demo.yaml")
@@ -260,56 +309,22 @@ def main():
         if args.limit < 1:
             raise ValueError("--limit must be positive")
         specs = specs[:args.limit]
-    random.seed(config["seed"])
-    np.random.seed(config["seed"])
-    client = carla.Client(args.host, args.port)
-    client.set_timeout(120)
-    print(f"CARLA server {client.get_server_version()}, client {client.get_client_version()}")
-    world = client.get_world()
-    if world.get_map().name.split("/")[-1] != config["map"]:
-        world = client.load_world(config["map"])
-    entry = config["junction_entry"]
-    print("Junction entry:", json.dumps(entry))
     if args.describe_scene:
+        connect_world(args, config)
         return
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     output = args.output or ROOT / "outputs" / stamp
     output.mkdir(parents=True, exist_ok=False)
-    write_json(output / "config.json", {**config, "junction_entry": entry, "expanded_rollouts": specs})
-    original_settings = world.get_settings()
-    original_weather = world.get_weather()
-    traffic_lights = [(light, light.get_state(), light.is_frozen())
-                      for light in world.get_actors().filter("traffic.traffic_light")]
+    write_json(output / "config.json", {**config, "expanded_rollouts": specs})
     summaries = []
-    try:
-        settings = world.get_settings()
-        settings.synchronous_mode = True
-        settings.fixed_delta_seconds = DT
-        settings.substepping = True
-        settings.max_substep_delta_time = 0.01
-        settings.max_substeps = 10
-        world.apply_settings(settings)
-        world.set_weather(carla.WeatherParameters.ClearNoon)
-        for light, _, _ in traffic_lights:
-            light.set_state(carla.TrafficLightState.Green)
-            light.freeze(True)
-        adapter = Alpamayo15Adapter()
-        model, processor = load_sharded_model(args, adapter)
-        write_json(output / "device-map.json", model.hf_device_map)
+    with rollout_session(args, config, output) as episode:
         for index, spec in enumerate(specs):
             label = re.sub(r"[^a-zA-Z0-9_-]", "_", str(spec.get("name", "rollout")))
             name = f"{index:03d}_{label}"
             print(f"Starting {name}: {spec}", flush=True)
-            summaries.append(run_rollout(client, world, adapter, model, processor,
-                                         config, entry, spec, output / name))
+            summaries.append(episode(spec, output / name))
             write_json(output / "batch-summary.json", summaries)
-        print(f"Finished {len(summaries)} rollouts: {output}", flush=True)
-    finally:
-        for light, state, frozen in traffic_lights:
-            light.set_state(state)
-            light.freeze(frozen)
-        world.set_weather(original_weather)
-        world.apply_settings(original_settings)
+    print(f"Finished {len(summaries)} rollouts: {output}", flush=True)
 
 
 if __name__ == "__main__":

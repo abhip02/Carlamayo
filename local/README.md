@@ -134,6 +134,77 @@ uv pip install --python .runtime/verifai-venv/bin/python pytest
 .runtime/verifai-venv/bin/python -m pytest -q tests/test_verifai_sampling.py
 ```
 
+## VerifAI server/client
+
+For sampling with feedback after each episode, use the new launcher on branch
+`feature/verifai-server-client`. It starts a VerifAI coordinator and one persistent
+CarlaMayo client automatically. Start CARLA separately as usual:
+
+```bash
+bash local/server.sh start
+bash local/run_verifai_server.sh --limit 2 --duration 1 --output outputs/verifai-server-demo
+bash local/server.sh stop
+```
+
+Run `bash local/setup_verifai.sh` first if the optional sampler environment has not
+been installed. With no options, the launcher reads `local/configs/verifai.yaml`
+and runs its two eight-second episodes. Use a new output directory for each run.
+
+- `sampling.count` in the YAML sets the number of episodes; `--limit N` caps it.
+- `sampling.ranges` controls distance, lateral offset, speed and heading. The map,
+  weather, empty intersection and navigation instruction stay in the existing setup.
+- `--duration N` overrides the simulation seconds per episode.
+- `--sampler random` is the default uniform sampler. `halton` and `ce`
+  (Cross-Entropy) are also available, using VerifAI's default settings.
+- `--verifai-port` selects the local coordinator port (default 8888; 0 chooses a
+  free port). `--host` and `--port` still select CARLA (default 127.0.0.1:2000).
+- `--timeout` bounds waits for the client and socket inactivity (default 1200 s).
+
+The flow is:
+
+```text
+VerifAI Server: sample → send initial state → wait for rollout summary
+                                               ↓
+CarlaMayo client: reset ego/sensors → run rollout in CARLA → return summary
+                                               ↓
+VerifAI monitor: score summary → feed score into the next sample → repeat
+```
+
+The specification is deliberately basic: **+1 if the episode reaches its duration
+without a recorded collision; −1 if a collision is recorded**. Spawn, sensor,
+model and connection errors abort the batch with an error status, rather than
+receiving a safety score. The score checks only collisions during the evaluated
+episode; it does not check route following or reaching the intersection's exit.
+Cross-Entropy uses negative scores to adjust future samples. This binary score
+provides little guidance when every sample passes.
+
+`local/verifai_server.py` subclasses the actual `verifai.server.Server`; its
+inherited `run_server()` performs sampling, monitor evaluation and feedback.
+`local/verifai_client.py` runs in the model environment and keeps Alpamayo loaded
+across episodes. It uses a small JSON socket protocol instead of inheriting
+`verifai.client.Client`, so VerifAI's dependencies stay in the sampler environment.
+The shared `rollout_session()` in `local/run_intersection.py` handles the model
+and CARLA session for both the new client and the original batch runner. No Scenic
+scenario scripts are needed.
+
+Recordings remain in `000_verifai/video.mp4`, `000_verifai/overhead.mp4`, and the
+corresponding directories for subsequent episodes. The output directory also has:
+
+- `verifai-results.jsonl`: one completed episode per line, with its exact sample,
+  score, pass/fail flag, rollout summary and timing.
+- `verifai-summary.json`: overall completion/error status, completed count and
+  collision violation count.
+- `config.json`: sampling settings, specification and samples actually sent to
+  the client. Replay these with `bash local/run.sh --config <run>/config.json`.
+- The usual `batch-summary.json`, device map and per-episode logs/recordings.
+
+Simulator-free tests exercise real sockets and subprocesses, including feedback,
+Cross-Entropy adaptation, saved replay samples and client failures:
+
+```bash
+.runtime/verifai-venv/bin/python -m pytest -q tests/test_verifai_sampling.py tests/test_verifai_server.py
+```
+
 ## Outputs
 
 `outputs/<UTC timestamp>/` contains the resolved configuration, device map, batch

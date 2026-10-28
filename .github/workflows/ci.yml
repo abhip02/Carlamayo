@@ -14,11 +14,11 @@ jobs:
           python-version: "3.12"
       - name: Install sampling dependencies
         run: python -m pip install -r local/requirements-verifai.txt pytest
-      - name: Test sampling and batch handoff
+      - name: Test sampling, batch handoff and server/client feedback
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
           PYGAME_HIDE_SUPPORT_PROMPT: "1"
-        run: python -m pytest -q tests/test_verifai_sampling.py
+        run: python -m pytest -q tests/test_verifai_sampling.py tests/test_verifai_server.py
 
   lightweight-tests:
     runs-on: ubuntu-latest

@@ -20,7 +20,8 @@ overhead:
 sampling:
   count: 2
   seed: 42
-  # Independent continuous uniforms; identical bounds hold a value fixed.
+  # Bounds for sampled initial states; identical bounds hold a value fixed.
+  # Default: independent uniforms. Server/client also accepts --sampler halton/ce.
   ranges:
     distance_before_intersection_m: [20, 25]
     lateral_offset_m: [0, 0]

@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 FIELDS = ("distance_before_intersection_m", "lateral_offset_m", "speed_mps", "heading_offset_deg")
 
 
-def sample_config(config, limit=None):
-    """Return an explicit rollout config using independent uniform distributions."""
+def sampling_settings(config, limit=None):
+    """Validate the shared sampling configuration without importing VerifAI."""
     if not isinstance(config, dict) or "sampling" not in config:
         raise ValueError("Config must contain a sampling block")
     if "rollouts" in config or "initial_conditions" in config:
@@ -49,30 +49,41 @@ def sample_config(config, limit=None):
             raise ValueError(f"{field}: lower bound must not exceed upper bound")
         if field in ("distance_before_intersection_m", "speed_mps") and low < 0:
             raise ValueError(f"{field} must be non-negative")
+    return count, seed, ranges
+
+
+def feature_space(ranges):
+    from verifai.features import Box, Constant, Feature, FeatureSpace
+
+    return FeatureSpace({
+        field: Feature(Constant(float(low)) if low == high else Box([low, high]))
+        for field, (low, high) in ranges.items()
+    })
+
+
+def rollout_spec(point, ranges):
+    spec = {"name": "verifai"}
+    for field in FIELDS:
+        value = getattr(point, field)
+        spec[field] = float(value if ranges[field][0] == ranges[field][1] else value[0])
+    return spec
+
+
+def sample_config(config, limit=None):
+    """Return an explicit rollout config using independent uniform distributions."""
+    count, seed, ranges = sampling_settings(config, limit)
 
     # Third-party imports may print banners; stdout is reserved for --sample-only YAML.
     with redirect_stdout(sys.stderr):
         import numpy as np
-        from verifai.features import Box, Constant, Feature, FeatureSpace
         from verifai.samplers import FeatureSampler
 
     py_state, np_state = random.getstate(), np.random.get_state()
     try:
         random.seed(seed)
         np.random.seed(seed)
-        space = FeatureSpace({
-            field: Feature(Constant(float(low)) if low == high else Box([low, high]))
-            for field, (low, high) in ranges.items()
-        })
-        sampler = FeatureSampler.randomSamplerFor(space)
-        rollouts = []
-        for _ in range(count):
-            point = sampler.nextSample()
-            spec = {"name": "verifai"}
-            for field in FIELDS:
-                value = getattr(point, field)
-                spec[field] = float(value if ranges[field][0] == ranges[field][1] else value[0])
-            rollouts.append(spec)
+        sampler = FeatureSampler.randomSamplerFor(feature_space(ranges))
+        rollouts = [rollout_spec(sampler.nextSample(), ranges) for _ in range(count)]
     finally:
         random.setstate(py_state)
         np.random.set_state(np_state)
