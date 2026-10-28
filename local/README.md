@@ -68,6 +68,10 @@ There is no automatic in-episode respawn.
 summary, and one directory per rollout:
 
 - `video.mp4`: front-wide camera at 10 simulation frames per second.
+- `overhead.mp4`: fixed overhead view, cyan actual trail, yellow latest predicted
+  6.4-second path, and a front-camera inset. Both paths use the rear axle as origin.
+- `overhead-preview.jpg`: final annotated overhead frame.
+- `overhead.json`: observer camera pose, projection settings and overlay colors.
 - `initial.json`: requested and actual handover conditions.
 - `ego.csv`: time, world pose, speed, controls and inference duration.
 - `predictions.jsonl`: model trajectories in the ego frame and generated text.
@@ -77,6 +81,53 @@ The current follower is CarlaMayo's upstream pure-pursuit/speed controller,
 including its launch-from-rest rule and speed limits. This is not AlpaSim's MPC.
 The initial sharded run uses BF16, SDPA, one trajectory, seed 42 on each inference,
 and ordinary navigation conditioning with guidance weight 1.0.
+
+## Overhead view
+
+Overhead recording is enabled by default. The observer is centered 15 m into the
+intersection, 80 m above the road, facing straight down with the approach pointing
+up in the image. The same view is used for every initial condition. Change these
+settings in either YAML:
+
+```yaml
+overhead:
+  enabled: true
+  height_m: 80
+  center_ahead_m: 15
+  front_inset: true
+```
+
+Set `enabled: false` for the original front-only recording. The extra RGB sensor
+has its own frame-matched queue and is never passed to Alpamayo. The path lines are
+drawn onto the saved overhead video in OpenCV, not into the CARLA world, so the
+model's input cameras never see the annotations. Driving and model settings are
+unchanged. The cyan line accumulates the measured path since handover; yellow is
+the newest available plan, anchored at the vehicle pose where it was predicted.
+The video displays the prediction age (normally 0.1 s after its control step).
+
+To view an existing batch from above without repeating model inference:
+
+```bash
+bash local/server.sh start
+source local/env.sh
+.venv/bin/python -m local.replay_overhead \
+  --source outputs/demo-two-starts \
+  --output outputs/demo-two-starts-overhead
+bash local/server.sh stop
+```
+
+Use a new output directory for each replay. This is a **saved-pose reconstruction**:
+the vehicle follows the logged poses with physics disabled, and predictions are
+read from the original JSONL. The inset is the original front-camera video. It
+does not rerun the policy or reproduce unlogged wheel/suspension animation. The
+original files are untouched, and `replay.json` records the source and method.
+New live rollouts also save overhead video directly during their normal physics
+simulation.
+
+The original two eight-second runs have been reconstructed under
+`outputs/demo-two-starts-overhead/` (81 frames each). A fresh one-second sharded
+run under `outputs/overhead-live-smoke/` completed 10 model calls and saved 11
+frame-matched overhead images into its video.
 
 ## Completed first batch
 

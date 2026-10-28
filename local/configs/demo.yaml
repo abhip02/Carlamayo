@@ -10,6 +10,11 @@ junction_entry:
 duration_s: 20
 instruction: Continue straight through the intersection.
 seed: 42
+overhead:
+  enabled: true
+  height_m: 80
+  center_ahead_m: 15
+  front_inset: true
 rollouts:
   - name: straight
     distance_before_intersection_m: 20

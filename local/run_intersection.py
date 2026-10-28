@@ -24,6 +24,7 @@ from module.adapters.alpamayo_1_5 import Alpamayo15Adapter
 from module.carla_interface import CARLAInterface
 from module.inference import extract_trajectory_samples
 from module.trajectory_follower import TrajectoryFollower, planned_speeds, trajectory_to_world
+from local.overhead import OverheadRecorder, rear_axle_xyz
 
 ROOT = Path(__file__).resolve().parents[1]
 DT = 0.1
@@ -144,10 +145,13 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
     interface.client, interface.world = client, world
     summary = {"requested": spec, "junction_entry": entry, "termination": "error"}
     writer = None
+    overhead = None
     started = time.monotonic()
     elapsed = 0.0
     count = 0
     try:
+        if config.get("overhead", {}).get("enabled", True):
+            overhead = OverheadRecorder(world, entry, out, config.get("overhead"), label=out.name)
         frames, target = initialize_ego(interface, entry, spec)
         state = interface.get_ego_state()
         summary.update(requested_world_pose=target, actual_handover=state)
@@ -165,6 +169,9 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
             csv_writer.writerow(dict(time_s=0, frame=interface.frame_id, **state,
                                      steer=0, throttle=0, brake=0, inference_s=0))
             add_video_frame(writer, frames[-1][adapter.viz_camera_slot], 0, state, out.name)
+            if overhead is not None:
+                overhead.add_frame(interface.frame_id, interface.ego_vehicle.get_transform(),
+                                   0, state["speed"], front_rgb=frames[-1][adapter.viz_camera_slot])
             for step in range(round(config["duration_s"] / DT)):
                 xyz, rot = interface.get_history_in_local_frame()
                 data = adapter.prepare_model_input(np.stack(frames, axis=1), xyz, rot,
@@ -182,6 +189,8 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
                     raise RuntimeError("Model returned non-finite waypoints")
                 tf = interface.ego_vehicle.get_transform()
                 world_trajectory = trajectory_to_world(tf, trajectory)
+                overlay_trajectory = np.vstack((rear_axle_xyz(tf), world_trajectory))
+                prediction_time = elapsed
                 steer, throttle, brake, _ = follower.compute_control(
                     tf, world_trajectory, state["speed"], planned_speeds(trajectory))
                 prediction_file.write(json.dumps(dict(time_s=elapsed, frame=interface.frame_id,
@@ -197,6 +206,11 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
                 csv_writer.writerow(dict(time_s=elapsed, frame=interface.frame_id, **state,
                                          steer=steer, throttle=throttle, brake=brake, inference_s=inference_s))
                 add_video_frame(writer, frames[-1][adapter.viz_camera_slot], elapsed, state, out.name)
+                if overhead is not None:
+                    overhead.add_frame(interface.frame_id, interface.ego_vehicle.get_transform(),
+                                       elapsed, state["speed"], prediction=overlay_trajectory,
+                                       prediction_time=prediction_time,
+                                       front_rgb=frames[-1][adapter.viz_camera_slot])
                 if count == 1 or count % 10 == 0:
                     print(f"{out.name}: {elapsed:.1f}s / {config['duration_s']}s, "
                           f"speed={state['speed']:.2f}m/s, inference={inference_s:.2f}s", flush=True)
@@ -216,7 +230,11 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
         if writer is not None:
             writer.release()
         write_json(out / "summary.json", summary)
-        destroy_ego(interface)
+        try:
+            if overhead is not None:
+                overhead.close()
+        finally:
+            destroy_ego(interface)
     return summary
 
 
