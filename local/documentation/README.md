@@ -57,3 +57,36 @@ restore that directory's `original.pptx` to the same Drive file ID.
 
 - Follow-up source SHA-256: `2f970085a6abc44fb29e2b562e8a98c0ed02ca1c4abfd7c539a745d916702e97`
 - Follow-up output SHA-256: `47ba3830b7f201f51a61e7f78938a26511d66e0f0ba4339cebe10ddd94235f2e`
+
+## Follow-up: VerifAI integration
+
+The next update has 20 slides. Slide 13 now describes the implemented sampling
+extension, replacing the obsolete statement that random sampling is unimplemented.
+Slides 18–20 summarize the direct VerifAI sampler, CARLA server/rollout controls,
+the 16 passing tests and two one-second integration rollouts, and the GitHub fork
+and feature branch. The eight-second default is distinguished from the one-second
+checks actually executed. No new inference was run for this presentation update.
+
+`verifai-slide-plan.json` records the source, exemplars and media preservation.
+`add_verifai_update.py` duplicates the existing text-slide style and preserves the
+original slide order and every source ZIP part except the package indexes and
+slide 13's text/notes. All four embedded videos and their links remain unchanged.
+
+Rebuild from the downloaded backup:
+
+```bash
+PYTHONPATH=.runtime/docsdeps .venv/bin/python \
+  local/documentation/add_verifai_update.py outputs/documentation-verifai-20261028
+```
+
+The backup, final deck, manifest, complete native preview readbacks and reviewed
+PDF/PNGs live in `outputs/documentation-verifai-20261028/` (ignored by Git).
+The existing Drive file was updated in place; its ID, name and folder are unchanged.
+The uploaded file was downloaded and matched the reviewed output byte-for-byte.
+Both temporary native preview decks were deleted after verification. The separate
+existing native Slides copy was not changed.
+
+- Source SHA-256: `47ba3830b7f201f51a61e7f78938a26511d66e0f0ba4339cebe10ddd94235f2e`
+- Updated SHA-256: `6d23030c82a9158774f75f822086849d65ae720bf4aba67de767d3fccfb9ed18`
+- To undo this update, restore `outputs/documentation-verifai-20261028/original.pptx`
+  to Drive file `1yKSWESk_3YMKYPaRN6RDF43gdp5yf-PY` with a raw-byte update.

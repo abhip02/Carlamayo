@@ -28,6 +28,7 @@
 - This is passive initial-state sampling for the fixed empty intersection. No adaptive monitor, actor generation, or Scenic scenario scripts are implemented.
 - All 16 simulator-free sampling/handoff tests passed. A dedicated GitHub Actions job runs these tests.
 - End-to-end check: `outputs/verifai-integration-smoke/` contains two one-second sampled episodes, with 10 model calls each and one model load total. Both reached the duration limit; each front/overhead video has 11 frames. Episode wall times were 47.4 s and 34.1 s. Saved samples, sampler version, and replay configuration were verified. The dedicated CARLA container was stopped after the test.
+- Updated the existing Drive deck to 20 slides: corrected sampling status on slide 13 and added slides 18–20 covering the implementation, server/configuration controls, validation and GitHub setup. Existing slide order and all four embedded videos were preserved. Rendered the deck and verified the Drive readback byte-for-byte; provenance and backup are in `outputs/documentation-verifai-20261028/`.
 
 ## Runs completed
 

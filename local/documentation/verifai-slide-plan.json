@@ -1,0 +1,12 @@
+{
+  "source_file_id": "1yKSWESk_3YMKYPaRN6RDF43gdp5yf-PY",
+  "source_sha256": "47ba3830b7f201f51a61e7f78938a26511d66e0f0ba4339cebe10ddd94235f2e",
+  "source_render": "outputs/documentation-both-rollouts-20261028/all-slides.jpg",
+  "slides": [
+    {"slide": 13, "role": "Correct obsolete sampling status", "exemplar": "ppt/slides/slide13.xml", "method": "Update native text and notes in place", "media": "None"},
+    {"slide": 18, "role": "Implemented VerifAI sampling workflow", "exemplar": "ppt/slides/slide2.xml", "method": "Duplicate title/body with 32 pt title, 24 pt native bullets and original geometry", "media": "None"},
+    {"slide": 19, "role": "CARLA server and rollout controls", "exemplar": "ppt/slides/slide2.xml", "method": "Duplicate title/body with native styling", "media": "None"},
+    {"slide": 20, "role": "Verified integration and GitHub provenance", "exemplar": "ppt/slides/slide2.xml", "method": "Duplicate title/body with native styling", "media": "None"}
+  ],
+  "existing_media": "Keep all four embedded videos, posters and Drive playback links byte-for-byte"
+}
