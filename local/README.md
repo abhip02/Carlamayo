@@ -5,6 +5,9 @@ Upstream CarlaMayo is pinned at `4914558f868d8e51d482dbcdaf833ad7e2ce7afe`.
 The only upstream code change is optional checkpoint-path and attention-backend
 arguments in `module/adapters/alpamayo_1_5.py`. The batch runner lives here.
 
+For a concise record of completed work, runs, limitations and slides, see
+[PROGRESS.md](PROGRESS.md).
+
 ## Run
 
 From `/scratch/apomalap/thesis/carlamayo`:

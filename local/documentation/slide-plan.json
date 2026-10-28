@@ -1,0 +1,8 @@
+[
+  {"slide":10,"role":"CarlaMayo control-loop overview","exemplar":"p2 / PowerPoint slide2.xml","method":"Duplicate title/body structure; replace four uniformly styled paragraphs","media":"none"},
+  {"slide":11,"role":"Local sharded integration and completed runs","exemplar":"p2 / PowerPoint slide2.xml","method":"Duplicate title/body structure; replace four uniformly styled paragraphs","media":"none"},
+  {"slide":12,"role":"Fixed intersection and episode initialization","exemplar":"p2 / PowerPoint slide2.xml","method":"Duplicate title/body structure; replace four uniformly styled paragraphs","media":"none"},
+  {"slide":13,"role":"Current deterministic states and proposed probability model","exemplar":"p2 / PowerPoint slide2.xml","method":"Duplicate title/body structure; replace four uniformly styled paragraphs","media":"none"},
+  {"slide":14,"role":"Original front-view video of rollout B","exemplar":"p2 / PowerPoint slide2.xml","method":"Reuse title/body, narrow body for captions and add fully fitted video","media":"Add 16:9 original front-camera video, embedded MP4 and Drive link"},
+  {"slide":15,"role":"Overhead video of the same rollout","exemplar":"p2 / PowerPoint slide2.xml","method":"Reuse title/body, narrow body for captions and add fully fitted video","media":"Add 4:3 saved-pose reconstruction, embedded MP4 and Drive link"}
+]
