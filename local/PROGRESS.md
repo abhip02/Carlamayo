@@ -38,7 +38,7 @@ The two runs are in `outputs/demo-two-starts/`. Earlier startup checks are in `o
 - Cyan shows the actual rear-axle trail. Yellow shows the latest full 6.4-second prediction, anchored at the pose where it was generated. Predictions are replaced every 0.1 s of simulation.
 - Overlays are drawn after rendering and are never passed to Alpamayo. The overhead view includes the original front view as an inset.
 - Reconstructed both original runs under `outputs/demo-two-starts-overhead/` from saved poses and predictions, without new inference. This is a saved-pose replay, not a second physics experiment or a native CARLA recorder replay.
-- The presentation uses run B in both views. MP4 copies are encoded as H.264 for presentation/browser compatibility; simulation content is unchanged.
+- The presentation includes both runs in both views. MP4 copies are encoded as H.264 for presentation/browser compatibility; simulation content is unchanged.
 
 ## Organization and reversal
 
@@ -51,11 +51,13 @@ The two runs are in `outputs/demo-two-starts/`. Earlier startup checks are in `o
 
 ## Presentation update
 
-- Appended six slides to the existing `abhi_thesis_updates.pptx`: workflow, sharded integration, scene definition, initialization/probabilistic extension, original rollout, and overhead overlay.
-- Existing slides are preserved. The original deck, generated deck and rendering artifacts are in `outputs/documentation-20261028/`.
-- Video assets are in a `CarlaMayo rollout videos` folder beside the deck on Drive. The PowerPoint embeds both videos and includes Drive playback links.
+- Added the workflow, sharded integration, scene definition, initialization/probabilistic extension, and videos to the existing `abhi_thesis_updates.pptx`. The follow-up includes both rollouts: slides 14–15 show front views A/B, and slides 16–17 show overhead views A/B (17 slides total).
+- The first 13 slides are unchanged by the follow-up. Initial documentation artifacts are in `outputs/documentation-20261028/`; the latest source backup, deck and renders are in `outputs/documentation-both-rollouts-20261028/`.
+- Video assets are in a `CarlaMayo rollout videos` folder beside the deck on Drive. The PowerPoint embeds all four videos and includes Drive playback links. The Drive-edited source had converted prior embedded videos to posters; the follow-up restores movie data, while links remain the browser playback alternative.
 - Deck: https://docs.google.com/presentation/d/1yKSWESk_3YMKYPaRN6RDF43gdp5yf-PY/edit
 - Front video: https://drive.google.com/file/d/1mL6NOt5Ek9rSOolD030n4WtIMzBdp30-/view
 - Overhead video: https://drive.google.com/file/d/10R5qxdlxMedw4lRRgyi7VGED94fDQlEx/view
+- Run A front video: https://drive.google.com/file/d/1irYr8jaVTKbys64Gged4A8HpeOkHmjQ3/view
+- Run A overhead video: https://drive.google.com/file/d/1hUe8mfhK59jkom3TQtE1Y750KvQ1wDG_/view
 
 No new simulation or controller/model change was made for this documentation update.

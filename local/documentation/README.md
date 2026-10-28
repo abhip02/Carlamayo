@@ -29,7 +29,31 @@ operation. Do not delete the existing file or create a replacement ID.
 - Temporary native Slides preview was used for rendering; the separate existing
   native `abhi_thesis_updates` copy was not modified.
 
-Both video files are embedded in the PowerPoint. Drive playback links provide
-a browser alternative; Drive sharing on those new assets was not broadened.
-Video slides use the same second rollout; the overhead is explicitly labeled as
-a reconstruction from saved poses and predictions. No new inference was run.
+## Follow-up: both rollouts
+
+The follow-up deck has 17 slides. Slides 14–15 show the original front views of
+rollouts A/B; slides 16–17 show their respective overhead reconstructions.
+`both-rollouts-slide-plan.json` records how the existing video slides were reused.
+The first 13 slides are preserved byte-for-byte. Run B's two existing slides are
+relabeled and kept; two run-A slides are added and the video slides are reordered.
+
+All four video files are embedded in the updated PowerPoint. Drive playback links
+provide a browser alternative; sharing on the new assets was not broadened.
+The source downloaded from Drive for this follow-up contained only posters and
+links, so the run-B embedded movie data was restored from the original clips.
+Both overhead clips are labeled as reconstructions from saved poses/predictions.
+No new inference was run.
+
+Rebuild the follow-up using its prepared assets:
+
+```bash
+PYTHONPATH=.runtime/docsdeps .venv/bin/python \
+  local/documentation/add_first_rollout.py outputs/documentation-both-rollouts-20261028
+```
+
+The follow-up's source backup, final deck, manifest and renders live in
+`outputs/documentation-both-rollouts-20261028/`. To undo only this follow-up,
+restore that directory's `original.pptx` to the same Drive file ID.
+
+- Follow-up source SHA-256: `2f970085a6abc44fb29e2b562e8a98c0ed02ca1c4abfd7c539a745d916702e97`
+- Follow-up output SHA-256: `47ba3830b7f201f51a61e7f78938a26511d66e0f0ba4339cebe10ddd94235f2e`

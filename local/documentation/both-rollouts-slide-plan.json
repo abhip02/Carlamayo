@@ -1,0 +1,6 @@
+[
+  {"slide":14,"role":"Rollout A front video","exemplar":"Current PowerPoint slide14.xml (previously rendered front-view slide)","method":"Duplicate and preserve title/body/media geometry","media":"Replace B poster/video/link with A front video; keep 16:9 aspect ratio"},
+  {"slide":15,"role":"Rollout B front video","exemplar":"Current PowerPoint slide14.xml","method":"Retain existing slide; label B in title","media":"Restore B embedded video from original source; preserve Drive link"},
+  {"slide":16,"role":"Rollout A overhead video","exemplar":"Current PowerPoint slide15.xml (previously rendered overhead slide)","method":"Duplicate and preserve title/body/media geometry","media":"Replace B poster/video/link with A overhead video; keep 4:3 aspect ratio"},
+  {"slide":17,"role":"Rollout B overhead video","exemplar":"Current PowerPoint slide15.xml","method":"Retain existing slide; label B in title","media":"Restore B embedded video from original source; preserve Drive link"}
+]
