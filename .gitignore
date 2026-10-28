@@ -234,3 +234,6 @@ CLAUDE.md
 .gjc/
 .claude/
 .code-review-graph/
+# Isolated sharded intersection experiment
+/.runtime/
+/outputs/

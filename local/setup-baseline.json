@@ -1,0 +1,21 @@
+{
+  "upstream_commit": "4914558f868d8e51d482dbcdaf833ad7e2ce7afe",
+  "created_paths": [
+    "/scratch/apomalap/thesis/carlamayo"
+  ],
+  "existing_repositories": {
+    "alpamayo1.5": {
+      "head": "36aeb4c5938cbc2eb2aed33b22434773da4ab639",
+      "status": ""
+    },
+    "alpasim": {
+      "head": "7eba43abcf5042cc87c31b376d9fb6bca3284e15",
+      "status": ""
+    }
+  },
+  "docker_images_before": "alpasim-base:b5-affc2ea sha256:3b7d33f6e849819fe8ba46ef649e19090659c1f1be479011d2e65f4731a1c9a7\nnvcr.io/nvidia/nre/nre-ga:26.04 sha256:a6837f3877126947ff281ce9a6506261b65a2cb53d17f271da7852a9058c2289\nviplanner:latest sha256:918e6f4d20cef895c892635d5889a89a3bc761dacfc1c3f89a404246c73b1c18\nisaac-lab-base:latest sha256:adfe5ca20d2c3256e77882e0c19bdbc78b9defa8e6231edb4a87aa438154df6d\nubuntu-ssh:latest sha256:1885e9f8f20a35d79ff87da1abd2b1047df5866341a8fb1d505cb6b363084121\ntuzj/chipbench:v1.0 sha256:9e8396ba4ed3e2d3992e880b4c22d486e1e185126dff0d340990045c5e07f227\nrobotics-profiling:isca-submission sha256:1eca9fc8409d67ffbdde766345a0aefc34d831786e2836c7116bab1b2c7a83ac\nrobotics-simulation-isca:0.0 sha256:b4a348048d48360dffb9b971aa83daeb6149283ccb71921909bb92f5e3d12c68\nrobotics-profiling:0.3 sha256:1d63c059ebc368e7b780eec953c7ed61ad4d4666d05d667ed311bfba07f5d238\nrobotics-profiling:0.2 sha256:d9ad280a2273324e7dab476f8af7c4021ab60ab4edd2e67bfad408193b6a15af\nisaaclab-user:0.0 sha256:f7cb89c863e85b5aa6f0ed1104bf9dc63a806a5d232da2b7ddd4eb61dd8df0b4\nisaaclab:0.0 sha256:59c23d0ffc3d3791d8785abf0edf22d0ef7dd3f1a860e508844b7f04dd7ac642\nrobotics-profiling:0.1 sha256:9600a3b8d5825fa4d7fc1dbe7ed35d53756628b7f4df29e09a388aad551d0939\nnvcr.io/nvidia/isaac-sim:4.2.0 sha256:f02b85d71f1afe4c3128a397de57b6fd51907c6134d6bffe7ce42b47b1f4765c\nrobotics-profiling:0.0 sha256:5763974c9151b7eff4d79c12cf198293af970f1f229a6d9a29d4b1d1770c98b8\nnvcr.io/nvidia/isaac-sim:4.1.0 sha256:fabe21594f31dce2caaf66d1ca86662db58762725091b64e1fc7b0513e8c8209",
+  "container_name": "apomalap-carlamayo-0916",
+  "model_cache_reused": "/scratch/apomalap/thesis/cache/huggingface",
+  "base_environment_reused": "/scratch/apomalap/thesis/.venv-alpamayo",
+  "carla_image": "carlasim/carla:0.9.16"
+}

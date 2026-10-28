@@ -1,0 +1,127 @@
+# Sharded Alpamayo intersection rollouts
+
+This directory is the local experiment on branch `local/sharded-intersection`.
+Upstream CarlaMayo is pinned at `4914558f868d8e51d482dbcdaf833ad7e2ce7afe`.
+The only upstream code change is optional checkpoint-path and attention-backend
+arguments in `module/adapters/alpamayo_1_5.py`. The batch runner lives here.
+
+## Run
+
+From `/scratch/apomalap/thesis/carlamayo`:
+
+```bash
+bash local/server.sh start
+bash local/run.sh --config local/configs/demo.yaml
+bash local/server.sh stop
+```
+
+The demo runs two different starting states. The grid configuration runs 27:
+
+```bash
+bash local/run.sh --config local/configs/intersection.yaml
+```
+
+For a short run, add `--limit 1 --duration 2`. Duration is **simulation time**;
+inference runs synchronously and the experiment can be much slower than real time.
+The default model is loaded once per batch, distributed across host GPUs 2 and 1.
+CARLA renders on host GPU 3. `local/env.sh` and `local/server.sh` pin GPU UUIDs.
+Use `CARLAMAYO_MODEL_GPUS` (two comma-separated GPU UUIDs) and
+`CARLAMAYO_RENDER_GPU` to select different cards before launching.
+
+For an existing dedicated remote CARLA 0.9.16 server, skip the server launcher and
+pass `--host HOST --port PORT`. The runner loads the configured town, so use a
+server assigned to this experiment. It restores world settings/weather/light
+states on exit, but does not reload the town that was previously active.
+
+## Initial conditions
+
+The scene is one fixed, straight approach to an intersection in Town03, with
+clear noon weather, green frozen traffic lights, and no spawned traffic.
+The YAML pins junction 103, approached along lane -1 of junction road 184,
+using `junction_entry: {x: ..., y: ..., z: ..., yaw: ...}`. Every batch
+records that entry. `--describe-scene` prints it without loading the model.
+
+- `distance_before_intersection_m`: longitudinal distance from the entry.
+- `lateral_offset_m`: displacement to the right of the approach centerline.
+- `speed_mps`: desired speed at handover, in meters per second.
+- `heading_offset_deg`: clockwise/right heading offset from the approach direction.
+
+Locations refer to the CARLA vehicle actor origin. The model's rear-axle frame is
+handled by CarlaMayo's existing history conversion and trajectory follower.
+
+Use an explicit `rollouts` list (demo) or `initial_conditions` arrays (Cartesian
+product). Each episode settles the vehicle, renders a constant-heading scripted
+pre-roll, and fills all 16 ego-history samples and four frames per camera.
+The last warm-up tick enables vehicle physics and applies the requested velocity.
+Physics can cause small handover deviations; `initial.json` records the requested
+world pose and measured handover state. After handover, physics and Alpamayo's
+trajectory follower control the vehicle. Warm-up is excluded from the duration.
+
+The runner starts a fresh ego, sensors, history and controller for every episode.
+It ends on a collision or duration limit, then starts the next configuration.
+Infrastructure/model exceptions stop the batch and preserve the failed summary.
+There is no automatic in-episode respawn.
+
+## Outputs
+
+`outputs/<UTC timestamp>/` contains the resolved configuration, device map, batch
+summary, and one directory per rollout:
+
+- `video.mp4`: front-wide camera at 10 simulation frames per second.
+- `initial.json`: requested and actual handover conditions.
+- `ego.csv`: time, world pose, speed, controls and inference duration.
+- `predictions.jsonl`: model trajectories in the ego frame and generated text.
+- `summary.json`: final state, termination reason, simulation and wall time.
+
+The current follower is CarlaMayo's upstream pure-pursuit/speed controller,
+including its launch-from-rest rule and speed limits. This is not AlpaSim's MPC.
+The initial sharded run uses BF16, SDPA, one trajectory, seed 42 on each inference,
+and ordinary navigation conditioning with guidance weight 1.0.
+
+## Completed first batch
+
+`outputs/demo-two-starts/` contains two completed eight-second rollouts, each with
+80 model calls and no recorded collision. They ran consecutively with one model
+load. The first requested 20 m before the entry, 3 m/s and zero heading offset;
+the second requested 25 m, 4 m/s and a +5 degree offset. Measured handover speeds
+were 2.95 and 3.91 m/s. Rollout wall times, including initialization, were about
+247 and 280 seconds. The YAML defaults remain 20 simulated seconds per rollout.
+
+Both paths deviated from the straight-through instruction. These recordings
+demonstrate the sharded integration, initial conditions, control loop and batch
+reset; reliable navigation remains a model-behavior question to explore.
+
+## Environment and storage
+
+`bash local/setup.sh` creates the private `.venv`. It reads the established ML
+dependencies from `../.venv-alpamayo` through a `.pth` file, and installs CARLA
+0.9.16 and headless OpenCV only into this checkout. It does not modify the base
+environment. The editable Alpamayo source remains `../alpamayo1.5`.
+
+The existing Hugging Face cache is reused in offline mode, including checkpoint
+snapshot `7aba8293c09993f2e125c6819df05d7fa3e873ea`. There is no second model copy.
+Other caches, installation logs and temporary files live in `.runtime/`.
+Generated files, the virtual environment and outputs are ignored by Git.
+
+The one installation outside this directory is the `carlasim/carla:0.9.16`
+Docker image, stored in the existing Docker data root on scratch. Its exact ID
+and digest are recorded in `local/installed-image.json` after installation.
+The launcher uses this host's existing NVIDIA CDI GPU definitions; no Docker
+daemon or system configuration was changed. Runtime versions are recorded in
+`local/runtime-versions.json`.
+
+## Revert
+
+The previous AlpaSim and Alpamayo repositories and environment were not edited.
+`local/setup-baseline.json` records their original heads/status and Docker images.
+
+1. Interrupt any active `local/run.sh` process and let its actor cleanup finish.
+2. Run `bash local/server.sh remove` to remove this experiment's named container.
+3. To recover the image space, run `docker image rm carlasim/carla:0.9.16`.
+   The image was absent before this setup. Do not force removal if another
+   container has since started using it, and do not run a global Docker prune.
+4. Preserve any desired outputs, then remove this new `carlamayo/` checkout.
+   Everything else introduced by this experiment is inside it.
+
+To revert only the code, retain this directory and use the upstream commit above
+as the comparison point; the experiment is isolated on its own local branch.

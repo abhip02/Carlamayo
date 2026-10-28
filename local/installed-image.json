@@ -1,0 +1,10 @@
+{
+  "Id": "sha256:98d224668ad013627b63b9c42d4fa5f87c4f5d267f6e10a647788e39b48983b5",
+  "RepoTags": [
+    "carlasim/carla:0.9.16"
+  ],
+  "RepoDigests": [
+    "carlasim/carla@sha256:aaf1df22702780ece072069e23d03c4879b002ae028c79744b09c4c7ddbae953"
+  ],
+  "Size": 20705974366
+}

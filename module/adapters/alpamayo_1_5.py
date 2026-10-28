@@ -37,7 +37,7 @@ class Alpamayo15Adapter(AlpamayoAdapter):
 
     def load_model(
         self, use_quantization=False, device_map="auto", oom_free=False, oom_kwargs=None,
-        max_memory=None,
+        max_memory=None, *, checkpoint_path=None, attn_implementation=None,
     ):
         from module.alpamayo_compat import patch_legacy_hydra_targets
 
@@ -51,6 +51,11 @@ class Alpamayo15Adapter(AlpamayoAdapter):
         from alpamayo1_5 import helper
         from alpamayo1_5.models.alpamayo1_5 import Alpamayo1_5
 
+        model_path = checkpoint_path or self.model_id
+        attention_kwargs = (
+            {"attn_implementation": attn_implementation} if attn_implementation else {}
+        )
+
         if use_quantization:
             from transformers import BitsAndBytesConfig
 
@@ -61,18 +66,22 @@ class Alpamayo15Adapter(AlpamayoAdapter):
                 bnb_4bit_quant_type="nf4",
             )
             model = Alpamayo1_5.from_pretrained(
-                self.model_id,
+                model_path,
                 quantization_config=quantization_config,
                 device_map=device_map,
                 max_memory=max_memory,
                 torch_dtype=torch.bfloat16,
+                **attention_kwargs,
             )
         elif device_map:
             model = Alpamayo1_5.from_pretrained(
-                self.model_id, dtype=torch.bfloat16, device_map=device_map, max_memory=max_memory
+                model_path, dtype=torch.bfloat16, device_map=device_map,
+                max_memory=max_memory, **attention_kwargs,
             )
         else:
-            model = Alpamayo1_5.from_pretrained(self.model_id, dtype=torch.bfloat16).to("cuda")
+            model = Alpamayo1_5.from_pretrained(
+                model_path, dtype=torch.bfloat16, **attention_kwargs
+            ).to("cuda")
 
         processor = helper.get_processor(model.tokenizer)
         return model, processor
