@@ -10,6 +10,8 @@ See [RESULTS.md](RESULTS.md) for the initial diagnosis and
 experiments. The latter are isolated on `experiment/driving-input-fixes`.
 Common-setting validation is recorded in [RESULTS_ROUND3.md](RESULTS_ROUND3.md) on
 `experiment/driving-validation`.
+Input-contract and acknowledged-control follow-up is recorded in
+[RESULTS_ROUND4.md](RESULTS_ROUND4.md) on `experiment/driving-input-contract`.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
@@ -60,6 +62,9 @@ Additional input/sampling experiments:
   Saved tensors and video insets contain the **raw wide pinhole images**; replay
   must specify the same projection. `{}` on these captures is not a native-camera
   baseline. `render_projection` in each input's context identifies the source.
+  `calibrated_fisheye` additionally uses the public rig's fitted distortion and
+  principal points. The nominal rig was checked against the 1.5 reference clip;
+  simulated optics and appearance still differ. See round 4 for checks and results.
 - `traffic_layout: "ego_green"`: the approach light is green and the other lights
   in its group are red. The normal launcher makes every light green. Alternatively,
   `traffic_light_state: "Red"` freezes all lights red for a stopping check.
@@ -90,6 +95,16 @@ Additional input/sampling experiments:
 - `reasoning_prefix`, `prompt_style: "trajectory_only"`, `route_in_user_text`,
   and `prompt_hint`: frozen-input prompt ablations; none is a demonstrated general
   driving fix.
+- `expert_sdpa_math: true`: use reference attention only during motion sampling,
+  leaving the language-generation backend unchanged.
+- `text_temperature`: vary the native language sampler's temperature separately
+  from motion noise. The original value is 0.6.
+- `completed_reasoning`: provide a complete assistant intent followed by the
+  trajectory marker. This diagnostic bypasses language-generated reasoning; the
+  resulting text must not be presented as the model's explanation or perception.
+- `complete_visual_stop_intent: true`: when the visual signal check says red or
+  yellow, use a completed stop intent instead of a prefix for further reasoning.
+  Green/unknown retains native generation. This is an isolated round-4 test.
 
 `controller_speed_lead_s` exists solely to reproduce a **rejected** experiment
 that collided with a pole. It is absent from the saved candidate presets.
@@ -137,6 +152,9 @@ snapshot waiting. Do not run either timing probe concurrently with a live rollou
 `control_delivery_probe` compares native and acknowledged control delivery without
 loading the driving model. `audit_capture` compares requested/reported controls,
 recorded poses and chosen candidates, and can inspect a partial capture.
+`input_contract` compares reference and adapter tokenization on CPU.
+`compare_replays` scores frozen variants against the same recorded previous plan;
+its candidate costs do not provide a validity guarantee.
 Compare completed captures with the environment containing matplotlib:
 
 ```bash

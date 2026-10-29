@@ -91,6 +91,12 @@ class Probe:
             messages[-1]["content"][0]["text"] = "<|traj_future_start|>"
         if "reasoning_prefix" in self.options:
             messages[-1]["content"][0]["text"] = "<|cot_start|>" + self.options["reasoning_prefix"]
+        if "completed_reasoning" in self.options:
+            # Diagnostic: condition the motion expert on a supplied intent.
+            # This text is not a model-generated explanation or perception result.
+            messages[-1]["content"][0]["text"] = (
+                "<|cot_start|>" + self.options["completed_reasoning"] +
+                "<|cot_end|><|traj_future_start|>")
         self.trace["assistant_prefix"] = messages[-1]["content"][0]["text"]
         self.trace["user_task_text"] = task["text"]
         return messages
@@ -99,16 +105,19 @@ class Probe:
         self.trace["diffusion_rng_fingerprint"] = [
             hashlib.sha256(torch.cuda.get_rng_state(i).numpy().tobytes()).hexdigest()[:16]
             for i in range(torch.cuda.device_count())]
-        if "flow_seed" not in self.options:
-            self.trace["diffusion_rng_fingerprint_used"] = self.trace["diffusion_rng_fingerprint"]
-            return self.original_flow_sample(*args, **kwargs)
-        with torch.random.fork_rng(devices=list(range(torch.cuda.device_count()))):
-            torch.manual_seed(self.options["flow_seed"])
-            torch.cuda.manual_seed_all(self.options["flow_seed"])
-            self.trace["diffusion_rng_fingerprint_used"] = [
-                hashlib.sha256(torch.cuda.get_rng_state(i).numpy().tobytes()).hexdigest()[:16]
-                for i in range(torch.cuda.device_count())]
-            return self.original_flow_sample(*args, **kwargs)
+        from torch.nn.attention import SDPBackend, sdpa_kernel
+        attention = sdpa_kernel(SDPBackend.MATH) if self.options.get("expert_sdpa_math") else nullcontext()
+        with attention:
+            if "flow_seed" not in self.options:
+                self.trace["diffusion_rng_fingerprint_used"] = self.trace["diffusion_rng_fingerprint"]
+                return self.original_flow_sample(*args, **kwargs)
+            with torch.random.fork_rng(devices=list(range(torch.cuda.device_count()))):
+                torch.manual_seed(self.options["flow_seed"])
+                torch.cuda.manual_seed_all(self.options["flow_seed"])
+                self.trace["diffusion_rng_fingerprint_used"] = [
+                    hashlib.sha256(torch.cuda.get_rng_state(i).numpy().tobytes()).hexdigest()[:16]
+                    for i in range(torch.cuda.device_count())]
+                return self.original_flow_sample(*args, **kwargs)
 
     def sample(self, *args, **kwargs):
         return self.sample_with_options(self.original_sample, *args, **kwargs)
@@ -127,6 +136,13 @@ class Probe:
             kwargs["max_generation_length"] = self.options["max_generation_length"]
         if "num_samples" in self.options:
             kwargs["num_traj_samples"] = self.options["num_samples"]
+        if "text_temperature" in self.options:
+            kwargs["temperature"] = self.options["text_temperature"]
+        if "completed_reasoning" in self.options:
+            # Prefill already includes the trajectory marker. One generated token
+            # is enough to obtain its KV cache; StopAfterEOS only notices newly
+            # generated markers and would otherwise generate irrelevant text.
+            kwargs["max_generation_length"] = 1
         return original(*args, **kwargs)
 
     def generate(self, *args, **kwargs):
@@ -231,7 +247,9 @@ class Probe:
             self.trace["visual_signal_answer"] = self.visual_signal_answer
             self.trace["visual_signal_check_index"] = self.visual_signal_index
             if self.visual_signal in ("red", "yellow"):
-                self.options = {**options, "reasoning_prefix":
+                stop_option = ("completed_reasoning" if options.get("complete_visual_stop_intent")
+                               else "reasoning_prefix")
+                self.options = {**options, stop_option:
                                 f"Stop and remain stopped for the {self.visual_signal} traffic light"}
         for device in range(torch.cuda.device_count()):
             torch.cuda.reset_peak_memory_stats(device)
