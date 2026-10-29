@@ -14,6 +14,10 @@ Input-contract and acknowledged-control follow-up is recorded in
 [RESULTS_ROUND4.md](RESULTS_ROUND4.md) on `experiment/driving-input-contract`.
 Left-turn instruction and navigation-guidance checks are recorded in
 [RESULTS_ROUND5.md](RESULTS_ROUND5.md) on `experiment/driving-turn-instructions`.
+Model-only validation/resampling is tracked in [RESULTS_ROUND6.md](RESULTS_ROUND6.md)
+on `experiment/driving-plan-validation`. This opt-in wrapper uses map geometry
+for sample selection, preserves the chosen model waypoints exactly, and ends the
+test explicitly if no sample passes; it does not provide a fallback planner.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 

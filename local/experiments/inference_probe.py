@@ -541,7 +541,9 @@ def main():
                                            "local/experiments/camera_projection.py",
                                            "local/experiments/candidate_selection.py",
                                            "local/experiments/frame_sync.py",
-                                           "local/experiments/acknowledged_preroll.py"]},
+                                           "local/experiments/acknowledged_preroll.py",
+                                           "local/experiments/validated_probe.py",
+                                           "local/experiments/validated_selection.py"]},
         })
         (capture if args.mode == "capture" else replay)(args, args.output)
 
