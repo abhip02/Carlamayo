@@ -9,11 +9,14 @@ from pathlib import Path
 import numpy as np
 
 
-def read_run(path):
+def read_run(path, horizon=None):
     summary = json.loads((path / "000_verifai/summary.json").read_text())
     with (path / "000_verifai/ego.csv").open() as stream:
         rows = [{k: float(v) for k, v in row.items()} for row in csv.DictReader(stream)]
     frames = [json.loads(p.read_text()) for p in sorted(path.glob("frame_*.json"))]
+    if horizon is not None:
+        rows = [row for row in rows if row["time_s"] <= horizon + 1e-8]
+        frames = [frame for frame in frames if frame["context"]["time_s"] < rows[-1]["time_s"] - 1e-8]
     time = np.array([r["time_s"] for r in rows])
     speed = np.array([r["speed"] for r in rows])
     xy = np.array([[r["x"], r["y"]] for r in rows])
@@ -24,10 +27,11 @@ def read_run(path):
     near_stop = speed < .25
     stop_onset = np.flatnonzero(near_stop[1:] & ~near_stop[:-1]) + 1
     metrics = {
-        "duration_s": summary["simulation_seconds"],
+        "duration_s": float(time[-1]),
+        "full_run_duration_s": summary["simulation_seconds"],
         "termination": summary["termination"],
         "actual_initial_state": summary["actual_handover"],
-        "actual_final_state": summary["final_state"],
+        "actual_final_state": {key: rows[-1][key] for key in summary["final_state"]},
         "mean_speed_mps": float(np.trapezoid(speed, time) / time[-1]),
         "min_speed_mps": float(speed.min()),
         "near_stop_onsets_s": time[stop_onset].tolist(),
@@ -52,11 +56,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", nargs="+", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--horizon", type=float, help="Compare only the first N simulation seconds")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     results, series = {}, {}
     for run in args.runs:
-        results[run.name], series[run.name] = read_run(run)
+        results[run.name], series[run.name] = read_run(run, args.horizon)
     first = next(iter(results.values()))["actual_initial_state"]
     for result in results.values():
         initial = result["actual_initial_state"]

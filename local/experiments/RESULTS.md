@@ -1,5 +1,8 @@
 # Driving inference investigation — 2026-10-28
 
+Follow-up camera, signal-layout, and multiple-trajectory experiments are recorded
+in [RESULTS_ROUND2.md](RESULTS_ROUND2.md). The conclusions below describe round 1.
+
 The slowdown originates in the model's predicted motion. The original controller
 then brakes in response. Several independent issues contribute to erratic plans,
 but these experiments have **not established a reliable straight-driving fix**.
