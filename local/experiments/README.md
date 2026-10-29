@@ -12,6 +12,8 @@ Common-setting validation is recorded in [RESULTS_ROUND3.md](RESULTS_ROUND3.md) 
 `experiment/driving-validation`.
 Input-contract and acknowledged-control follow-up is recorded in
 [RESULTS_ROUND4.md](RESULTS_ROUND4.md) on `experiment/driving-input-contract`.
+Left-turn instruction and navigation-guidance checks are recorded in
+[RESULTS_ROUND5.md](RESULTS_ROUND5.md) on `experiment/driving-turn-instructions`.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
@@ -91,7 +93,8 @@ Additional input/sampling experiments:
 - `acknowledged_controls: true`: deliver the original controller's unchanged
   command through a synchronous CARLA batch before ticking. The model-free
   control-delivery comparison had 7/40 stale commands natively and 0/40 with this
-  delivery method; full driving validation remains pending.
+  delivery method. The round-4 green rollout also had zero mismatches, but still
+  failed to drive the requested route.
 - `reasoning_prefix`, `prompt_style: "trajectory_only"`, `route_in_user_text`,
   and `prompt_hint`: frozen-input prompt ablations; none is a demonstrated general
   driving fix.
@@ -155,6 +158,16 @@ recorded poses and chosen candidates, and can inspect a partial capture.
 `input_contract` compares reference and adapter tokenization on CPU.
 `compare_replays` scores frozen variants against the same recorded previous plan;
 its candidate costs do not provide a validity guarantee.
+`junction_routes` exports the configured junction's lane paths from an already
+loaded CARLA map without ticking or changing it. `audit_turn` compares recorded
+vehicle centers with those paths and checks the exit position and heading;
+`plot_turns` draws the actual paths. These map references are evaluation data,
+never driving input. The existing route-continuity selector is straight-only
+and must be disabled when testing a left instruction. `instruction_summary`
+compares the round-5 frozen navigation variants.
+`plot_turn_predictions` overlays saved raw predictions and the actual rear axle
+using the original coordinate conversion. It requires the model environment's
+CARLA Python package, but does not connect to CARLA or load a model.
 Compare completed captures with the environment containing matplotlib:
 
 ```bash

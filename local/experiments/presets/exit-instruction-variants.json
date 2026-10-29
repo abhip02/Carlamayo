@@ -1,0 +1,45 @@
+{
+  "left": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Turn left at the intersection."
+  },
+  "straight": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Continue straight through the intersection."
+  },
+  "follow_exit": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Finish the left turn, then continue straight along the exit lane."
+  },
+  "no_navigation": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": ""
+  },
+  "straight_completed": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Continue straight through the intersection.",
+    "completed_reasoning": "Follow the current lane straight ahead."
+  },
+  "left_repeat": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Turn left at the intersection."
+  }
+}

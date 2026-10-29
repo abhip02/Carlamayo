@@ -1,0 +1,103 @@
+{
+  "straight_guidance_1.0": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Continue straight through the intersection.",
+    "navigation_weight": 1.0
+  },
+  "straight_guidance_1.5": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Continue straight through the intersection.",
+    "navigation_weight": 1.5
+  },
+  "straight_guidance_2.0": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Continue straight through the intersection.",
+    "navigation_weight": 2.0
+  },
+  "left_guidance_1.0": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Turn left at the intersection.",
+    "navigation_weight": 1.0
+  },
+  "left_guidance_1.5": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Turn left at the intersection.",
+    "navigation_weight": 1.5
+  },
+  "left_guidance_2.0": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Turn left at the intersection.",
+    "navigation_weight": 2.0
+  },
+  "left_distance_10m": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Turn left in 10m",
+    "navigation_weight": 1.0
+  },
+  "straight_short": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Go straight",
+    "navigation_weight": 1.0
+  },
+  "straight_completed": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Continue straight through the intersection.",
+    "navigation_weight": 1.0,
+    "completed_reasoning": "Continue straight through the intersection."
+  },
+  "left_completed": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Turn left at the intersection.",
+    "navigation_weight": 1.0,
+    "completed_reasoning": "Turn left at the intersection."
+  },
+  "straight_repeat": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "sdpa_math": true,
+    "instruction": "Continue straight through the intersection.",
+    "navigation_weight": 1.0
+  }
+}

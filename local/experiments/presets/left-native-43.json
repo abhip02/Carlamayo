@@ -1,0 +1,11 @@
+{
+  "camera_projection": "equidistant",
+  "seed": 43,
+  "flow_seed": 42,
+  "num_samples": 1,
+  "instruction": "Turn left at the intersection.",
+  "acknowledged_preroll": true,
+  "acknowledged_controls": true,
+  "wait_for_snapshot": true,
+  "traffic_layout": "ego_green"
+}

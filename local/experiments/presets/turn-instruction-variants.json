@@ -1,0 +1,52 @@
+{
+  "straight": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Continue straight through the intersection."
+  },
+  "left": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Turn left at the intersection."
+  },
+  "no_navigation": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": ""
+  },
+  "straight_repeat": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Continue straight through the intersection."
+  },
+  "left_completed": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 1,
+    "instruction": "Turn left at the intersection.",
+    "completed_reasoning": "Turn left at the intersection."
+  },
+  "straight_four": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 4,
+    "instruction": "Continue straight through the intersection."
+  },
+  "left_four": {
+    "camera_projection": "equidistant",
+    "seed": 43,
+    "flow_seed": 42,
+    "num_samples": 4,
+    "instruction": "Turn left at the intersection."
+  }
+}
