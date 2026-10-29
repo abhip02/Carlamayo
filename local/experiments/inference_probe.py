@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from contextlib import nullcontext
 import copy
+import fcntl
 import gc
 import hashlib
 import json
@@ -31,6 +32,19 @@ from module.trajectory_follower import planned_speeds
 
 def write_json(path, value):
     Path(path).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n")
+
+
+def acquire_experiment_lock():
+    """These probes share two model GPUs; reject overlapping launches early."""
+    path = runner.ROOT / ".runtime" / "driving-probe.lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock = path.open("a+")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock.close()
+        raise RuntimeError("Another inference probe is running; wait for it to exit before launching this one.") from None
+    return lock
 
 
 class Probe:
@@ -291,6 +305,7 @@ def capture(args, output):
     active = {}
     original_adapter, original_connect = runner.Alpamayo15Adapter, runner.connect_world
     original_tick = runner.CARLAInterface.tick
+    original_initialize = runner.initialize_ego
     snapshot_waits = []
     original_speed_lead = runner.defaults.PID_SPEED_LEAD_SEC
     if "controller_speed_lead_s" in options:
@@ -351,6 +366,9 @@ def capture(args, output):
     runner.Alpamayo15Adapter, runner.connect_world = RecordingAdapter, connect
     if options.get("wait_for_snapshot"):
         runner.CARLAInterface.tick = synchronized_tick
+    if options.get("acknowledged_preroll"):
+        from local.experiments.acknowledged_preroll import initialize_ego
+        runner.initialize_ego = initialize_ego
     try:
         with runner.rollout_session(args, config, output) as episode:
             if options.get("traffic_layout") == "ego_green":
@@ -395,6 +413,7 @@ def capture(args, output):
             active["probe"].close()
         runner.Alpamayo15Adapter, runner.connect_world = original_adapter, original_connect
         runner.CARLAInterface.tick = original_tick
+        runner.initialize_ego = original_initialize
         runner.defaults.PID_SPEED_LEAD_SEC = original_speed_lead
         if snapshot_waits:
             write_json(output / "snapshot-waits.json", snapshot_waits)
@@ -478,18 +497,20 @@ def main():
         parser.error("capture requires --config")
     if args.mode == "replay" and not args.inputs:
         parser.error("replay requires --inputs")
-    args.output.mkdir(parents=True, exist_ok=False)
-    write_json(args.output / "experiment.json", {
-        "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=runner.ROOT, text=True).strip(),
-        "arguments": {key: str(value) for key, value in vars(args).items()},
-        "source_sha256": {name: hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest()
-                          for name in ["module/config.py", "module/trajectory_follower.py",
-                                       "local/experiments/inference_probe.py",
-                                       "local/experiments/camera_projection.py",
-                                       "local/experiments/candidate_selection.py",
-                                       "local/experiments/frame_sync.py"]},
-    })
-    (capture if args.mode == "capture" else replay)(args, args.output)
+    with acquire_experiment_lock():
+        args.output.mkdir(parents=True, exist_ok=False)
+        write_json(args.output / "experiment.json", {
+            "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=runner.ROOT, text=True).strip(),
+            "arguments": {key: str(value) for key, value in vars(args).items()},
+            "source_sha256": {name: hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest()
+                              for name in ["module/config.py", "module/trajectory_follower.py",
+                                           "local/experiments/inference_probe.py",
+                                           "local/experiments/camera_projection.py",
+                                           "local/experiments/candidate_selection.py",
+                                           "local/experiments/frame_sync.py",
+                                           "local/experiments/acknowledged_preroll.py"]},
+        })
+        (capture if args.mode == "capture" else replay)(args, args.output)
 
 
 if __name__ == "__main__":

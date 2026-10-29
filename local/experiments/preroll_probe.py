@@ -17,10 +17,12 @@ from module.carla_interface import CARLAInterface
 
 
 def main():
+    import carla
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeats", type=int, default=10)
+    parser.add_argument("--modes", nargs="+", choices=("native", "wait", "acknowledged"), default=["native", "wait"])
     args = parser.parse_args()
     config = yaml.safe_load(args.config.read_text())
     client, world = runner.connect_world(SimpleNamespace(host="127.0.0.1", port=2000), config)
@@ -32,7 +34,7 @@ def main():
         settings.fixed_delta_seconds = .1
         world.apply_settings(settings)
         for repeat in range(args.repeats):
-            for mode in ("native", "wait"):
+            for mode in args.modes:
                 interface = CARLAInterface(camera_configs=wide_render_rig())
                 interface.client, interface.world = client, world
                 ticks = []
@@ -49,7 +51,11 @@ def main():
                 interface.tick = tick
                 try:
                     spec = runner.rollout_specs(config)[0]
-                    runner.initialize_ego(interface, config["junction_entry"], spec)
+                    initialize = runner.initialize_ego
+                    if mode == "acknowledged":
+                        from local.experiments.acknowledged_preroll import initialize_ego
+                        initialize = initialize_ego
+                    initialize(interface, config["junction_entry"], spec)
                     xyz, _ = interface.get_history_in_local_frame()
                     dx = np.diff(xyz[:, 0])
                     # First 15 poses are teleported at exactly the requested speed;
@@ -64,7 +70,16 @@ def main():
                     args.output.write_text(json.dumps(records, indent=2) + "\n")
                     print(json.dumps({k: v for k, v in record.items() if k not in ("ticks", "history_forward")}), flush=True)
                 finally:
-                    runner.destroy_ego(interface)
+                    # A just-spawned collision sensor may not yet appear alive in
+                    # the client's actor cache. Destroy acknowledged IDs directly.
+                    actors = list(interface.sensors.values())
+                    for sensor in actors:
+                        sensor.stop()
+                    if interface.ego_vehicle is not None:
+                        actors.append(interface.ego_vehicle)
+                    client.apply_batch_sync([carla.command.DestroyActor(actor.id) for actor in actors], False)
+                    interface.sensors.clear()
+                    interface.ego_vehicle = None
     finally:
         world.apply_settings(previous)
 

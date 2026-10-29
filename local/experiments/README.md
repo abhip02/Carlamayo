@@ -77,6 +77,10 @@ Additional input/sampling experiments:
 - `wait_for_snapshot: true`: after each simulator tick, wait until the client has
   received that exact frame before reading the ego pose. This isolates a pre-roll
   history race; it does not change the controller or simulated tick duration.
+  Waiting alone did not fix the observed pre-roll errors.
+- `acknowledged_preroll: true`: use acknowledged CARLA commands during placement
+  and read poses from exact-frame actor snapshots. This produced clean histories
+  in 10/10 initialization trials. It is separate from learned driving quality.
 - `reasoning_prefix`, `prompt_style: "trajectory_only"`, `route_in_user_text`,
   and `prompt_hint`: frozen-input prompt ablations; none is a demonstrated general
   driving fix.
@@ -86,6 +90,25 @@ that collided with a pole. It is absent from the saved candidate presets.
 
 The selector and periodic signal checker are stateful; evaluate them with live
 capture. Frozen-input replay is intended for independent inference variants.
+
+Small option presets are saved in `presets/`. `straight-crossing.json` reproduces
+the selected green experiment; `red-stop-check.json` is the red hold experiment;
+`acknowledged-baseline.json` changes only initialization. These are experimental,
+with their validation status and limitations in `RESULTS_ROUND2.md`.
+
+```bash
+source local/env.sh
+.venv/bin/python -m local.experiments.inference_probe capture \
+  --config local/configs/demo.yaml --duration 8 --capture-frames -1 \
+  --options local/experiments/presets/straight-crossing.json \
+  --output outputs/driving-investigation-2/my-straight-test
+```
+
+Start CARLA first as above. `--capture-frames -1` avoids large regular input saves;
+malformed generations are still saved. Capture runs the first configured scene.
+Inference probes now take an exclusive process lock to reject overlapping model
+launches before loading GPUs or changing simulator settings. This does not guard
+unrelated CARLA scripts; run simulator-mutating diagnostics sequentially.
 
 For example, `--variants variants.json` can use:
 

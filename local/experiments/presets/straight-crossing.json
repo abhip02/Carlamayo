@@ -1,0 +1,9 @@
+{
+  "camera_projection": "equidistant",
+  "num_samples": 4,
+  "flow_seed": 42,
+  "select_route_continuity": true,
+  "verify_signal": true,
+  "traffic_layout": "ego_green",
+  "seed": 43
+}

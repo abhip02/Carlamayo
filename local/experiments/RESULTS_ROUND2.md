@@ -26,9 +26,16 @@ junction. Images show another junction and a STOP road marking ahead. We have no
 established whether that late stop is appropriate. One selected generation lacked
 the trajectory marker at 8.4 s; validity filtering is not implemented.
 
-The full red-light hold validation is still pending. An interrupted attempt
-reached a stop by 4.8 s but did not reach the previously observed false restart
-around 6.5 s. Do not count it as a successful red-light validation.
+The initial full red-light rerun completed but did not hold continuously: it stopped at
+2.3 s and 5.8 s, restarted, and ended moving at 0.773 m/s. Its front remained about
+0.27 m behind the stop line at 8 s, so this was a stop-and-go failure, not an
+observed line crossing. The final full-horizon stop-cost variant then completed
+8 s: after a brief 0.288 m/s restart at 2.1 s, speed stayed below 0.011 m/s from
+2.2 s onward. It ended essentially stationary, 10.34 m short of the stop line,
+with no collision or missing selected trajectory markers. This is conservative
+early stopping, not normal stop-line positioning. Green and red results are
+separate scene-specific experiments; the newest combined options have not been
+validated across green lights, traffic, or arbitrary routes.
 
 ## Completed live experiments
 
@@ -50,10 +57,14 @@ the initial heading line, not distance to a map-derived curved route.
 | `capture-selected-green` | Four samples + route/continuity selection + visual signal check | 0.5 s | Aborted by a VQA generation-count bug. Not a completed driving result. |
 | `capture-selected-green-v2` | Same wrapper after VQA bug fix; seed 43 | 12 s | Crossed straight; max lateral 0.714 m; no collision. No near-stop in first 8 s; late near-stop at 10.7 s. |
 | `capture-selected-red` | Same wrapper, all signals red | 4.8 s, interrupted | 48 completed calls. Speed 0.00957 m/s at interruption. Full red hold **not validated**. |
+| `capture-selected-red-v2` | Fresh full red rerun | 8 s | Stayed behind stop line but repeatedly restarted; final 0.773 m/s. Three selected generations lacked markers. |
+| `capture-acknowledged-baseline` | Original inference with acknowledged initialization | 8 s | **Confounded:** a second capture was mistakenly started before this process exited. Its GPU load failed, but shared simulator setup may have affected the first run. Excluded from driving-quality conclusions. |
+| `capture-selected-red-stop-cost` | First stop-cost launch attempt | No rollout | GPU OOM while prior model was still resident. No driving result. Retry uses a new output directory after both processes exit. |
+| `capture-selected-red-stop-cost-v2` | Stop-length cost on visual red + acknowledged initialization + snapshot wait | 8 s | Stopped and held from 2.2 s onward; one brief initial restart at 2.1 s. Final speed about 0.000001 m/s, minimum front clearance 10.34 m. No collision, zero missing selected markers. |
 
-The last run was gracefully interrupted while the user checked available usage,
+The first selected red run was gracefully interrupted while the user checked available usage,
 not because of a simulator/model failure. Its CSV, frame records and inputs were
-preserved. It has no completed batch summary. A fresh full-length rerun is needed.
+preserved. It has no completed batch summary. The subsequent v2 rerun is complete.
 
 ## Frozen-input experiments
 
@@ -63,8 +74,17 @@ preserved. It has no completed batch summary. A fresh full-length rerun is neede
 | `replay-red` (6 trajectory evaluations + VQA) | Saved false-restart frame: native; fixed noise; no CoT; explicit red fact; stop instruction; stopping reasoning prefix | Native text claimed green despite rendered red. Explicit fact/route instruction and no-CoT still produced forward motion. The stopping prefix reduced target speed to 0.080 m/s and endpoint to 0.533 m. Separate visual question correctly answered Red on the same images. |
 | `replay-multisample` | Four native samples on saved failing seed-43 frame 057 | First three trajectories turned off route; fourth provided a useful straight alternative. Offline selector chose that fourth sample. `candidate-selection-check.json` records its costs. |
 
-`selected-prefix-variants.json` was prepared for a later frozen-input comparison;
-it has **not been run** at this checkpoint. Similarly, prepared front-camera /
+`replay-selected-prefix` contains 12 additional evaluations (four variants on
+frames 022, 057 and 100 of the selected green run), plus three VQA answers.
+`prefix-selection-comparison.json` applies the same recorded previous plan to
+every variant. A stronger route prefix lowered the early target from 1.057 to
+0.608 m/s and substantially worsened the late route cost; putting the route into
+user text also worsened the late route. Removing CoT did not consistently recover
+speed. These variants were not promoted to live tests. The broad visual question
+returned “No relevant objects detected” on all three inputs and did not resolve
+the interpretation of the late stop.
+
+Prepared front-camera /
 short-controller-preview combinations without capture directories were not run.
 
 ## What the experimental wrapper actually does
@@ -129,12 +149,43 @@ despite its original `wide_pinhole` context label. Replay that particular input
 without another projection. Selected regular captures (000, 022, 057, 100) are raw
 as documented. The recorder now preserves source images for automatic failure
 captures too, preventing double remapping in future experiments.
+The same caveat applies to `capture-selected-red-v2/inputs/frame_026.pt` and
+`frame_037.pt`, whose process had loaded the old recorder. Its explicitly requested
+frames 000, 038 and 065 are source images. The interrupted selected red run had no
+automatic failure captures.
 
 A restarted red test reproduced a larger initial history anomaly: a duplicated
 penultimate position followed by a 0.593 m jump. Estimated initial speed was
 7.675 m/s versus measured 2.952 m/s. A scoped `wait_for_snapshot` option and the
-model-free `preroll_probe` were added to investigate this separately. At this
-checkpoint the timing correction is not yet validated as a driving improvement.
+model-free `preroll_probe` were added to investigate this separately.
+
+The repeated initialization tests now establish the following:
+
+| Comparison | Original initialization | Experimental initialization |
+| --- | --- | --- |
+| Snapshot wait only | 5/10 bad histories | 5/10 bad histories: **did not fix it** |
+| Acknowledged placement + exact-frame actor poses | 2/10 bad histories | **0/10 bad histories** |
+
+All immediate snapshot frame numbers were current, even on bad histories. Thus
+the earlier 71-tick freshness test did not rule out this separate pose problem.
+The maximum pre-roll step error was 4.50 m in the native trials, versus 0.000014 m
+with acknowledged commands. A bad history here means a pre-roll step error over
+0.05 m or a final handover displacement more than 0.05 m from the usual 0.293 m.
+`preroll-comparison.json`, `preroll-acknowledged-comparison.json`, and
+`preroll-summary.json` preserve every trial.
+
+The acknowledged variant uses CARLA's synchronous command batches for placement,
+physics and velocity changes, and reads the ego pose from the matching frame's
+actor snapshot. It changes both command acknowledgment and pose access; these
+trials do not isolate which is sufficient alone. The first baseline-only driving
+attempt was confounded by an overlapping launch (see table) and does not provide
+a valid driving comparison. No driving-quality claim follows from clean
+initialization alone.
+
+After the overlapping-launch mistake, the probe acquired an exclusive process
+lock before model loading or simulator setup. A second acquisition is rejected,
+and closing the first releases it; both cases were checked. This prevents future
+overlapping inference-probe processes, not unrelated simulator clients.
 
 The red rerun also exposed a selection/controller interaction. At 2.2 s, the
 selected trajectory's 1–1.5 s target was only 0.146 m/s but its full path length
@@ -144,18 +195,46 @@ launch behavior and it resumed despite the visual checker still reporting red.
 `prefer_stop_on_red` adds full path length squared to candidate cost only for a
 visual red/yellow answer. An offline comparison using the **same previous plan**
 and candidate arrays selected shorter stop plans at frames 022, 024 and 025;
-see `red-stop-selection-offline.json`. Live validation remains pending.
+see `red-stop-selection-offline.json`. The final live result is in the table above.
+All 80 selected trajectories exactly matched an unmodified candidate. The visual
+checker answered red for 75 planning ticks and unknown for five. Actual recorded
+signals stayed red throughout. Median inference time was 6.60 s per tick.
+
+`red-validation.json` calculates clearance using all corners of the actual vehicle
+bounding box against the approach stop-line plane. This refines the earlier
+front-offset approximation: input-only red crossed by 0.826 m; the first selected
+red remained 0.253 m behind at 8 s; final stop-cost red remained 10.341 m behind.
+`red-final-comparison/` contains measured plots and metrics. Videos:
+
+- `red-before-after-8s.mp4`: previous selection vs stop-cost + acknowledged setup.
+- `capture-selected-red-stop-cost-v2/000_verifai/overhead-h264.mp4`: full final run.
+
+The exact final-run experimental sources are preserved in its `source_snapshot/`
+directory, verified against the run manifest hashes. The subsequent launch lock
+does not change inference behavior.
+
+All 63 existing regression tests passed again after the code changes. Production
+controller/configuration/tests and external model sources remained unchanged.
+The final cleanup check found zero rollout vehicles and 40 sensors left after the
+40 rapid initialization trials. This is consistent with freshly spawned collision
+sensors being skipped by native cleanup's client-cache `is_alive` check; sensor
+types were not inventoried before shutdown. The probe's
+cleanup now destroys acknowledged actor IDs directly. The owned CARLA container
+was stopped, removing all remaining simulator actors and freeing its resources.
 
 ## Resume and rollback
 
-Keep full red-light hold validation first: the observed failure begins around
-6.5 s, so an early stop alone is insufficient. Next, evaluate prompt variants on
-saved inputs before additional live runs. Do not force away the late stop without
-checking the next junction and visible road controls.
+This round is complete; no tests remain running. Further validation should use one
+common configuration on both red and green scenes, then add traffic and route
+variation. Stop-cost selection currently stops much too early. The brief initial
+red restart also warrants measuring applied controls against requested controls
+before attributing it solely to inference. Malformed-generation filtering remains
+unimplemented. Do not force away the late green-run stop without checking the
+next junction and visible road controls.
 
 Commands and option meanings are in [README.md](README.md). Exact tested option
-objects are `outputs/driving-investigation-2/selected-green.json` and
-`selected-red.json`; the first configured scene is used by capture. Output folders
+objects are also committed under `local/experiments/presets/`; the first configured
+scene is used by capture. Output folders
 must be new so old evidence is not overwritten.
 
 After committing/saving experiment work, `git switch feature/verifai-server-client`
