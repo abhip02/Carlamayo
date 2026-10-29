@@ -306,6 +306,7 @@ def capture(args, output):
     original_adapter, original_connect = runner.Alpamayo15Adapter, runner.connect_world
     original_tick = runner.CARLAInterface.tick
     original_initialize = runner.initialize_ego
+    original_apply_control = runner.CARLAInterface.apply_control
     snapshot_waits = []
     original_speed_lead = runner.defaults.PID_SPEED_LEAD_SEC
     if "controller_speed_lead_s" in options:
@@ -325,6 +326,14 @@ def capture(args, output):
         snapshot_waits.append({"frame": frame, "immediate_snapshot_frame": immediate,
                                "wait_seconds": time.monotonic() - started})
         return frame
+
+    def acknowledged_control(interface, steering, throttle, brake):
+        import carla
+        control = carla.VehicleControl(steer=float(steering), throttle=float(throttle), brake=float(brake))
+        response = interface.client.apply_batch_sync([
+            carla.command.ApplyVehicleControl(interface.ego_vehicle.id, control)], False)[0]
+        if response.error:
+            raise RuntimeError(response.error)
 
     class RecordingAdapter(Alpamayo15Adapter):
         if "camera_projection" in options:
@@ -346,6 +355,7 @@ def capture(args, output):
             actor = snapshot.find(vehicle.id)
             transform, velocity = actor.get_transform(), actor.get_velocity()
             forward = transform.get_forward_vector()
+            applied = vehicle.get_control()
             context = {"index": self.index, "time_s": self.index * .1,
                        "closed_loop": True,
                        "world_pose": {"x": transform.location.x, "y": transform.location.y, "z": transform.location.z,
@@ -353,6 +363,8 @@ def capture(args, output):
                        "route_entry": config["junction_entry"],
                        "render_projection": "wide_pinhole" if "camera_projection" in options else "native_pinhole",
                        "snapshot_frame": snapshot.frame, "seed": config.get("seed", 42),
+                       "applied_control": {"steer": applied.steer, "throttle": applied.throttle,
+                                           "brake": applied.brake, "reverse": applied.reverse},
                        "signal_states": {str(light.id): str(light.get_state()) for light in active.get("signals", [])},
                        "measured_signed_speed_mps": velocity.x * forward.x + velocity.y * forward.y + velocity.z * forward.z,
                        "measured_speed_mps": velocity.length()}
@@ -369,6 +381,8 @@ def capture(args, output):
     if options.get("acknowledged_preroll"):
         from local.experiments.acknowledged_preroll import initialize_ego
         runner.initialize_ego = initialize_ego
+    if options.get("acknowledged_controls"):
+        runner.CARLAInterface.apply_control = acknowledged_control
     try:
         with runner.rollout_session(args, config, output) as episode:
             if options.get("traffic_layout") == "ego_green":
@@ -414,6 +428,7 @@ def capture(args, output):
         runner.Alpamayo15Adapter, runner.connect_world = original_adapter, original_connect
         runner.CARLAInterface.tick = original_tick
         runner.initialize_ego = original_initialize
+        runner.CARLAInterface.apply_control = original_apply_control
         runner.defaults.PID_SPEED_LEAD_SEC = original_speed_lead
         if snapshot_waits:
             write_json(output / "snapshot-waits.json", snapshot_waits)

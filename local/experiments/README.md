@@ -8,6 +8,8 @@ remain identical to upstream `4914558`; the starting integration commit is
 See [RESULTS.md](RESULTS.md) for the initial diagnosis and
 [RESULTS_ROUND2.md](RESULTS_ROUND2.md) for camera, signal, and multiple-trajectory
 experiments. The latter are isolated on `experiment/driving-input-fixes`.
+Common-setting validation is recorded in [RESULTS_ROUND3.md](RESULTS_ROUND3.md) on
+`experiment/driving-validation`.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
@@ -81,6 +83,10 @@ Additional input/sampling experiments:
 - `acknowledged_preroll: true`: use acknowledged CARLA commands during placement
   and read poses from exact-frame actor snapshots. This produced clean histories
   in 10/10 initialization trials. It is separate from learned driving quality.
+- `acknowledged_controls: true`: deliver the original controller's unchanged
+  command through a synchronous CARLA batch before ticking. The model-free
+  control-delivery comparison had 7/40 stale commands natively and 0/40 with this
+  delivery method; full driving validation remains pending.
 - `reasoning_prefix`, `prompt_style: "trajectory_only"`, `route_in_user_text`,
   and `prompt_hint`: frozen-input prompt ablations; none is a demonstrated general
   driving fix.
@@ -95,6 +101,10 @@ Small option presets are saved in `presets/`. `straight-crossing.json` reproduce
 the selected green experiment; `red-stop-check.json` is the red hold experiment;
 `acknowledged-baseline.json` changes only initialization. These are experimental,
 with their validation status and limitations in `RESULTS_ROUND2.md`.
+Follow-up common-setting validation failed on green; these presets should not be
+treated as a reliable driving fix. See `RESULTS_ROUND3.md` before reusing them.
+`common-green-43.json` and `common-red-43.json` preserve the failed round-3
+validation settings for reproduction.
 
 ```bash
 source local/env.sh
@@ -124,6 +134,9 @@ For example, `--variants variants.json` can use:
 existing saved episodes. `frame_sync` measures snapshot freshness in CARLA without
 model inference. `preroll_probe` compares repeated initializations with and without
 snapshot waiting. Do not run either timing probe concurrently with a live rollout.
+`control_delivery_probe` compares native and acknowledged control delivery without
+loading the driving model. `audit_capture` compares requested/reported controls,
+recorded poses and chosen candidates, and can inspect a partial capture.
 Compare completed captures with the environment containing matplotlib:
 
 ```bash

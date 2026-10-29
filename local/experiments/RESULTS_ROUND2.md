@@ -1,5 +1,9 @@
 # Driving inference experiments — round 2, 2026-10-29
 
+**Follow-up:** [Round 3](RESULTS_ROUND3.md) failed to reproduce reliable straight
+driving with the combined settings: the new green run stopped early and turned
+off course. The favorable episodes below are individual results, not a general fix.
+
 Work branch: `experiment/driving-input-fixes`, starting from `8dee5f7`.
 The integration baseline is `feature/verifai-server-client` (`9ec8b53`).
 All changes are confined to `local/experiments/`; production launchers do not

@@ -1,0 +1,12 @@
+{
+  "camera_projection": "equidistant",
+  "num_samples": 4,
+  "flow_seed": 42,
+  "select_route_continuity": true,
+  "verify_signal": true,
+  "wait_for_snapshot": true,
+  "prefer_stop_on_red": true,
+  "acknowledged_preroll": true,
+  "seed": 43,
+  "traffic_light_state": "Red"
+}
