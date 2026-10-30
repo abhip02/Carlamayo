@@ -42,7 +42,7 @@ def main():
         ax.set_aspect("equal", adjustable="box")
         ax.grid(alpha=.3)
         ax.legend(fontsize=8)
-    fig.suptitle("Lane geometry is used only for evaluation, not model input or control")
+    fig.suptitle("Recorded vehicle paths against map lane centerlines")
     fig.tight_layout()
     fig.savefig(args.output, dpi=160)
     plt.close(fig)

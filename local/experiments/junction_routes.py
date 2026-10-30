@@ -1,4 +1,4 @@
-"""Export map lane paths for evaluating an instructed turn; never used for control."""
+"""Export map lane paths for audits or the opt-in native-sample validator."""
 import argparse
 import json
 import math
@@ -70,7 +70,7 @@ def export(world_map, entry):
     if not {"left", "straight"} <= routes.keys():
         raise ValueError("Both left and straight connections are required for this comparison")
     return {"map": world_map.name, "junction_id": junction.id, "routes": routes,
-            "note": "Map paths are for evaluation only; they are not supplied to inference or control."}
+            "note": "Map lane references; the caller determines whether these are used for audit or sample selection."}
 
 
 def main():

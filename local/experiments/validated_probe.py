@@ -36,7 +36,8 @@ class ValidatingProbe(native.Probe):
             self.navigation_phase = "approach"
             if routes["junction_id"] != context["route_entry"]["junction_id"]:
                 raise ValueError("Validation route and capture junction differ")
-            native.write_json(self.output / "route-reference.json", routes)
+            native.write_json(self.output / "route-reference.json", {
+                **routes, "note": "Used to validate and select native model samples; never substituted as an executed path."})
         route = self.validation_route
         phase = self.navigation_phase
         pose = context["world_pose"]
@@ -73,9 +74,11 @@ class ValidatingProbe(native.Probe):
         for attempt in range(options.get("validation_max_pools", 3)):
             trial = {**options, "instruction": instruction,
                      "flow_seed": options.get("flow_seed", 42) + attempt,
+                     "seed": options.get("seed", context.get("seed", 42)),
                      "select_route_continuity": False}
-            if attempts and all(not m["marker_present"] for m in attempts[-1]["metrics"]):
-                trial["seed"] = options.get("seed", 43) + attempt
+            if attempt and (options.get("validation_resample_language", False) or
+                            all(not m["marker_present"] for m in attempts[-1]["metrics"])):
+                trial["seed"] += attempt
             proposal_label = f"{label}_pool_{attempt}"
             self.output = proposals
             try:
@@ -87,7 +90,9 @@ class ValidatingProbe(native.Probe):
             record = json.loads((proposals / (proposal_label + ".json")).read_text())
             candidates = extract_trajectory_samples(prediction)
             metrics = assess(candidates, context, route, record["candidate_markers"],
-                             record["candidate_velocities"], options.get("validation_horizon_s", 3.))
+                             record["candidate_velocities"], options.get("validation_horizon_s", 3.),
+                             yaws=record.get("candidate_yaw_rad"),
+                             check_body=options.get("validation_check_body", False))
             chosen = choose(metrics, candidates, self.visual_signal,
                             context["measured_speed_mps"], options.get("validation_desired_speed_mps", 5.))
             attempts.append({"proposal": proposal_label, "metrics": metrics,

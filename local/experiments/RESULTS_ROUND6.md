@@ -98,8 +98,165 @@ hash in its `source_snapshot/`.
   minimum lookahead reaches later points. The nearest-point starting index is
   also logged. Lane-width, marker, reverse and heading rejection bounds stay
   the same. `left-v1-short-horizon-audit.json` preserves the re-evaluation.
-- `capture-validated-left-short-43`: prepared 16 s maximum live test of this
-  revised window; pending execution at this checkpoint.
+- `capture-validated-left-short-43`: ends explicitly at 2.3 s with no admitted
+  plan after 12 samples. Actual speed reaches 0.000639 m/s; the native decoder
+  estimates -0.6607 m/s after braking. All proposals contain reverse motion and
+  heading violations. The full failure input is saved at `inputs/frame_023.pt`.
+  All 23 consumed trajectories are exact native samples, with zero control or
+  snapshot mismatches. This test does not solve the early stop.
+
+## Format-guard / VQA interaction
+
+Found and fixed an experimental integration bug: the trajectory-format guard
+also applied to the separate signal question, where it suppressed the VQA
+answer-ending token. This produced 256-token contradictory answers, often
+parsed as unknown. The guard now recognizes the VQA answer prefix and leaves
+that protocol alone. It still guards trajectory generation.
+
+`vqa_guard_check.py` compares the archived old probe, corrected probe and
+unguarded generation on identical saved inputs and seed. On both initial and
+failure images from `capture-validated-left-short-43`, the corrected and
+unguarded full-camera answers are identical: three tokens rather than 256.
+However, both say red despite the configured ego-green scene. Front-only says
+none initially and red at the failure frame; front plus telephoto says red.
+The protocol fix is verified, but signal perception remains unresolved. This
+does not explain the original unmodified CarlaMayo failure or earlier VQA
+experiments which did not enable this guard.
+
+Evidence: `vqa-guard-check/results.json`, source hashes in `sources.json`, and
+the exact archived old probe under the failed capture's `source_snapshot/`.
+`signal-geometry.json` records a later read-only map query, **after** rollout
+cleanup. Its signal states are not the states during those recorded images.
+
+## Front-camera candidate availability
+
+Fifteen frozen calls on round-2 `capture-front-only` frames 015, 022 and 038:
+original seed-42 single sample; guarded seed-43 single sample; and three pools
+of four with motion seeds 42–44. These use the original pinhole front camera
+only, without the equidistant projection. There are 42 proposed trajectories.
+
+At slowdown frame 022, single-sample targets are 0.677 and 0.484 m/s. The pools
+include valid native targets up to 1.218, 1.321 and 1.534 m/s respectively. At
+frames 015 and 038 all tested candidates pass the adaptive controller-coverage
+checks. This establishes candidate availability, not live driving success.
+Older inputs lack world poses; for this **audit only**, poses were joined from
+the original ego CSV by exact simulation time and matching frame ID. Original
+inputs and replay records are untouched; augmented records are separately
+stored in `front-pools-with-csv-pose/` with the pose-source path.
+
+Evidence: `replay-front-pools/`, `front-pool-audit.json`. The subsequent
+`capture-validated-front-straight-43` uses corrected VQA, front-only native
+pinhole input, and the launcher's default all-green empty scene. It is a
+separate controlled comparison, not a claim of mixed-signal robustness.
+
+## Completed front-camera live tests
+
+- `capture-validated-front-straight-43` reaches the straight exit at **7.3 s**,
+  with minimum actual speed **2.6232 m/s**, final speed 9.8465 m/s and no
+  near-stops. All 73 selected paths and controller inputs exactly match original
+  model samples; no control or snapshot mismatch. The first pool suffices on
+  every frame, so this run tests sample selection, not live retry recovery.
+  Image signal checks return green 13 times and unknown twice near the exit.
+- Maximum actor-center lane distance is **1.2969 m**. A stricter audit using
+  the actual Lincoln bounding box finds up to **0.4874 m of corner overhang**,
+  beginning at 4.7 s. Therefore this is a completed crossing without the early
+  stop, **not clean lane containment**. Geometry was queried read-only from the
+  same vehicle blueprint in the subsequent live test, after waiting for a
+  simulator snapshot; the initial query before a snapshot found no actor.
+  Evidence: `front-straight-audit.json`, `front-straight-route.json`,
+  `front-straight-body-audit.json`, `vehicle-bounds.json`, and video
+  `validated-front-straight.mp4`.
+- `capture-validated-front-left-43` ends explicitly at **4.2 s**: all 12
+  candidates miss the left route, with predicted maximum rear-axle lane
+  distances 1.82–3.51 m. Actual minimum speed is 2.6589 m/s and actual maximum
+  center distance 0.6813 m; no near-stops, but the turn is not completed.
+  All 42 executed arrays are native with zero control/snapshot mismatch.
+  Evidence: `front-left-audit.json`, `front-left-route.json`, and full failure
+  input `capture-validated-front-left-43/inputs/frame_042.pt`.
+
+The body audit motivates an opt-in `validation_check_body` extension. It
+uses the model's native predicted orientations and the recorded CARLA vehicle
+bounds to project box corners through the same checked horizon. Candidate
+waypoints are still unchanged. This is a lane-corner check, not an obstacle or
+swept-volume guarantee. Sources, options and native orientation traces are now
+saved automatically by new probe launches. The existing center-only presets
+remain separate comparison configurations.
+
+The first frozen front-camera guidance batch completed four calls on approach
+frame 019, then native guidance weight 2 with four samples hit an illegal CUDA
+access in the unguided VLM forward pass despite the math-attention context.
+The process was allowed to exit and release its GPUs. Its partial results and
+failure remain in `replay-front-left-guidance/`. A fresh-process retry tests
+single-sample guidance (previously working in round 5), plus the remaining
+language/prompt ablations. That retry completes three ordinary calls, then
+fails at the first guided call with CUBLAS execution failure, again in the
+unguided continuation forward. Both processes release their GPUs. These
+runtime failures are not driving outcomes; the unexecuted ablations are not
+counted as tests.
+
+A CPU retrospective body check re-decodes the archived actions with the
+cached decoder configuration solely to recover missing orientations. The
+original predicted positions stay untouched. Its maximum CPU/GPU re-decode
+position discrepancy is 0.0957 m, so it is approximate diagnostic evidence;
+live body validation uses the actual returned native rotations instead.
+Evidence and the exact analysis script: `front-straight-retrospective-body-validation.json`
+and `audit_native_body.py`.
+
+The initial pose, velocity histories and rotation histories of the two straight
+captures match exactly, but rendered images do not. Initial model predictions
+therefore differ (maximum candidate-coordinate difference 0.0880 m). This is
+not a pixel-identical A/B comparison. `straight-initial-repeatability.json`
+records the comparison; frozen-input tests remain the stronger causal check.
+
+## Straight crossing with body validation
+
+`capture-validated-front-straight-body-43` reaches the straight exit at **7.9 s**.
+Minimum measured speed **2.6500 m/s**, final speed 4.6619 m/s, no near-stops.
+Maximum centerline distance is **0.7567 m**. All recorded vehicle-box corners
+remain inside the selected lane corridor: minimum corner clearance **0.0683 m**.
+This is a narrow margin, and the recorded-corner check is not a swept-volume
+or obstacle guarantee. No traffic is present.
+
+All **79** selected trajectories and controller inputs exactly match native
+model samples, with zero control/snapshot mismatch. At frames 070 and 072,
+the first two pools fail the body checks; a native sample from pool 3 passes
+and is executed. This demonstrates actual live retry recovery. The other 77
+frames use the first pool. Signal questions return green 12 times and unknown
+four times. Rendering differs from the earlier run, as documented above.
+
+Evidence: `front-straight-body-control-audit.json`,
+`front-straight-body-route.json`, `front-straight-body-footprint.json`, and
+`validated-front-straight-body.mp4`. Repeat with
+`presets/validated-front-straight-body-43.json` after exporting the configured
+map reference as shown in the README. This successful straight run does not
+resolve left turns, mixed signals, different initial states or repeatability.
+
+## Further left-turn sampling
+
+`replay-left-camera-pools/` completes 12 calls / 48 native trajectories on the
+front-left run's approach frame 019 and failure frame 042. Variants: all four
+original pinhole cameras; another language seed; another motion seed; front
+plus telephoto; a more explicit left command; and front with trajectory-only
+prompting. The latter still enables the format guard and does not demonstrate
+faithful removal of model reasoning.
+
+With actual native orientations and the same recorded vehicle dimensions,
+all 24 early candidates pass body checks through 3 s, but none passes the full
+6.4 s plan. At the late failure state none of the 24 passes even the adaptive
+1.5 s horizon. Evidence: `left-camera-body-audit.json`. No variant from this
+batch establishes left-turn recovery.
+
+Added opt-in `validation_resample_language`: after a rejected pool, increment
+both the language seed and motion seed. Previously only motion noise changed
+unless every trajectory marker was absent. The first pool stays the same.
+An additional regression confirms a second-pool recovery returns the exact
+candidate and records both changed seeds. All 11 focused tests pass.
+
+Next live test `capture-validated-four-left-body-43` uses all four cameras with
+the existing equidistant rendering experiment, default all-green empty scene,
+body checks, 1.5 s minimum controller-coverage horizon, and this broader retry.
+It is a new camera configuration relative to the front-only run; defaults in
+normal CarlaMayo are unchanged.
 
 ## Verification and rollback
 
@@ -112,6 +269,14 @@ be recorded with final results. After the logger addition all five focused tests
 pass again (2.33 s); after adding controller-target coverage, all six focused
 tests pass (2.45 s). The new test rejects a path that is initially in-lane but
 leaves it before reaching the controller's actual distant steering target.
+
+After the VQA protocol fix, all seven focused tests plus the existing suites
+pass: **70 passed in 4.13 s**. The added regression verifies that VQA can emit
+its answer ending while driving still has to emit its trajectory marker.
+
+After body checks and their CARLA geometry regressions, **73 tests passed in
+4.60 s**. The later retry regression brings the focused suite to 11 passing
+tests; the final combined run will be recorded below.
 
 Production defaults, controller, VerifAI launchers, model weights and external
 model sources remain unchanged. Return to `experiment/driving-turn-instructions`

@@ -16,8 +16,32 @@ def pose_transform(pose):
                            carla.Rotation(**{k: pose[k] for k in ("pitch", "yaw", "roll")}))
 
 
-def assess(candidates, context, route, markers, velocities, horizon_s=3.):
-    """Lane distances use the rear axle; validity is not full-body safety."""
+def predicted_corners(transform, candidate, yaws, bounds):
+    """Project the real vehicle box at native predicted rear-axle poses.
+
+    Model yaw is left-positive; CARLA local yaw is right-positive. The box is
+    actor-relative, so its offset from the rear axle must also be rotated.
+    These points are used only for validation, never returned as a trajectory.
+    """
+    box = carla.BoundingBox(carla.Location(**bounds["location"]), carla.Vector3D(**bounds["extent"]))
+    box.rotation = carla.Rotation(**bounds["rotation"])
+    offsets = np.array([[p.x, p.y, p.z] for p in box.get_local_vertices()])
+    offsets[:, 0] -= config.EGO_REAR_AXLE_X
+    rotations = np.zeros((len(yaws), 3, 3))
+    cosine, sine = np.cos(yaws), np.sin(yaws)
+    rotations[:, 0, 0] = rotations[:, 1, 1] = cosine
+    rotations[:, 0, 1], rotations[:, 1, 0] = sine, -sine
+    rotations[:, 2, 2] = 1
+    world_rotations = np.asarray(transform.get_matrix())[:3, :3] @ rotations
+    rear = trajectory_to_world(transform, candidate)
+    return rear[:, None, :] + np.einsum("tij,vj->tvi", world_rotations, offsets)
+
+
+def assess(candidates, context, route, markers, velocities, horizon_s=3., *,
+           yaws=None, check_body=False):
+    """Check native plans; optional box-corner checks are not an obstacle model."""
+    if check_body and (yaws is None or "vehicle_bounds" not in context):
+        raise ValueError("Body validation requires native predicted yaw and recorded vehicle bounds")
     tf = pose_transform(context["world_pose"])
     rear = tf.transform(carla.Location(x=config.EGO_REAR_AXLE_X))
     origin = np.array([rear.x, rear.y])
@@ -61,6 +85,18 @@ def assess(candidates, context, route, markers, velocities, horizon_s=3.):
             reasons.append("outside_lane_center_corridor")
         if np.any(error[moving] > 45):
             reasons.append("misaligned_with_route")
+        if check_body:
+            native_yaw = np.asarray(yaws[index])
+            if native_yaw.shape != (len(candidate),) or not np.isfinite(native_yaw).all():
+                reasons.append("invalid_native_orientation")
+            else:
+                corners = predicted_corners(tf, candidate[:limit], native_yaw[:limit], context["vehicle_bounds"])
+                corner_distance, _, _, corner_width, _ = project(corners[..., :2].reshape(-1, 2), route)
+                overhang = corner_distance - corner_width
+                item.update(max_corner_lane_distance_m=float(corner_distance.max()),
+                            max_corner_overhang_m=float(overhang.max()))
+                if np.any(overhang > 0):
+                    reasons.append("vehicle_corners_outside_lane_corridor")
         item.update(valid=not reasons, reasons=reasons,
                     current_rear_lane_distance_m=float(initial_distance[0]),
                     max_lane_distance_m=float(distance.max()),

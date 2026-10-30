@@ -152,7 +152,11 @@ class Probe:
         if self.options.get("greedy_text"):
             kwargs["generation_config"] = copy.deepcopy(kwargs["generation_config"])
             kwargs["generation_config"].do_sample = False
-        if self.options.get("guard_trajectory_format"):
+        # VQA has its own <answer_start> / <answer_end> protocol. Applying the
+        # trajectory guard there blocks answer termination and causes rambling.
+        answer_start = self.model.tokenizer.convert_tokens_to_ids("<|answer_start|>")
+        is_vqa = bool(torch.all(kwargs["input_ids"][:, -1] == answer_start))
+        if self.options.get("guard_trajectory_format") and not is_vqa:
             from transformers import LogitsProcessorList
             marker = self.model.tokenizer.convert_tokens_to_ids("<|traj_future_start|>")
             vocab = self.model.tokenizer.get_vocab()
@@ -201,7 +205,12 @@ class Probe:
             candidate_velocities=velocity.detach().float().cpu().tolist(),
             candidate_accelerations=acceleration.detach().float().cpu().tolist(),
         )
-        return self.original_decode(action, history_xyz, history_rot, {**states, "v": used})
+        decoded = self.original_decode(action, history_xyz, history_rot, {**states, "v": used})
+        rotations = decoded[1]
+        self.trace["candidate_yaw_rad"] = torch.atan2(
+            rotations[..., 1, 0].float(), rotations[..., 0, 0].float()
+        ).detach().cpu().reshape(-1, rotations.shape[-3]).tolist()
+        return decoded
 
     def evaluate(self, adapter, data, context, instruction, options, label, capture=False,
                  capture_failures=False):
@@ -374,11 +383,17 @@ def capture(args, output):
             transform, velocity = actor.get_transform(), actor.get_velocity()
             forward = transform.get_forward_vector()
             applied = vehicle.get_control()
+            bounds = vehicle.bounding_box
             context = {"index": self.index, "time_s": self.index * .1,
                        "closed_loop": True,
                        "world_pose": {"x": transform.location.x, "y": transform.location.y, "z": transform.location.z,
                                       "yaw": transform.rotation.yaw, "pitch": transform.rotation.pitch, "roll": transform.rotation.roll},
                        "route_entry": config["junction_entry"],
+                       "vehicle_bounds": {
+                           "blueprint": vehicle.type_id,
+                           "location": {key: getattr(bounds.location, key) for key in ("x", "y", "z")},
+                           "extent": {key: getattr(bounds.extent, key) for key in ("x", "y", "z")},
+                           "rotation": {key: getattr(bounds.rotation, key) for key in ("pitch", "yaw", "roll")}},
                        "render_projection": "wide_pinhole" if "camera_projection" in options else "native_pinhole",
                        "snapshot_frame": snapshot.frame, "seed": config.get("seed", 42),
                        "applied_control": {"steer": applied.steer, "throttle": applied.throttle,
@@ -403,6 +418,13 @@ def capture(args, output):
         runner.CARLAInterface.apply_control = acknowledged_control
     try:
         with runner.rollout_session(args, config, output) as episode:
+            entry = config["junction_entry"]
+            # Record the default all-green scene as well as explicit variants.
+            # The selector still reads only the separate image-based answer.
+            active["signals"] = [
+                light for light in active["world"].get_actors().filter("traffic.traffic_light")
+                if math.hypot(light.get_location().x - entry["x"],
+                              light.get_location().y - entry["y"]) < 50]
             if options.get("traffic_layout") == "ego_green":
                 import carla
                 entry = config["junction_entry"]
@@ -532,18 +554,23 @@ def main():
         parser.error("replay requires --inputs")
     with acquire_experiment_lock():
         args.output.mkdir(parents=True, exist_ok=False)
+        sources = {name: (runner.ROOT / name).read_bytes() for name in (
+            "module/config.py", "module/trajectory_follower.py",
+            "local/experiments/inference_probe.py", "local/experiments/camera_projection.py",
+            "local/experiments/candidate_selection.py", "local/experiments/frame_sync.py",
+            "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
+            "local/experiments/validated_selection.py")}
+        for name, content in sources.items():
+            snapshot = args.output / "source_snapshot" / name
+            snapshot.parent.mkdir(parents=True, exist_ok=True)
+            snapshot.write_bytes(content)
         write_json(args.output / "experiment.json", {
             "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=runner.ROOT, text=True).strip(),
             "arguments": {key: str(value) for key, value in vars(args).items()},
-            "source_sha256": {name: hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest()
-                              for name in ["module/config.py", "module/trajectory_follower.py",
-                                           "local/experiments/inference_probe.py",
-                                           "local/experiments/camera_projection.py",
-                                           "local/experiments/candidate_selection.py",
-                                           "local/experiments/frame_sync.py",
-                                           "local/experiments/acknowledged_preroll.py",
-                                           "local/experiments/validated_probe.py",
-                                           "local/experiments/validated_selection.py"]},
+            "options": json.loads(args.options.read_text()) if args.options else None,
+            "variants": json.loads(args.variants.read_text()) if args.variants else None,
+            "source_sha256": {name: hashlib.sha256(content).hexdigest()
+                              for name, content in sources.items()},
         })
         (capture if args.mode == "capture" else replay)(args, args.output)
 

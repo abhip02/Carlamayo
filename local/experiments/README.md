@@ -165,13 +165,63 @@ its candidate costs do not provide a validity guarantee.
 `junction_routes` exports the configured junction's lane paths from an already
 loaded CARLA map without ticking or changing it. `audit_turn` compares recorded
 vehicle centers with those paths and checks the exit position and heading;
-`plot_turns` draws the actual paths. These map references are evaluation data,
-never driving input. The existing route-continuity selector is straight-only
+`plot_turns` draws the actual paths. Through round 5 these map references are
+evaluation data only; the round-6 validator also uses them to select native
+model samples, as described below. The earlier route-continuity selector is straight-only
 and must be disabled when testing a left instruction. `instruction_summary`
 compares the round-5 frozen navigation variants.
 `plot_turn_predictions` overlays saved raw predictions and the actual rear axle
 using the original coordinate conversion. It requires the model environment's
 CARLA Python package, but does not connect to CARLA or load a model.
+### Native-model validation and resampling (round 6)
+
+This is an isolated experimental policy, not the normal VerifAI launcher.
+Start CARLA on Town03, source `local/env.sh`, and generate the map reference:
+
+```bash
+.venv/bin/python -m local.experiments.junction_routes \
+  --config local/configs/demo.yaml --output outputs/driving-validation-routes.json
+.venv/bin/python -m local.experiments.validated_probe capture \
+  --config local/configs/demo.yaml --duration 16 --capture-frames 0 19 45 65 95 \
+  --options local/experiments/presets/validated-front-straight-43.json \
+  --output outputs/my-validated-straight
+```
+
+The corresponding left preset is `presets/validated-front-left-43.json`.
+Use a new output directory for each launch. Both presets use the default
+empty all-green scene and the original front pinhole camera only. They are
+controlled tests, not evidence that mixed signals or traffic are solved.
+
+`presets/validated-front-straight-body-43.json` additionally checks projected
+vehicle-box corners using native predicted orientations and actual car
+dimensions. This configuration completed one 7.9 s straight crossing without
+near-stops or recorded corner overhang. It still needs broader validation.
+`audit_body` checks actual recorded box corners independently of prediction
+admission; its CLI takes a capture and `--output` path. Older captures need
+`--bounds` pointing to a recorded geometry JSON.
+
+The wrapper admits native model samples only when their marker, finite values,
+motion direction, lane-center corridor and heading checks pass. It checks at
+least 1.5 s and extends through the original controller's actual steering
+lookahead. A failed pool triggers resampling, up to three pools of four. If
+all fail, the test explicitly terminates; no fallback or repaired path is
+executed. A separate image-based signal answer affects ranking. Map geometry
+is used to evaluate samples, not to manufacture a trajectory. See
+[RESULTS_ROUND6.md](RESULTS_ROUND6.md) for limitations and measured results.
+
+`validation_resample_language: true` also varies the text-generation seed on
+rejected pools, allowing another generated intent as well as new motion noise.
+It leaves the first pool unchanged. Body checks require the native orientation
+trace and recorded dimensions; they do not approximate a missing orientation
+or silently disable themselves.
+
+Every accepted array can be compared with its original candidate and the
+controller's input using `audit_capture`. `proposals/` retains all proposals,
+including rejected ones. `validation-failure.json` and its saved input record
+failure; `route-exit-reached.json` records reaching the requested exit. Ending
+at that exit does not certify the preceding driving. New probe launches save
+exact source snapshots, hashes, and option values automatically.
+
 Compare completed captures with the environment containing matplotlib:
 
 ```bash

@@ -8,7 +8,7 @@ import torch
 
 from local.experiments import inference_probe as native
 from local.experiments.validated_probe import RouteExitReached, ValidatingProbe
-from local.experiments.validated_selection import assess, choose
+from local.experiments.validated_selection import assess, choose, pose_transform, predicted_corners
 from module.config import EGO_REAR_AXLE_X
 
 
@@ -52,6 +52,42 @@ def test_short_horizon_still_checks_actual_controller_lookahead():
     assert result["controller_target_index"] > 15
     assert result["horizon_s"] >= (result["controller_target_index"] + 1) * .1
     assert not result["valid"]
+
+
+def test_body_check_rejects_lane_overhang_that_rear_axle_check_accepts():
+    route, context, path = fixture_data()
+    context["vehicle_bounds"] = {
+        "location": {"x": 0., "y": 0., "z": .75},
+        "extent": {"x": 2.45, "y": .92, "z": .75},
+        "rotation": {"pitch": 0., "yaw": 0., "roll": 0.}}
+    path[:, 1] = np.minimum(np.arange(1, 65) * .05, 1.2)
+    args = (np.array([path]), context, route, [True], np.full((1, 64), 3.))
+    assert assess(*args)[0]["valid"]
+    result = assess(*args, yaws=np.zeros((1, 64)), check_body=True)[0]
+    assert not result["valid"]
+    assert result["max_corner_overhang_m"] > .3
+    assert "vehicle_corners_outside_lane_corridor" in result["reasons"]
+
+
+@pytest.mark.parametrize("pitch,roll,native_yaw", [(0., 0., .2), (3., 2., 0.)])
+def test_predicted_box_matches_carla_geometry_and_left_yaw_sign(pitch, roll, native_yaw):
+    import carla
+    _, context, _ = fixture_data()
+    context["world_pose"].update(yaw=34., pitch=pitch, roll=roll)
+    tf = pose_transform(context["world_pose"])
+    bounds = {"location": {"x": -.006, "y": 0., "z": .75},
+              "extent": {"x": 2.45, "y": .92, "z": .75},
+              "rotation": {"pitch": 0., "yaw": 0., "roll": 0.}}
+    candidate = np.array([[5., 0., 0.]])
+    actual = predicted_corners(tf, candidate, np.array([native_yaw]), bounds)[0]
+    expected_rotation = carla.Rotation(yaw=34. - np.degrees(native_yaw), pitch=pitch, roll=roll)
+    expected = carla.Transform(carla.Location(), expected_rotation)
+    rear = tf.transform(carla.Location(x=5. + EGO_REAR_AXLE_X))
+    offset = expected.transform(carla.Location(x=-EGO_REAR_AXLE_X))
+    expected.location = rear + offset
+    box = carla.BoundingBox(carla.Location(**bounds["location"]), carla.Vector3D(**bounds["extent"]))
+    vertices = np.array([[p.x, p.y, p.z] for p in box.get_world_vertices(expected)])
+    np.testing.assert_allclose(actual, vertices, atol=2e-5)
 
 
 def fake_probe(tmp_path, monkeypatch, all_bad=False):
@@ -110,6 +146,25 @@ def test_no_valid_candidate_terminates_without_executed_path(tmp_path, monkeypat
     assert not (tmp_path / "frame_000.json").exists()
 
 
+def test_retry_can_resample_language_and_return_an_exact_native_candidate(tmp_path, monkeypatch):
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch, all_bad=True)
+    options.update(seed=43, validation_resample_language=True)
+    generate_pool = native.Probe.evaluate
+
+    def evaluate(*args, **kwargs):
+        if len(calls) == 1:
+            prediction[:, :, 1, :, 1] = 0  # The second mocked pool contains one valid native plan.
+        return generate_pool(*args, **kwargs)
+
+    monkeypatch.setattr(native.Probe, "evaluate", evaluate)
+    actual, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    assert [c["seed"] for c in calls] == [43, 44]
+    assert [c["flow_seed"] for c in calls] == [42, 43]
+    assert torch.equal(actual, prediction[:, :, 1:2])
+    record = json.loads((tmp_path / "frame_000.json").read_text())
+    assert [attempt["chosen"] for attempt in record["selection"]["attempts"]] == [None, 1]
+
+
 def test_completion_does_not_claim_success_outside_exit_lane(tmp_path, monkeypatch):
     probe, adapter, context, options, _, calls = fake_probe(tmp_path, monkeypatch)
     options["validation_stop_at_exit"] = True
@@ -120,3 +175,30 @@ def test_completion_does_not_claim_success_outside_exit_lane(tmp_path, monkeypat
     context["world_pose"]["y"] = 3.
     with pytest.raises(RuntimeError, match="No valid model-generated plan"):
         probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+
+
+def test_trajectory_guard_does_not_block_vqa_termination():
+    vocab = {"<|traj_future_start|>": 10, "<|answer_start|>": 11,
+             "<|answer_end|>": 12, "<|im_end|>": 13, "<|endoftext|>": 14}
+    probe = object.__new__(native.Probe)
+    probe.options = {"guard_trajectory_format": True}
+    probe.trace = {}
+    probe.model = SimpleNamespace(tokenizer=SimpleNamespace(
+        convert_tokens_to_ids=vocab.__getitem__, get_vocab=lambda: vocab,
+        decode=lambda tokens, **kwargs: str(tokens)))
+    observed = []
+
+    def generate(**kwargs):
+        scores = torch.zeros((1, 20))
+        for processor in kwargs.get("logits_processor", []):
+            scores = processor(kwargs["input_ids"], scores)
+        observed.append(scores)
+        return SimpleNamespace(sequences=torch.cat([kwargs["input_ids"], torch.tensor([[12]])], dim=1))
+
+    probe.original_generate = generate
+    config = SimpleNamespace(num_return_sequences=1)
+    probe.generate(input_ids=torch.tensor([[11]]), generation_config=config)
+    probe.generate(input_ids=torch.tensor([[15]]), generation_config=config)
+    assert observed[0][0, 12] == 0  # VQA must be able to end its answer.
+    assert torch.isneginf(observed[1][0, 12])  # Driving must first emit its trajectory marker.
+    assert observed[1][0, 10] == 0
