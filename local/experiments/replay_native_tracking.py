@@ -20,7 +20,7 @@ from local import run_intersection as runner
 from local.experiments.acknowledged_preroll import initialize_ego
 from local.experiments.audit_turn import project
 from local.experiments.frame_sync import wait_for_frame
-from local.experiments.validated_selection import pose_transform
+from local.experiments.validated_selection import assess, pose_transform, require_green_progress
 from module.adapters.alpamayo_1_5 import Alpamayo15Adapter
 from module.carla_interface import CARLAInterface
 from module.trajectory_follower import TrajectoryFollower, planned_speeds, trajectory_to_world
@@ -64,6 +64,34 @@ def state_error(actual, expected):
     }
 
 
+def native_proposal(capture, label, candidate):
+    """Load an untouched rejected proposal for a tracking diagnostic only."""
+    proposal = json.loads((capture / "proposals" / (label + ".json")).read_text())
+    options = json.loads((capture / "experiment.json").read_text())["options"]
+    route_name = options["validation_route"]
+    route = json.loads((capture / "route-reference.json").read_text())["routes"][route_name]
+    if candidate is None or not 0 <= candidate < len(proposal["candidate_trajectories"]):
+        raise ValueError("A proposal diagnostic requires an original candidate index")
+    metrics = assess(np.asarray(proposal["candidate_trajectories"]), proposal["context"], route,
+                     proposal["candidate_markers"], proposal["candidate_velocities"],
+                     options["validation_horizon_s"], yaws=proposal["candidate_yaw_rad"],
+                     check_body=True, body_margin_m=options["validation_body_margin_m"])
+    require_green_progress(metrics, proposal["visual_signal"], options["validation_green_min_target_mps"])
+    if not metrics[candidate]["valid"]:
+        raise ValueError(f"Proposal fails original native validation: {metrics[candidate]['reasons']}")
+    raw = np.asarray(proposal["candidate_trajectories"][candidate])
+    record = {"label": f"{label}_candidate_{candidate}", "context": proposal["context"],
+              "trajectory_ego": raw.tolist(), "generated_token_ids": proposal["candidate_generated_tokens"][candidate],
+              "selection": {"proposal": label, "chosen": candidate, "route": route_name},
+              "diagnostic_proposal": True, "native_admission": metrics[candidate],
+              **{k: proposal[k] for k in ("candidate_trajectories", "candidate_yaw_rad", "candidate_velocities")}}
+    world = trajectory_to_world(pose_transform(record["context"]["world_pose"]), raw)
+    speeds = planned_speeds(raw)
+    world.setflags(write=False)
+    speeds.setflags(write=False)
+    return record, world, speeds
+
+
 def run(args):
     capture, out = args.capture, args.output
     out.mkdir(parents=True, exist_ok=False)
@@ -80,9 +108,9 @@ def run(args):
         controls, reference = controls[:count], reference[:count + 1]
     if not controls:
         raise ValueError("At least one prefix step is required")
-    sources = {label: native_plan(capture, label) for label in
-               {args.source, *(row["source_label"] for row in controls)}}
-    continuation = native_plan(capture, args.source, args.candidate)
+    sources = {label: native_plan(capture, label) for label in {row["source_label"] for row in controls}}
+    continuation = (native_proposal(capture, args.proposal, args.candidate) if args.proposal else
+                    native_plan(capture, args.source, args.candidate))
     for index, row in enumerate(controls):
         record, path, speeds = sources[row["source_label"]]
         if (not np.array_equal(path, row["world_trajectory"])
@@ -106,6 +134,7 @@ def run(args):
     tolerances = {"position_m": .01, "orientation_deg": .1, "speed_mps": .02, "control": 1e-4}
     summary = {"kind": "native-path tracking replay, not a fresh-inference rollout",
                "capture": str(capture), "continuation_source": args.source,
+               "continuation_proposal": args.proposal,
                "continuation_candidate_override": args.candidate,
                "prefix_seconds": len(controls) * .1, "requested_continuation_s": args.duration,
                "tolerances": tolerances, "source_hashes": hashes,
@@ -151,7 +180,7 @@ def run(args):
             light.set_state(carla.TrafficLightState.Green)
             light.freeze(True)
         overhead = runner.OverheadRecorder(world, config["junction_entry"], out, config.get("overhead"),
-                                          label=f"Native replay {args.source}; no new inference")
+                                          label=f"Native replay {args.proposal or args.source}; no new inference")
         frames, _ = initialize_ego(interface, config["junction_entry"], runner.rollout_specs(config)[0])
         state = save_state(0.)
         overhead.add_frame(interface.frame_id, pose_transform(state), 0., state["speed"],
@@ -236,7 +265,9 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("capture", type=Path)
-    parser.add_argument("--source", required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--source")
+    source.add_argument("--proposal", help="Test a natively valid sample from a rejected original proposal pool")
     parser.add_argument("--candidate", type=int,
                         help="Test a different unmodified sample from the source's original proposal pool")
     parser.add_argument("--output", type=Path, required=True)

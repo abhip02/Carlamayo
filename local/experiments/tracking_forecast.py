@@ -17,7 +17,7 @@ import carla
 import numpy as np
 
 from local.experiments.audit_turn import project
-from local.experiments.replay_native_tracking import native_plan
+from local.experiments.replay_native_tracking import native_plan, native_proposal
 from local.experiments.validated_selection import pose_transform
 from module import config
 from module.trajectory_follower import TrajectoryFollower
@@ -115,8 +115,10 @@ def main():
             raise ValueError("Simulator replay prefix did not verify")
         states, controls = read_capture(capture)
         count = round(replay["prefix_seconds"] / .1)
-        record, world, speeds = native_plan(capture, replay["continuation_source"],
-                                           replay.get("continuation_candidate_override"))
+        record, world, speeds = (
+            native_proposal(capture, replay["continuation_proposal"], replay["continuation_candidate_override"])
+            if replay.get("continuation_proposal") else native_plan(
+                capture, replay["continuation_source"], replay.get("continuation_candidate_override")))
         follower = prefix_follower(states, controls, count, maximum_angle)
         route = json.loads((capture / "route-reference.json").read_text())["routes"][record["selection"]["route"]]
         actual = replay["states"][count + 1:]

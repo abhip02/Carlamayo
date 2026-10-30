@@ -78,4 +78,97 @@ source local/env.sh
   --output outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43
 ```
 
-Status: pending full-inference result and actual-footprint/native-identity audits.
+Completed: **7.7 s**, **50.7883°** left rotation, no route exit. Speed remains
+between **2.78562 and 5.17466 m/s**, ending at **4.07124 m/s**, with no near-stop.
+Minimum actual corner clearance is **0.24448 m**, at termination. All 77 native
+arrays, fixed world anchors, speeds and ages match; all applied controls and
+snapshot frames match. Every executed tracking check and original controller
+command independently recomputes exactly. Maximum observed one-step forecast
+clearance overestimate is **0.003549 m**, and maximum one-step position error
+is **0.02459 m**. These are observed errors in this capture, not future bounds.
+
+There are **121** fresh proposal pools, **546** geometrically admitted candidates
+screened, and **122** tracking rejections. All **55** cached executions beat a
+fresh admitted choice; none bridges complete sampling exhaustion. There are
+77 accepted fresh proposals, 16 green VQA checks, and zero control/snapshot
+mismatches. Speed-quality retries add 20 pools across seven steps, change six
+choices, and leave two optional speed preferences unmet. Wall time is
+**1350.4 s (22.5 minutes)**. Evidence:
+`tracking-left-margin20-{control,footprint,route,retention,quality,tracking}-audit.json`.
+Review video: `tracking-left-margin20-incomplete.mp4` (H.264, labeled incomplete).
+
+At 7.7 s, **16 of 48** new samples pass native geometry but all fail the added
+0.20 m tracking reserve. Best forecast reserve is **0.170819 m** (pool 3,
+candidate 4); pool 0 candidate 2 has **0.158152 m**. Both minima occur 0.5 s
+ahead. The eligible cached sources 072–076 fail native remaining-body reserve,
+so the experiment ends explicitly while the actual car is still inside.
+
+## Testing whether the reserve is too conservative
+
+The replay helper now accepts an original rejected `--proposal` plus
+`--candidate`. It independently requires the original native format, route,
+reverse, body-margin and green-progress checks before executing the untouched
+sample. It saves exact candidate arrays/tokens and original context. Three
+additional tests check native provenance, immutable arrays, invalid geometry
+and nonexistent candidates. Combined regression suite: **107 passed in 5.09 s**.
+
+Two paired diagnostics reproduce the entire new 7.7 s prefix **exactly**, with
+zero state and computed-control errors, then hold a rejected native plan for
+1.5 s through the unchanged controller:
+
+| Original sample | Forecast minimum | Actual minimum | Endpoint |
+| --- | --- | --- | --- |
+| `frame_077_pool_3`, candidate 4 | 0.170819 m | **0.153042 m** | 9.2 s, 76.14° total left rotation, 6.066 m/s |
+| `frame_077_pool_0`, candidate 2 | 0.158152 m | **0.155646 m** | 9.2 s, 82.90° total left rotation, 7.136 m/s |
+
+Both remain inside throughout the diagnostic, without new inference. They do
+not establish a full closed-loop turn or validate long cache retention. The
+second accelerates substantially as its original speed preview ages, another
+reason to distinguish a held-plan replay from normal replanning. Artifacts:
+`replay-terminal-pool3-candidate4/`, `replay-terminal-pool0-candidate2/`.
+
+## Next reserve comparison
+
+The next separate preset, `tracking-native-four-left-margin10-43.json`, changes
+the native-body and tracking reserve requirements from **0.20 to 0.10 m**.
+All other options, including 1.5 s forecasts, measured steering gain, original
+controller and 0.5 s cache limit, remain unchanged. Both checks use the same
+smaller reserve so a car passing through the observed 15 cm clearance region
+can still propose fresh native paths. This is explicitly a two-threshold
+change, not an isolated attribution to either individual check. The actual
+pass criterion remains full lane-corridor containment and reaching the exit.
+The earlier 20 cm result and all failed samples remain preserved.
+
+Pending capture: `capture-tracking-native-four-left-margin10-43`.
+
+## Additional offline checks during the live run
+
+`audit_tracking.py` reconstructs the original follower state from recorded
+actual poses/speeds and controller inputs. It recomputes each executed plan's
+tracking forecast and independently checks the original control command,
+forecast clearance, current measured speed and real plan age. The first 11
+completed live steps match exactly, with zero forecast and controller error.
+This checks implementation fidelity, not the physical model's accuracy.
+The final full audit is required after the rollout ends.
+
+The added screen alone was also evaluated on both previously successful
+front-camera straight captures. All 85/79 original control commands reconstruct
+exactly. With a 0.20 m forecast reserve, 48/44 of their executed samples would
+be rejected; two in each run have a negative approximate forecast clearance.
+Those earlier captures required zero additional native body reserve, and their
+actual minimum clearances were only 0.112/0.068 m. This is not a controlled
+alternate rollout: later replanning can correct a forecast departure, and a
+20 cm margin is intentionally stricter than those earlier settings. It does
+show why this screen should not become a general default based on one paired
+left-turn replay. Evidence:
+`tracking-screen-successful-straight-retrospective.json`.
+
+Round-7 paired comparison artifacts are now available as
+`native-paired-replay-6-to-8s.mp4` and `native-paired-replay-clearance.png/.pdf`.
+Both video and plot were visually checked. The video freezes the original
+candidate's frame after its 7.4 s departure while the alternative continues to
+8.0 s; labels and frame timestamps distinguish the endpoints. The plot compares
+native predicted corners, approximate controller tracking and actual CARLA
+corners. The alternative's maximum forecast-clearance error over its two-second
+replay is 0.1224 m, versus 0.3078 m for ideal geometry. These errors are measured
+on this specific replay, not bounds for future scenes.
