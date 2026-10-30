@@ -67,6 +67,8 @@ Pending. Reproduction command (local simulator must already be running):
 
 ```bash
 source local/env.sh
+.venv/bin/python -m local.experiments.junction_routes \
+  --config local/configs/demo.yaml --output outputs/driving-validation-routes.json
 .venv/bin/python -m local.experiments.retained_probe capture \
   --config local/configs/demo.yaml --duration 16 --capture-frames 0 19 45 \
   --options local/experiments/presets/retained-native-four-left-margin-43.json \
@@ -75,3 +77,9 @@ source local/env.sh
 
 This uses the round-6 four-camera margin preset plus the three retention limits.
 No longer-forecast preference or measured-speed decoder substitution is enabled.
+
+The first startup failed before any driving inference because the preset's
+`outputs/driving-validation-routes.json` had not been generated. The original
+attempt and log are preserved with suffix `-setup-failure`. Exported the route
+with the command above and verified its geometry equals the round-6 capture's
+saved reference exactly before relaunching. No path-policy change was needed.
