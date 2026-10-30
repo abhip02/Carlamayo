@@ -87,3 +87,17 @@ def test_invalid_forecast_options_fail_before_sampling(key, value):
     options[key] = value
     with pytest.raises(ValueError):
         tracking.check_options(options)
+
+
+def test_preferred_reserve_is_separate_from_hard_admission():
+    route, context, options, plan, follower = fixture()
+    options['validation_preferred_reserve_m'] = .3
+    metric = tracking.screen({'valid': True, 'reasons': [], 'max_corner_overhang_m': -.25},
+                             context, route, plan.world, plan.speeds, .4, options, follower)
+    assert metric['valid'] and not metric['preferred_reserve_valid']
+    metric = tracking.screen({'valid': True, 'reasons': [], 'max_corner_overhang_m': -.4},
+                             context, route, plan.world, plan.speeds, .4, options, follower)
+    assert metric['valid'] and metric['preferred_reserve_valid']
+    options['validation_preferred_reserve_m'] = .05
+    with pytest.raises(ValueError, match='Preferred reserve'):
+        tracking.check_options(options)

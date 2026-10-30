@@ -260,6 +260,58 @@ def test_quality_retry_does_not_change_red_stop_selection(tmp_path, monkeypatch)
     assert len(calls) == 1 and torch.equal(actual, prediction[:, :, 2:3])
 
 
+@pytest.mark.parametrize("later_preferred,later_valid,expected_pool", [(True, True, 1), (False, True, 0), (False, False, 0)])
+def test_reserve_retry_prefers_larger_clearance_but_keeps_exact_minimum_admitted_sample(
+        tmp_path, monkeypatch, later_preferred, later_valid, expected_pool):
+    from local.experiments import validated_probe as validated
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch)
+    options.update(validation_preferred_reserve_m=.2, validation_body_margin_m=0.,
+                   validation_tracking_margin_m=.1, validation_green_min_target_mps=1.)
+    source = prediction[:, :, 1].clone()
+    generate, assess_original = native.Probe.evaluate, validated.assess
+    generated = []
+
+    def evaluate(*args, **kwargs):
+        index = len(calls)
+        # First candidate has a better speed score. Preference must still win
+        # when a later native sample has the larger required clearance.
+        prediction[:, :, 1] = source * (5. / 3. if index == 0 else 1.)
+        if index and not later_valid:
+            prediction[:, :, 1, :, 1] = 2.5
+        result, extra = generate(*args, **kwargs)
+        extra['cot'][0, 0, 1] = f'pool-{index}'
+        generated.append(result[:, :, 1:2].clone())
+        return result, extra
+
+    def assess(*args, **kwargs):
+        metrics = assess_original(*args, **kwargs)
+        for m in metrics:
+            m['preferred_reserve_valid'] = bool(len(calls) > 1 and later_preferred and m['valid'])
+        return metrics
+
+    monkeypatch.setattr(native.Probe, 'evaluate', evaluate)
+    monkeypatch.setattr(validated, 'assess', assess)
+    actual, extra = probe.evaluate(adapter, {}, context, 'Go straight', options, 'frame_000')
+    assert len(calls) == 2
+    assert torch.equal(actual, generated[expected_pool])
+    assert extra['cot'][0, 0, 0] == f'pool-{expected_pool}'
+    record = json.loads((tmp_path / 'frame_000.json').read_text())
+    assert record['selection']['reserve_preference']['met'] == later_preferred
+    assert record['selection']['attempts'][0]['retry_for_reserve_preference']
+    assert record['trajectory_ego'] == record['candidate_trajectories'][1]
+    assert not (tmp_path / 'validation-failure.json').exists()
+
+
+def test_reserve_preference_never_admits_a_failed_sample():
+    route, context, path = fixture_data()
+    candidates = np.stack([path * (5. / 3.), path])
+    metrics = assess(candidates, context, route, [True, True], np.array([[5.] * 64, [3.] * 64]), 1.5)
+    metrics[0]['preferred_reserve_valid'], metrics[1]['preferred_reserve_valid'] = False, True
+    assert choose(metrics, candidates, 'green', 3.) == 1
+    metrics[1]['valid'] = False
+    assert choose(metrics, candidates, 'green', 3.) == 0
+
+
 @pytest.mark.parametrize("longer_available", [True, False])
 def test_longer_forecast_preference_preserves_native_paths_and_short_admission(
         tmp_path, monkeypatch, longer_available):

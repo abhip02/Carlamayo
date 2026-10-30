@@ -127,9 +127,9 @@ second accelerates substantially as its original speed preview ages, another
 reason to distinguish a held-plan replay from normal replanning. Artifacts:
 `replay-terminal-pool3-candidate4/`, `replay-terminal-pool0-candidate2/`.
 
-## Next reserve comparison
+## Smaller hard-reserve comparison
 
-The next separate preset, `tracking-native-four-left-margin10-43.json`, changes
+The separate preset, `tracking-native-four-left-margin10-43.json`, changes
 the native-body and tracking reserve requirements from **0.20 to 0.10 m**.
 All other options, including 1.5 s forecasts, measured steering gain, original
 controller and 0.5 s cache limit, remain unchanged. Both checks use the same
@@ -139,7 +139,53 @@ change, not an isolated attribution to either individual check. The actual
 pass criterion remains full lane-corridor containment and reaching the exit.
 The earlier 20 cm result and all failed samples remain preserved.
 
-Pending capture: `capture-tracking-native-four-left-margin10-43`.
+Completed capture: `capture-tracking-native-four-left-margin10-43`.
+It ends at **7.2 s**, **46.57394°** left rotation, without reaching the exit.
+Minimum actual corner clearance is **0.203714 m**. Actual speed ranges from
+**2.78541 to 6.38413 m/s**, ending at **5.49457 m/s**.
+All 72 executed native arrays, fixed anchors, speed arrays and original ages
+match. All 72 tracking forecasts and unchanged controller commands independently
+recompute exactly. There are 148 proposal pools, 572 geometrically admitted
+candidates screened and 146 tracking rejections. Of 47 cached executions, 44
+beat a fresh admitted choice and three bridge exhausted fresh sampling.
+
+At termination, all 48 fresh candidates fail; 14 pass native geometry but
+fail the 0.10 m tracking reserve. An offline diagnostic removes the signal
+gate only for analysis: source 067 has 0.111707 m remaining native clearance
+but only 0.091748 m forecast clearance; source 070 has 0.040167 m native
+corner overhang; source 071 has only 0.091661 m native clearance. Thus no
+remaining cached plan passes the physical checks, independently of the
+current unknown-signal result. Signal rules were not changed or bypassed
+in execution. Evidence: `margin10-terminal-signal-gate-diagnostic.json`.
+
+Maximum observed one-step clearance overestimate is **0.015839 m**, and
+maximum one-step position error is **0.061451 m**. These are measured errors,
+not future bounds. Speed retries add 38 pools across ten steps, change five
+choices, and leave seven optional speed preferences unmet. Wall time is
+**1646.4 s (27.4 minutes)**. Full audit files:
+`tracking-left-margin10-{control,footprint,route,retention,quality,tracking}-audit.json`.
+
+## Prefer 20 cm, retain a native 10 cm alternative
+
+The next isolated preset, `tracking-native-four-left-preferred20-min10-43.json`,
+keeps both hard minima at 0.10 m and adds a 0.20 m preference for both native
+body geometry and controller-tracking forecast. Candidate ranking first
+prefers samples meeting both preferred margins, then uses the existing
+horizon preference and numeric score. If a pool provides only hard-admitted
+samples below the preference, later pools are tried within the original
+six-pool budget. The best admitted sample and its exact native tensor/text
+are retained if subsequent pools fail. Fresh versus cached comparison uses
+the same ranking. No extra sampling budget, signal change, cache extension,
+path repair or speed override is introduced.
+
+This tests whether the stricter policy's earlier choices can be preserved
+while allowing native continuations in the 10–20 cm region when necessary.
+The two rejected native continuations above justify investigating this region,
+but do not establish its general reliability. The new preference is opt-in;
+without it, ranking and retry behavior remain unchanged.
+
+Pending capture: `capture-tracking-native-four-left-preferred20-min10-43`.
+Return to `434d6c1` to remove this preference experiment alone.
 
 ## Additional offline checks during the live run
 
@@ -172,3 +218,24 @@ native predicted corners, approximate controller tracking and actual CARLA
 corners. The alternative's maximum forecast-clearance error over its two-second
 replay is 0.1224 m, versus 0.3078 m for ideal geometry. These errors are measured
 on this specific replay, not bounds for future scenes.
+
+
+Preference verification: **157 passed in 5.21 s**, covering all `tests/` and
+`local/experiments/` tests. Import the installed `carla` module before pytest
+collection because an upstream test installs an incomplete CARLA stub when
+it is absent; collecting both suites without that import fails unrelated
+geometry tests. The experiment suite alone passes **51 tests**. New cases
+check preference across retry pools, retaining the exact best tensor/text
+when later samples fail, fresh/cache preference consistency, and separation
+of hard admission from preference. Both completed captures still pass the
+updated native retention audit (72/77 steps). Production source and external
+model source remain unchanged.
+
+```bash
+source local/env.sh
+.venv/bin/python -m local.experiments.tracking_probe capture \
+  --config local/configs/demo.yaml --duration 16 \
+  --capture-frames 0 19 40 50 60 64 68 74 80 90 100 110 \
+  --options local/experiments/presets/tracking-native-four-left-preferred20-min10-43.json \
+  --output outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43
+```

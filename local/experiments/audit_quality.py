@@ -1,4 +1,4 @@
-"""Compare quality retries with the first admitted pool on each identical input."""
+"""Compare post-admission retries with the first admitted pool on the same input."""
 import argparse
 import json
 from pathlib import Path
@@ -34,11 +34,18 @@ def audit(capture):
             "first_corner_clearance_m": -first_metric["max_corner_overhang_m"],
             "selected_corner_clearance_m": -metric["max_corner_overhang_m"],
             "preference": preference, "source_array_and_tokens_match": identity,
+            "reserve_preference": selection.get("reserve_preference"),
+            "speed_retry_requests": sum(a.get("retry_for_speed_preference", False) for a in attempts[:-1]),
+            "reserve_retry_requests": sum(a.get("retry_for_reserve_preference", False) for a in attempts[:-1]),
         })
     return {"capture": str(capture), "fresh_steps_checked": len(records),
             "steps_with_extra_pools_after_admission": sum(r["extra_pools_after_first_admission"] > 0 for r in records),
             "extra_pools_after_admission": sum(r["extra_pools_after_first_admission"] for r in records),
-            "selections_changed_by_quality_retries": sum(r["selection_changed"] for r in records),
+            "selections_changed_by_post_admission_retries": sum(r["selection_changed"] for r in records),
+            "speed_retry_requests": sum(r["speed_retry_requests"] for r in records),
+            "reserve_retry_requests": sum(r["reserve_retry_requests"] for r in records),
+            "steps_with_unmet_reserve_preference": sum(bool(r["reserve_preference"] and
+                                                             not r["reserve_preference"]["met"]) for r in records),
             "steps_with_unmet_green_preference": sum(bool(r["preference"] and r["preference"]["applied"] and
                                                            not r["preference"]["met"]) for r in records),
             "source_array_or_token_mismatches": mismatches, "records": records,

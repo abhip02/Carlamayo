@@ -8,7 +8,7 @@ import json
 
 from local.experiments import retained_probe as retained
 from local.experiments import inference_probe as native
-from local.experiments.validated_selection import choose
+from local.experiments.validated_selection import choose, selection_rank
 
 
 class ProactiveProbe(retained.RetainingProbe):
@@ -42,7 +42,7 @@ class ProactiveProbe(retained.RetainingProbe):
         selection = fresh["selection"]
         attempt = next(a for a in selection["attempts"] if a["proposal"] == selection["proposal"])
         fresh_metric = attempt["metrics"][selection["chosen"]]
-        if chosen is None or metrics[chosen]["selection_cost"] >= fresh_metric["selection_cost"]:
+        if chosen is None or selection_rank(metrics[chosen]) >= selection_rank(fresh_metric):
             return prediction, extra
 
         plan = previous[chosen]
@@ -61,6 +61,7 @@ class ProactiveProbe(retained.RetainingProbe):
                                  "source_context": plan.record["context"], "age_s": age,
                                  "chosen_cache_index": chosen, "metrics": metrics,
                                  "fresh_candidate_source": source_label,
+                                 "fresh_selection_rank": selection_rank(fresh_metric),
                                  "fresh_selection_cost": fresh_metric["selection_cost"]})
         native.write_json(self.output / (label + ".json"), record)
         self.executing_plan, self.executing_age = plan, age

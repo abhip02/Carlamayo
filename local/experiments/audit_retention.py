@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from local.experiments.validated_selection import pose_transform
+from local.experiments.validated_selection import pose_transform, selection_rank
 from module.trajectory_follower import planned_speeds, trajectory_to_world
 
 
@@ -42,8 +42,14 @@ def audit(capture):
                     "retention" not in fresh and fresh["context"] == current["context"] and
                     fresh["trajectory_ego"] == proposal["candidate_trajectories"][fresh["selection"]["chosen"]] and
                     fresh["generated_token_ids"] == proposal["candidate_generated_tokens"][fresh["selection"]["chosen"]])
-                checks["cached_rank_is_better"] = (detail["metrics"][detail["chosen_cache_index"]]["selection_cost"] <
-                                                   detail["fresh_selection_cost"])
+                selected = fresh["selection"]
+                attempt = next(a for a in selected["attempts"] if a["proposal"] == selected["proposal"])
+                fresh_metric = attempt["metrics"][selected["chosen"]]
+                checks["fresh_score_preserved"] = fresh_metric["selection_cost"] == detail["fresh_selection_cost"]
+                checks["cached_rank_is_better"] = (selection_rank(detail["metrics"][detail["chosen_cache_index"]]) <
+                                                   selection_rank(fresh_metric))
+                if "fresh_selection_rank" in detail:
+                    checks["fresh_rank_preserved"] = detail["fresh_selection_rank"] == list(selection_rank(fresh_metric))
             else:
                 checks["rejection_preserved"] = (capture / "replan-rejections" / (current["label"] + ".json")).exists()
             reused.append({"time_s": row["time_s"], "source": row["source_label"], "age_s": row["age_s"],

@@ -12,7 +12,7 @@ import numpy as np
 
 from local.experiments import inference_probe as native
 from local.experiments.audit_turn import project
-from local.experiments.validated_selection import assess, choose, require_green_progress
+from local.experiments.validated_selection import assess, choose, require_green_progress, selection_rank
 from module.inference import extract_trajectory_samples
 from module.trajectory_follower import planned_speeds
 
@@ -77,6 +77,7 @@ class ValidatingProbe(native.Probe):
         proposals.mkdir(exist_ok=True)
         attempts, best = [], None
         quality_limit = options.get("validation_resample_above_target_mps")
+        preferred_reserve = options.get("validation_preferred_reserve_m")
         if quality_limit is not None and (not math.isfinite(quality_limit) or quality_limit <= 0):
             raise ValueError("The resampling target preference must be finite and positive")
         for attempt in range(options.get("validation_max_pools", 3)):
@@ -129,18 +130,24 @@ class ValidatingProbe(native.Probe):
             # Retry a fast but admitted selection only when explicitly enabled.
             # Preserve the best admitted native sample even if later pools fail.
             metric = metrics[chosen]
-            key = (not metric.get("preferred_horizon_valid", True), metric["selection_cost"])
+            if preferred_reserve is not None and "preferred_reserve_valid" not in metric:
+                raise ValueError("Preferred reserve requires tracking_probe's native and tracking annotations")
+            key = selection_rank(metric)
             if best is None or key < best["key"]:
                 best = dict(key=key, pool=attempt, chosen=chosen, record=record, metric=metric,
                             selected=prediction[:, :, chosen:chosen + 1].detach().clone(),
                             extra=copy.deepcopy({
                                 k: v[..., chosen:chosen + 1] if isinstance(v, np.ndarray) else v
                                 for k, v in extra.items()}))
-            retry = (quality_limit is not None and self.visual_signal == "green" and
-                     best["metric"]["target_speed_mps"] > quality_limit)
+            retry_speed = (quality_limit is not None and self.visual_signal == "green" and
+                           best["metric"]["target_speed_mps"] > quality_limit)
+            retry_reserve = (preferred_reserve is not None and
+                             not best["metric"]["preferred_reserve_valid"])
             if quality_limit is not None:
-                attempts[-1]["retry_for_speed_preference"] = retry
-            if not retry:
+                attempts[-1]["retry_for_speed_preference"] = retry_speed
+            if preferred_reserve is not None:
+                attempts[-1]["retry_for_reserve_preference"] = retry_reserve
+            if not (retry_speed or retry_reserve):
                 break
         if best is not None:
             selected, extra, record = best["selected"], best["extra"], best["record"]
@@ -175,6 +182,13 @@ class ValidatingProbe(native.Probe):
                     "applied": self.visual_signal == "green",
                     "met": best["metric"]["target_speed_mps"] <= quality_limit,
                     "note": "Retry preference only; an admitted native plan may remain above it when the budget is exhausted."}
+            if preferred_reserve is not None:
+                record["selection"]["reserve_preference"] = {
+                    "preferred_clearance_m": preferred_reserve,
+                    "minimum_native_clearance_m": options["validation_body_margin_m"],
+                    "minimum_tracking_clearance_m": options["validation_tracking_margin_m"],
+                    "met": best["metric"]["preferred_reserve_valid"],
+                    "note": "Search the existing pool budget for the preferred reserve; otherwise retain the best sample meeting both hard minima."}
             native.write_json(root / (label + ".json"), record)
             print(json.dumps({"selected": label, "pool": best["pool"], "candidate": chosen,
                               "navigation_phase": phase, "signal": self.visual_signal,

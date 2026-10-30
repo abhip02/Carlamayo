@@ -12,9 +12,11 @@ from local.experiments.test_retained_probe import setup_plan
 from local.experiments.validated_selection import assess, choose
 
 
-@pytest.mark.parametrize("fresh_speed,age,reuse", [(1.2, .4, True), (5., .4, False), (1.2, .6, False)])
+@pytest.mark.parametrize("fresh_speed,age,reuse,cached_preferred,fresh_preferred", [
+    (1.2, .4, True, None, None), (5., .4, False, None, None), (1.2, .6, False, None, None),
+    (5., .4, True, True, False), (1.2, .4, False, False, True)])
 def test_compare_preserves_both_native_sources_and_does_not_refresh_cached_age(
-        tmp_path, monkeypatch, fresh_speed, age, reuse):
+        tmp_path, monkeypatch, fresh_speed, age, reuse, cached_preferred, fresh_preferred):
     route, context, options, old, _ = setup_plan()
     context['time_s'] = age
     context['world_pose']['x'] += (age - .4) * 3.
@@ -22,6 +24,17 @@ def test_compare_preserves_both_native_sources_and_does_not_refresh_cached_age(
     metrics = assess(np.array([path]), context, route, [True], np.full((1, 64), fresh_speed),
                      1.5, yaws=np.zeros((1, 64)), check_body=True, body_margin_m=.1)
     assert choose(metrics, [path], 'green', context['measured_speed_mps'], 5.) == 0
+    if fresh_preferred is not None:
+        metrics[0]['preferred_reserve_valid'] = fresh_preferred
+    cached_assessment = retained.assess_retained
+
+    def assess_cached(*args, **kwargs):
+        metric = cached_assessment(*args, **kwargs)
+        if cached_preferred is not None:
+            metric['preferred_reserve_valid'] = cached_preferred
+        return metric
+
+    monkeypatch.setattr(retained, 'assess_retained', assess_cached)
     fresh = copy.deepcopy(old.record)
     fresh.update(label='frame_004', context=context, trajectory_ego=path.tolist(),
                  candidate_trajectories=[path.tolist()], inference_seconds=.2,

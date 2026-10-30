@@ -32,6 +32,10 @@ def check_options(options):
         raise ValueError("Tracking horizon must align with the 0.1 s control grid")
     if not options.get("validation_check_body") or options.get("validation_route") not in ("left", "straight"):
         raise ValueError("Tracking screening requires existing native body and route checks")
+    preferred = options.get("validation_preferred_reserve_m")
+    minimum = max(options.get("validation_body_margin_m", 0.), options["validation_tracking_margin_m"])
+    if preferred is not None and (not math.isfinite(preferred) or not minimum <= preferred <= 1.):
+        raise ValueError("Preferred reserve must be finite and at least both minimum reserves, at most 1 m")
 
 
 def screen(metric, context, route, world, speeds, age, options, follower):
@@ -59,6 +63,11 @@ def screen(metric, context, route, world, speeds, age, options, follower):
     if not passed:
         metric["valid"] = False
         metric["reasons"].append("insufficient_controller_tracking_clearance")
+    preferred = options.get("validation_preferred_reserve_m")
+    if preferred is not None:
+        metric["preferred_reserve_valid"] = bool(
+            passed and metric["max_corner_overhang_m"] <= -preferred and clearances.min() >= preferred)
+        metric["tracking_forecast"]["preferred_clearance_m"] = preferred
     return metric
 
 

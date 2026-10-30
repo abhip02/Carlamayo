@@ -135,6 +135,12 @@ def require_green_progress(metrics, signal, minimum_speed):
                 item["reasons"].append("green_progress_requirement")
 
 
+def selection_rank(metric):
+    """Optional preferences rank admitted native plans; they never admit a failure."""
+    return (not metric.get("preferred_reserve_valid", True),
+            not metric.get("preferred_horizon_valid", True), metric["selection_cost"])
+
+
 def choose(metrics, candidates, signal, current_speed, desired_speed=5.):
     """Rank admissible samples; signals come from the image-based model question."""
     target = desired_speed if signal == "green" else max(0., min(current_speed, desired_speed))
@@ -154,12 +160,7 @@ def choose(metrics, candidates, signal, current_speed, desired_speed=5.):
                     .05 * (item["ranking_progress_m"] - target * item["ranking_horizon_s"])**2)
         item["selection_cost"] = cost
     accepted = [item for item in metrics if item["valid"]]
-    # Prefer a longer checked forecast when the optional annotation is present.
-    # This never admits a path which failed the controller-coverage checks.
-    preferred = [item for item in accepted if item.get("preferred_horizon_valid")]
-    if preferred:
-        accepted = preferred
-    return min(accepted, key=lambda item: item["selection_cost"])["candidate"] if accepted else None
+    return min(accepted, key=selection_rank)["candidate"] if accepted else None
 
 
 def main():
