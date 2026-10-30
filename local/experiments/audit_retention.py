@@ -29,6 +29,20 @@ def audit(capture):
             "real_age": abs(row["age_s"] - expected_age) < 1e-8,
             "bounded_age": -1e-8 <= row["age_s"] <= .5 + 1e-8,
         }
+        if "admitted_reserve" in source:
+            provenance = source["admitted_reserve"]
+            fresh = json.loads((capture / (provenance["fresh_record"] + ".json")).read_text())
+            proposal_label = source["selection"]["proposal"]
+            proposal = json.loads((capture / "proposals" / (proposal_label + ".json")).read_text())
+            original_attempt = next(a for a in fresh["selection"]["attempts"] if a["proposal"] == proposal_label)
+            candidate = source["selection"]["chosen"]
+            original_metric = original_attempt["metrics"][candidate]
+            checks["reserve_was_originally_admitted"] = (
+                original_metric["valid"] and original_metric == provenance["original_metric"])
+            checks["reserve_native_provenance"] = (
+                source["trajectory_ego"] == proposal["candidate_trajectories"][candidate] and
+                source["generated_token_ids"] == proposal["candidate_generated_tokens"][candidate] and
+                source["context"] == proposal["context"] == fresh["context"])
         if row["age_s"] > 1e-8:
             detail = current.get("retention", {})
             checks["explicit_retention"] = (detail.get("source_label") == row["source_label"] and

@@ -31,6 +31,11 @@ Controller-aware candidate screening is tracked in [RESULTS_ROUND8.md](RESULTS_R
 on `experiment/driving-tracking-validation`. Its separate `tracking_probe`
 entrypoint uses an approximate forecast only to reject native candidates;
 forecast poses are never executed and the original follower remains unchanged.
+An isolated reserve of previously admitted, unselected samples is tracked in
+[RESULTS_ROUND9.md](RESULTS_ROUND9.md) on `experiment/driving-native-candidate-reserve`.
+Its `candidate_reserve_probe` entrypoint considers those alternatives only after
+fresh sampling and selected-plan retention both fail, with unchanged age and
+physical checks. Physical replay and live verification are tracked in that ledger.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
