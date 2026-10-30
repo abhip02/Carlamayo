@@ -268,8 +268,8 @@ Only `accepted_frame_109` also has both source and current actor headings within
 10 degrees of the exit: **9.57458 / 8.33540 degrees**, age **0.1 s**, native
 clearance **0.327528 m**, native target **3.32148 m/s**. The original source signal
 is green and the current signal remains unknown. This diagnostic does not itself
-permit live reuse. A separate physical replay is being checked before considering
-an additional opt-in exit-transition rule.
+permit live reuse. The separate physical replay stays inside through 12.5 s; its complete result
+and the isolated opt-in transition experiment are in [round 11](RESULTS_ROUND11.md).
 
 The fresh-run video was visually reviewed at 10.8 s. Final quality and independent
 tracking audits also pass: 45 steps retry after first admission, 181 extra pools,

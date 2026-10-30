@@ -60,6 +60,9 @@ The opt-in matching-unknown exit-cache rule is tracked in
 [RESULTS_ROUND10.md](RESULTS_ROUND10.md) on `experiment/driving-exit-cache-validation`.
 It preserves unknown signal labels and all physical/age checks, and applies only
 to already accepted samples aligned with the left-turn exit lane in this controlled test.
+A separately enabled green-to-unknown exit transition is being tested on
+`experiment/driving-exit-signal-transition`; see [round 11](RESULTS_ROUND11.md).
+It keeps both original labels and the same exit alignment, native and physical checks.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 

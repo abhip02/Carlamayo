@@ -1,4 +1,4 @@
-"""Narrow opt-in eligibility for unchanged unknown-signal native exit plans.
+"""Narrow opt-in eligibility for unchanged native exit plans under unknown signals.
 
 Controlled empty scene only. This does not infer green, resolve signal
 applicability, detect obstacles, or authorize approaching an unknown signal.
@@ -13,10 +13,15 @@ def angle_error(a, b):
 
 
 def unknown_exit_evidence(record, context, route, signal, phase, options):
-    if not options.get('validation_allow_unknown_exit_cache', False):
+    source_signal = record['selection']['signal']
+    if source_signal == 'unknown' and options.get('validation_allow_unknown_exit_cache', False):
+        policy = 'matching_unknown_after_left_turn_alignment'
+    elif source_signal == 'green' and options.get('validation_allow_green_unknown_exit_cache', False):
+        policy = 'green_to_unknown_after_left_turn_alignment'
+    else:
         return None
     if (options.get('validation_route') != 'left' or not options.get('verify_signal') or
-            signal != 'unknown' or record['selection']['signal'] != 'unknown' or
+            signal != 'unknown' or
             phase != 'finish_turn' or record['navigation_phase'] != 'finish_turn'):
         return None
     end_yaw = route['exit']['yaw']
@@ -37,7 +42,7 @@ def unknown_exit_evidence(record, context, route, signal, phase, options):
         states.append({'state': label, 'heading_to_exit_deg': float(errors[0]),
                        'local_route_heading_to_exit_deg': float(errors[1]),
                        'center_distance_m': float(distance[0]), 'route_arc_m': float(arc[0])})
-    return {'policy': 'matching_unknown_after_left_turn_alignment',
-            'source_signal': 'unknown', 'current_signal': 'unknown',
+    return {'policy': policy,
+            'source_signal': source_signal, 'current_signal': 'unknown',
             'maximum_heading_error_deg': 10, 'states': states,
             'note': 'Signal remains unknown. Same-source native path must pass every physical and age check.'}

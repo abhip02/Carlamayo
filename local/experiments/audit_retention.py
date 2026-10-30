@@ -60,8 +60,9 @@ def audit(capture):
                     current["navigation_phase"], options)
                 checks["unknown_exit_eligibility_matches"] = evidence == selected_metric["signal_reuse"]
                 checks["unknown_signal_not_relabelled"] = (
-                    source["selection"]["signal"] == current["visual_signal"] ==
-                    current["selection"]["signal"] == "unknown")
+                    source["selection"]["signal"] == selected_metric["signal_reuse"].get("source_signal") and
+                    current["visual_signal"] == current["selection"]["signal"] ==
+                    selected_metric["signal_reuse"].get("current_signal") == "unknown")
             reason = detail.get("reason", "fresh_sampling_exhausted")
             if reason == "cached_plan_ranked_better":
                 fresh_path = capture / (detail["fresh_candidate_source"] + ".json")
