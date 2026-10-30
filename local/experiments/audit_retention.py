@@ -49,6 +49,9 @@ def audit(capture):
             checks["explicit_retention"] = (detail.get("source_label") == row["source_label"] and
                                               abs(detail.get("age_s", -100) - row["age_s"]) < 1e-8)
             selected_metric = detail["metrics"][detail["chosen_cache_index"]]
+            checks["signal_eligibility_logged"] = (
+                source["selection"]["signal"] == current["selection"]["signal"] == "green" or
+                "signal_reuse" in selected_metric)
             if "signal_reuse" in selected_metric:
                 options = json.loads((capture / "experiment.json").read_text())["options"]
                 routes = json.loads((capture / "route-reference.json").read_text())["routes"]

@@ -60,6 +60,12 @@ Evidence under `outputs/driving-investigation-10/`:
 `check_unknown_exit_policy.py`, `unknown-exit-policy-terminal122.json`.
 Physical replay and resumed live comparisons are pending.
 
+A further auditor test verifies a valid unknown-exit record, then confirms that
+either changing its signal label to green or removing its eligibility evidence
+makes the audit fail. The focused exit-cache/reserve/prefix suite is **39 passed
+in 2.71 s**. This also enforces explicit eligibility evidence for any non-green
+retention; previously recorded green uses retain their existing behavior.
+
 ## Planned comparison and labeling
 
 Use the verified-prefix harness to replay the original 12.2 s approach, then

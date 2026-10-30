@@ -83,3 +83,32 @@ def test_green_pair_is_unchanged_and_does_not_use_unknown_policy():
     without_option = assess_retained(plan, context, route, 'green', 'finish_turn', options)
     assert with_option == without_option and with_option['valid']
     assert 'signal_reuse' not in with_option
+
+
+def test_independent_retention_audit_requires_unchanged_unknown_labels_and_evidence(tmp_path):
+    import json
+    from local.experiments.audit_retention import audit
+    route, context, options, plan = fixture()
+    metric = assess_retained(plan, context, route, 'unknown', 'finish_turn', options)
+    metric['candidate'] = 0
+    current = copy.deepcopy(plan.record)
+    current.update(label='frame_004', context=context, visual_signal='unknown',
+                   retention={'source_label': plan.record['label'], 'age_s': .4,
+                              'chosen_cache_index': 0, 'metrics': [metric]})
+    for name, data in [('frame_000.json', plan.record), ('frame_004.json', current),
+                       ('experiment.json', {'options': options}),
+                       ('route-reference.json', {'routes': {'left': route}})]:
+        (tmp_path / name).write_text(json.dumps(data))
+    (tmp_path / 'replan-rejections').mkdir()
+    (tmp_path / 'replan-rejections/frame_004.json').write_text('{}')
+    (tmp_path / 'controller-inputs.jsonl').write_text(json.dumps({
+        'time_s': .4, 'source_label': plan.record['label'], 'source_context': plan.record['context'],
+        'age_s': .4, 'world_trajectory': plan.world.tolist(), 'speeds_mps': plan.speeds.tolist()}) + '\n')
+    assert audit(tmp_path)['all_sources_anchors_speeds_and_ages_match']
+    current['selection']['signal'] = 'green'
+    (tmp_path / 'frame_004.json').write_text(json.dumps(current))
+    assert not audit(tmp_path)['all_sources_anchors_speeds_and_ages_match']
+    current['selection']['signal'] = 'unknown'
+    del current['retention']['metrics'][0]['signal_reuse']
+    (tmp_path / 'frame_004.json').write_text(json.dumps(current))
+    assert not audit(tmp_path)['all_sources_anchors_speeds_and_ages_match']
