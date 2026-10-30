@@ -98,3 +98,32 @@ frames, preserves the original inference context separately, and distinguishes
 archived visual answers from fresh checks. Verify-only output is never marked
 completed merely because a batch summary exists. Ten prefix tests pass in
 2.63 s, including this regression check.
+
+
+## Prefix verification and baseline continuation
+
+`verify-prefix-speed4-terminal122/` verifies **122 commands exactly** and zero
+position/orientation error. The maximum context-speed difference against CSV
+is 3.31e-7 m/s, from the float32 context representation. Native retention,
+controller, snapshot and independently recomputed tracking audits all pass.
+There are no fresh model calls in this verify-only run. Wall time is **51.99 s**.
+
+`resume-speed4-terminal122-baseline/` replays the same verified prefix and then
+attempts fresh sampling with unchanged cache eligibility. It fails at **12.2 s**:
+all **48** new native samples fail body geometry; 40 also misalign with the
+route, 18 leave the center corridor and six reverse. All five selected cached
+plans fail solely `reuse_requires_green`. No new command is executed after the
+prefix. Wall time is **137.32 s**. The summary's zero completed fresh planning
+steps does not mean zero attempted inference: **six new pools** were sampled.
+The new exit-cache comparison is in progress, with all other settings unchanged.
+
+The saved figure `native-exit-failure-comparison.png/.pdf` shows the original
+first pool's eight rejected native paths against the selected recent native
+path and the validation corridor; it was visually checked. This is an offline
+comparison, not a continuation outcome. `native-exit-curvature-audit.json`
+confirms the generated native yaw at 1.5 s is 27.8–40.7 degrees left at the
+terminal input, versus mostly 0.45–2.49 degrees at 12.0 s (one 10.44-degree
+outlier). Decoder speed at failure is 2.7569 m/s against measured 2.7130 m/s.
+The generated curvature, not a supplied history-initialized turn rate, creates
+the extra turn. A CPU action-integration check differs from stored native yaw
+by at most 0.00334 rad across the inspected inputs; it is not claimed exact.
