@@ -229,10 +229,50 @@ failures, 224 center-corridor departures, 98 misalignment, 81 reverse motion,
 
 Terminal-only counts: all 48 fail native body geometry; 19 also misalign, nine
 leave the center corridor, six reverse, and one lacks the trajectory marker.
-A separate frozen-input sampler comparison is in progress at this exact saved
-observation; it changes neither live eligibility nor generated trajectories.
+Completed frozen-input sampler and wording comparisons at this exact saved
+observation find no admissible replacement; details follow below.
 
 Artifacts: `native-left-fresh-11s-incomplete.mp4` (explicitly labeled incomplete),
 `capture-native-four-left-speed4-unknown-exit-43/combined-audit-summary.json`,
 six independent audit files and `sampling-audit.json`. `audit_sampling.py`
 excludes replayed-prefix pools when used on continuation captures.
+
+
+## Additional sampling, wording and call-state checks at 11.0 seconds
+
+`replay-terminal110-sampler-variants/` tests 18 pools of eight native samples:
+an exact baseline; 30/100 flow steps; motion temperatures 0.25/0.6; language
+temperature 1.0; and seeds 49–54 at motion temperatures 1 and 2. All **136
+additional samples** fail at least one unchanged hard check. Three pass native
+geometry but fail controller tracking. Baseline trajectories, generated tokens,
+yaw and velocities reproduce the original pool exactly. No setting is adopted.
+Evidence: `terminal110-sampler-variants.json`, `check_terminal110_sampling.py`,
+`terminal110-sampler-audit.json`.
+
+`replay-terminal110-call-state-wording/` first compares fresh driving inference
+without VQA, with VQA, then without VQA again. All three reproduce the original
+native arrays, tokens, yaw and velocities exactly. The visual-question call
+therefore does not cause this output change on the tested input. It also tests
+`Continue straight along the current lane.`, `Continue straight in the lane
+ahead at a steady speed.`, and no navigation text, each with seeds 43 and 49.
+All **48 wording-variant samples** fail native body geometry. No wording change
+is adopted. Its admission audit retains the original unknown signal, including
+for VQA-disabled diagnostics; no live signal rule is changed.
+Evidence: `terminal110-call-state-wording-variants.json`,
+`check_terminal110_call_state_wording.py`, `terminal110-call-state-wording-audit.json`.
+
+`terminal110-cache-geometry-diagnostic.json` bypasses only the signal gate in an
+offline process, without mutating source/current labels or any arrays. All five
+recent selected native plans pass the original age, geometry and tracking checks.
+Only `accepted_frame_109` also has both source and current actor headings within
+10 degrees of the exit: **9.57458 / 8.33540 degrees**, age **0.1 s**, native
+clearance **0.327528 m**, native target **3.32148 m/s**. The original source signal
+is green and the current signal remains unknown. This diagnostic does not itself
+permit live reuse. A separate physical replay is being checked before considering
+an additional opt-in exit-transition rule.
+
+The fresh-run video was visually reviewed at 10.8 s. Final quality and independent
+tracking audits also pass: 45 steps retry after first admission, 181 extra pools,
+33 fresh selection changes, 21 executed steps below the optional 0.2 m preference.
+The largest observed first-step forecast clearance overestimate is 0.012795 m;
+this is an observed error, not a physical accuracy bound.
