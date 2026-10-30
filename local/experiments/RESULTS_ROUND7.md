@@ -14,6 +14,7 @@ The completed tests are:
 | Retention, 0.10 m predicted margin | Ends 4.6 s, 11.5° left; 2 reused steps | 2.783–9.543 m/s | 0.319 m |
 | Retention + speed-quality retries | Ends 8.3 s, 59.8° left; 7 reused steps | 1.759–6.468 m/s | 0.029 m |
 | Same, 0.20 m predicted margin | Ends 5.3 s, 5.2° left; 4 reused steps | 2.788–6.031 m/s | 0.243 m |
+| Proactive native-cache comparison, 0.20 m margin | Ends 7.4 s, 46.4° left; 56 reused steps | 2.788–5.288 m/s | 0.053 m |
 
 All remain inside the recorded lane corridor and have no near-stop below
 0.25 m/s, but none reaches the exit. The second has a much steadier approach
@@ -318,6 +319,115 @@ its population as accepted fresh proposals, including superseded ones.
 Three new tests cover a better cached choice, a better fresh choice and an
 expired cache, including distinct native source files, associated text and
 unchanged original age. Combined verification: **97 passed in 4.93 s**.
-The next live comparison uses the same margin-20 preset via `proactive_probe`,
-changing only the final fresh-versus-cached selection rule. Pending capture:
+The live comparison uses the same margin-20 preset via `proactive_probe`,
+changing only the final fresh-versus-cached selection rule. Completed capture:
 `capture-proactive-native-four-left-quality-margin20-43`.
+
+It ends at **7.4 s**, with **46.3652°** left rotation and no exit. Speed stays
+between **2.7880 and 5.2880 m/s**, ending at 5.2163 m/s; no near-stop. Minimum
+actual corner clearance narrows to **0.05327 m**. All 74 executed paths retain
+exact native source arrays, world anchors, speed arrays and original ages;
+there are no control or snapshot mismatches. Of 56 reused steps, 51 beat the
+fresh proposal's existing score and five bridge fresh-sampling exhaustion.
+The last source, `accepted_frame_068`, is reused at 6.9–7.3 s, ages 0.1–0.5 s.
+At 7.4 s all 48 fresh samples fail and the cache has expired.
+
+There are 130 proposal calls, 69 accepted fresh proposals (including 51
+superseded proposals), and 15 green VQA checks. Speed-quality retries add 19
+pools across six steps and change all six choices; three accepted proposals
+still miss the optional speed preference. Proposal arrays/tokens all match.
+Wall time is 1465.3 s (24.4 minutes). Evidence:
+`proactive-left-margin20-{control,footprint,route,retention,quality}-audit.json`.
+
+At the terminal state, relaxing age to 1.0 s in an **offline diagnostic only**
+admits original sources 064, 065, 066 and 068 with remaining native corner
+clearances 0.3982, 0.3380, 0.3245 and 0.2729 m. Source 067 fails clearance.
+This does not establish that the unchanged controller can track them.
+Evidence: `proactive-terminal-longer-cache-diagnostic.json`.
+
+At 7.3 s, nine fresh candidates fail only the required 0.20 m predicted reserve;
+their native corners stay in the ordinary corridor. Their minimum reserves
+occur just 0.3–0.4 s ahead, not only far down the trajectory. The best reserve
+is 0.0823 m (pool 4, candidate 4, target 7.346 m/s).
+Evidence: `proactive-frame073-clearance-timing.json`.
+
+## Faithful native-path tracking replay
+
+`replay_native_tracking.py` runs no inference. It verifies each saved native
+array and generated tokens against its original proposal, checks the exact
+world path/speed array/age used by the original controller, and requires the
+controller/config files to match the capture's source snapshot. It respawns
+the same vehicle/cameras, reproduces the original acknowledged pre-roll and
+simulator settings, and recomputes every prefix control using the unchanged
+stateful follower. Before continuation, all states and controls must match the
+recorded prefix within 0.01 m position, 0.1° orientation, 0.02 m/s speed and
+0.0001 control. Deviations abort rather than silently accepting a different
+starting state. This is a diagnostic, not a fresh-inference rollout.
+
+Both initial replays reproduce all 7.4 s **exactly**, with zero maximum error
+in every prefix state and computed control. Continuing source 064 (original
+age 1.0 s) yields actual corner overhang **0.02255 m at 7.5 s**. Continuing
+source 068 (age 0.6 s) yields overhang **0.02430 m at 7.5 s**. Both stop at the
+first observed departure. The controller receives the original fixed world
+path, unchanged original speeds and real age throughout. Commands are
+acknowledged and verified against applied simulator controls. Outputs:
+`replay-native-tracking-source064/` and `replay-native-tracking-source068/`,
+each containing `summary.json`, source record, script snapshot and overhead
+video. Live cache limits remain unchanged at 0.5 s.
+
+This disproves the specific hypothesis that simply allowing either of these
+older geometrically admissible plans to continue would safely bridge the
+terminal state. Native predicted body clearance does not account for all
+closed-loop tracking error. It does not by itself identify a controller bug
+or prove that every other native sample would fail.
+
+Holding source 064 from its original 6.4 s state also departs at **7.5 s**
+(0.00615 m overhang); holding original chosen source 060 from 6.0 s departs at
+**7.4 s** (0.04007 m overhang). Both reproduce their entire recorded prefixes
+exactly. These tests deliberately hold the plan beyond the live 0.5 s admission
+limit to diagnose tracking; that limit is not changed in inference rollouts.
+Artifacts: `replay-native-tracking-earlier064/`, `...-earlier060/`.
+
+## Offline forecast and paired native alternative
+
+`tracking_forecast.py` copies the original follower's reconstructed state and
+predicts a bicycle trajectory at constant measured initial speed. These
+approximate poses are for validation research only; they are never passed to
+the controller as a path. An effective steering-angle multiplier is estimated
+from **40 turning steps in the three older captures**, excluding the latest
+proactive run. Its median is **0.844854**, with 10th/90th percentiles
+0.813559/0.928187. This is empirical aggregate behavior, not a universal plant
+model, calibrated safety bound, or demonstrated cause of the discrepancy.
+It omits longitudinal response, tire slip and changing roll/pitch.
+
+Compared with the ideal geometry multiplier 1, it reduces the maximum observed
+clearance error in the two earlier-plan replays from 0.367/0.408 m to
+0.147/0.186 m. It still misses source 064's actual departure if judged only by
+zero predicted clearance, so it must not be treated as a certificate. At the
+7.4 s terminal state it predicts departures for both continued sources. Full
+evidence: `tracking-forecast-heldout-audit.json`. CARLA documents a
+[speed-dependent steering curve](https://carla.readthedocs.io/en/0.9.16/python_api/#carlavehiclephysicscontrol),
+and the replay records the vehicle's curve and wheel geometry. We have not
+attributed the empirical multiplier solely to that curve.
+
+The frozen-pool audit (`tracking-screen-frozen-availability.json`) compares
+native-admitted alternatives using a 1.5 s tracking forecast. At 6.0 s the
+original chosen candidate 4 has 0.024 m forecast reserve, while candidate 7
+from the **same original model pool** has 0.274 m. Their native predicted
+clearances are both about 0.27 m. Thus native geometry alone did not distinguish
+their tracking outcomes well.
+
+The paired simulator test confirms a useful difference: candidate 4 departs at
+7.4 s; candidate 7 remains inside through the full **8.0 s** diagnostic endpoint,
+with **0.08730 m minimum actual clearance** and **61.6889°** total left rotation.
+At the common 7.4 s timestamp candidate 7 has 0.20491 m actual clearance.
+Its final speed is 4.34291 m/s. Both prefixes through 6.0 s match the source
+exactly, and all continuation waypoints/speeds are original native samples
+from `frame_060_pool_0`. No new inference occurs after that point. This supports
+controller-aware sample selection as a hypothesis; it is not a completed
+closed-loop left turn. Artifact: `replay-native-tracking-earlier060-candidate7/`.
+
+The model-free replay helper supports `--prefix-seconds` and `--candidate` for
+these paired comparisons. Existing regression suite: **97 passed in 4.80 s**.
+Latest full-inference review video: `proactive-left-margin20-incomplete.mp4`,
+encoded to H.264, explicitly marked incomplete and visually checked.
