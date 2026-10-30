@@ -5,17 +5,21 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Current evidence: two earlier controlled straight crossings completed. Two
-failing left-turn states now have audited continuations to the route endpoint:
-15.4 s after a verified 12.2 s prefix, and 14.8 s after a verified 11.0 s prefix.
-The newest continuation keeps every native path/speed unchanged and has no
-recorded corridor departure or near-stop. A fresh run from t=0 with the latest
-option is being checked separately. These are not yet a general driving fix.
-See [round 11](RESULTS_ROUND11.md) for the new transition rule, exact evidence,
-rollback checkpoint and controlled-scene limitations. The earlier full fresh
-run failed at 11.0 s, as documented in [round 10](RESULTS_ROUND10.md).
+Current evidence: a **full fresh left turn reaches the endpoint at 13.4 s**,
+with all 134 executed paths/speed arrays unchanged from their native model
+sources and the original controller. No recorded corner leaves the corridor
+and speed never falls below 2.788 m/s. Minimum clearance is only **0.109 m**;
+repeatability remains unverified and inference takes about 70 minutes. This is
+one successful controlled empty, all-green case, not a general driving fix.
+Two earlier controlled straight crossings and two verified-prefix left-turn
+continuations also completed. See [round 11](RESULTS_ROUND11.md) for the new
+transition rule, full-run audits, separate reproduced physical speed jump,
+rollback checkpoint and limitations. The preceding full fresh run failed at
+11.0 s, as documented in [round 10](RESULTS_ROUND10.md).
 
 Local videos (generated evidence, not committed to Git):
+
+- [Completed fresh left turn, 13.4 s](../../outputs/driving-investigation-11/native-left-full-exit-transition-complete.mp4).
 - [Newest completed continuation](../../outputs/driving-investigation-11/native-left-exit-transition-continuation-complete.mp4).
 - [Earlier completed continuation](../../outputs/driving-investigation-10/native-left-exit-continuation-complete.mp4).
 - [Earlier incomplete fresh run](../../outputs/driving-investigation-10/native-left-fresh-11s-incomplete.mp4).
@@ -60,7 +64,7 @@ The opt-in matching-unknown exit-cache rule is tracked in
 [RESULTS_ROUND10.md](RESULTS_ROUND10.md) on `experiment/driving-exit-cache-validation`.
 It preserves unknown signal labels and all physical/age checks, and applies only
 to already accepted samples aligned with the left-turn exit lane in this controlled test.
-A separately enabled green-to-unknown exit transition is being tested on
+A separately enabled green-to-unknown exit transition is recorded on
 `experiment/driving-exit-signal-transition`; see [round 11](RESULTS_ROUND11.md).
 It keeps both original labels and the same exit alignment, native and physical checks.
 
