@@ -552,3 +552,14 @@ Video: `tracking-left-speed4-incomplete.mp4`, H.264, labeled incomplete and
 visually reviewed at 11.6 s. The updated `tracking-policy-comparison.png/.pdf`
 includes all five incomplete live runs and was visually checked. No recorded
 rotation-only result is labeled route completion.
+
+
+The exit-input audit finds no numerical discontinuity in the saved ego history:
+overlapping 12.0/12.2 s histories agree after their rigid frame change within
+4.77e-7 m and 1.20e-7 in rotation entries. Rotations are finite and orthonormal
+within 1.20e-7. The four latest camera views at 11.0, 12.0 and 12.2 s were
+visually reviewed; they show a clear exit lane with no abrupt scene change.
+This does not certify image/sensor calibration or exclude model sensitivity.
+The decoder initializes velocity only; its generated action curvature causes
+the extra predicted turn. No decoder or history edit is made. Evidence:
+`exit-model-input-audit.json`, `exit-model-camera-inputs.jpg`, `check_exit_inputs.py`.

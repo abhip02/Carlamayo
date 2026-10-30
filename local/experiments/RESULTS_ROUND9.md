@@ -109,3 +109,35 @@ source local/env.sh
   --options local/experiments/presets/tracking-native-four-left-quality-margin20-43.json \
   --output outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43
 ```
+
+
+## Verified-prefix continuation harness
+
+`prefix_resume_probe.py` is an opt-in diagnostic entrypoint layered over the
+candidate reserve. It replays previously executed native arrays through the
+unchanged controller, then begins fresh model sampling at a configured frame.
+It requires identical scene configuration, original controller/config bytes,
+route and render/signal settings. Before application, every replayed controller
+command must match within 1e-8. Every prefix vehicle state, including the resume
+boundary, must match within 1e-6 m/degrees/m/s. Any mismatch aborts continuation.
+
+Source proposals and selected records retain original inference metadata and
+are copied with SHA-256 provenance. Replayed records additionally identify the
+new physical context and explicitly say no fresh inference occurred. Histories
+contain original native candidates and original ages. No map path is executed.
+The summary separates replayed planning steps from completed fresh-inference
+steps. A new image-based signal check is forced at resume; camera images are
+new renders and are not claimed to be bit-identical.
+
+Options `replay_prefix_capture` and `replay_prefix_seconds` specify the source
+and boundary. `replay_prefix_only: true` verifies the physical prefix and stops
+with `prefix_verification_complete`, never route completion. This supports
+faster controlled continuation diagnostics without claiming a new full run.
+
+Nine unit tests pass in 2.32 s. They cover native array/text preservation,
+no model call before the boundary, fresh signal refresh, mismatch rejection
+(states, controller commands, source arrays, incomplete data, route and scene
+configuration), verify-only termination and wrapper restoration. An offline
+check reconstructs all 120 steps / 49 selected sources of the longer left run
+and archives 533 source files with exact native anchors, speed arrays and ages.
+Physical prefix verification is pending the current live experiment.

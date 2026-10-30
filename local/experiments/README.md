@@ -36,6 +36,10 @@ An isolated reserve of previously admitted, unselected samples is tracked in
 Its `candidate_reserve_probe` entrypoint considers those alternatives only after
 fresh sampling and selected-plan retention both fail, with unchanged age and
 physical checks. Physical replay and live verification are tracked in that ledger.
+The opt-in `prefix_resume_probe` can replay archived native plans and then resume
+fresh sampling. Every replayed state and unchanged-controller command must match
+the source before continuation; prefix records and counts are explicitly labeled.
+This is a diagnostic continuation, not a new whole-run inference result.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
