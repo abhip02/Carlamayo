@@ -445,3 +445,44 @@ Review artifacts for completed tests:
 - `tracking-left-preferred20-min10-incomplete.mp4` (H.264, labeled, visually checked).
 - `tracking-policy-comparison.png/.pdf` (recorded outcomes, not paired whole-run A/B).
 - `native-longer-horizon-replay.mp4` (original pool 4 candidate 4; replay only).
+
+
+## Initial input reproducibility check
+
+`initial-input-comparison.json` compares the first saved model inputs of the
+strict-20 capture against the minimum-10, preferred-20/minimum-10, and new
+speed-preference-4 captures. Initial world poses, ego position/rotation history
+tensors and camera indices are bit-identical. Camera pixel tensors differ:
+mean absolute channel differences are **1.0683**, **0.9874**, and **0.9204**
+on the 0–255 scale; about 24%, 25%, and 24% of channels differ. The cause of
+those rendering differences has not been isolated. This confirms the reason
+for distinguishing fixed-input sampling comparisons from full live-run policy
+comparisons; it does not quantify the policy contribution to live outcomes.
+
+
+## Previously admitted but unselected recent candidates
+
+`check_unselected_cache.py` revalidates every previously **admitted** native
+candidate in the existing half-second window, including candidates not chosen
+at generation. Original anchors, speeds, times, age bound, phase, signal,
+native-body and controller-tracking checks are preserved. No candidate is
+executed by this offline audit.
+
+Two prior failures have a currently valid alternative that the selected-only
+cache omitted:
+- Strict-20 terminal 7.7 s: original `frame_075_pool_0`, candidate 0, age **0.2 s**,
+  native remaining clearance **0.263050 m**, tracking forecast **0.211839 m**,
+  current native target **3.777970 m/s**. It meets even the strict 20 cm checks.
+- Preferred-20/minimum-10 terminal 7.2 s: original `frame_071_pool_3`, candidate 4,
+  age **0.1 s**, native remaining clearance **0.283555 m**, tracking forecast
+  **0.168853 m**, current native target **7.011264 m/s**. It meets hard admission
+  but not optional reserve/speed preferences.
+
+Both were hard-admitted at their original sampling time. Seven prior admitted
+candidates are considered in each case; one passes at each terminal state.
+The minimum-10 run with an unknown signal has no admitted alternative under
+unchanged rules. These results establish a gap in retaining only selected
+fresh samples, not yet physical continuation success. Candidate replay and
+an isolated reserve extension are the next proposed checks after the active
+speed-preference run releases the simulator. No live behavior has changed.
+Evidence: `unselected-recent-candidates-terminal-audit.json`.
