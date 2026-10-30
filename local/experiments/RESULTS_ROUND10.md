@@ -58,7 +58,7 @@ that diagnostic's ranking must not be reported as the new policy's choice.
 
 Evidence under `outputs/driving-investigation-10/`:
 `check_unknown_exit_policy.py`, `unknown-exit-policy-terminal122.json`.
-Physical replay and resumed live comparisons are pending.
+Physical replay and the resumed comparison are complete; results are below.
 
 A further auditor test verifies a valid unknown-exit record, then confirms that
 either changing its signal label to green or removing its eligibility evidence
@@ -66,10 +66,10 @@ makes the audit fail. The focused exit-cache/reserve/prefix suite is **39 passed
 in 2.71 s**. This also enforces explicit eligibility evidence for any non-green
 retention; previously recorded green uses retain their existing behavior.
 
-## Planned comparison and labeling
+## Comparison design and labeling
 
-Use the verified-prefix harness to replay the original 12.2 s approach, then
-resume fresh inference with either unchanged eligibility or this option enabled.
+The verified-prefix harness replays the original 12.2 s approach, then
+resumes fresh inference with either unchanged eligibility or this option enabled.
 Every prefix state and original-controller command must reproduce before either
 continuation. A separate verify-only run precedes live use. Camera renders may
 differ, so this is not a pixel-identical whole-run A/B. Each output will state
@@ -115,7 +115,8 @@ route, 18 leave the center corridor and six reverse. All five selected cached
 plans fail solely `reuse_requires_green`. No new command is executed after the
 prefix. Wall time is **137.32 s**. The summary's zero completed fresh planning
 steps does not mean zero attempted inference: **six new pools** were sampled.
-The new exit-cache comparison is in progress, with all other settings unchanged.
+The exit-cache comparison completes the route, with all other settings unchanged;
+its result and limitations are recorded below.
 
 The saved figure `native-exit-failure-comparison.png/.pdf` shows the original
 first pool's eight rejected native paths against the selected recent native
@@ -132,9 +133,7 @@ by at most 0.00334 rad across the inspected inputs; it is not claimed exact.
 The complete combined suite after capture-auditor changes is **197 passed in
 5.01 s**. The opt-in continuation has bridged frame 122 using the exact frame
 121 native source, and fresh sampling again finds an admissible model sample
-at frame 123. This is an intermediate recovery only; the run is still active
-and must reach the route endpoint and pass full audits before any continuation
-completion claim.
+at frame 123. The final continuation result and audits are recorded below.
 
 
 `resume-boundary-input-comparison.json` confirms original, baseline and opt-in
@@ -149,4 +148,54 @@ A separate full-run preset, `tracking-native-four-left-speed4-unknown-exit-43.js
 adds only the opt-in unknown-exit flag to the preceding speed-4 preset. It contains
 no prefix replay settings. Use `candidate_reserve_probe` to test the current
 combined native validation/resampling package from the original scene start.
-The run is planned after the resumed comparison ends and passes its audits.
+The full run is active after the resumed comparison passed its audits; see below.
+
+
+## Completed native continuation
+
+`resume-speed4-terminal122-unknown-exit/` reaches the required route endpoint
+at **15.4 s**, final x **21.5438 m** (required 21.2431 m), total left rotation
+**91.7583 degrees** and actual speed **3.5514 m/s**. There are **no recorded body
+corridor departures**. Minimum speed over the complete physical run is
+**2.34385 m/s**, minimum body clearance **0.204931 m**; after the 12.2 s resume
+boundary, minimum clearance is **0.399861 m**. No near-stop occurs.
+
+This result comprises a **verified 12.2 s replayed approach and 3.2 s of fresh
+inference/validated native retention**, not a new whole-run inference success.
+The suffix contains 32 executed commands, 52 newly sampled pools, and 29 fresh
+admitted planning steps (some superseded by better-ranked cached paths).
+There are 23 native cache uses: three after fresh-sampling exhaustion and 20
+better-ranked than fresh choices. All 23 preserve unknown source/current signal
+labels and pass the explicit exit eligibility checks. Seven fresh visual
+checks all report unknown. No unselected-reserve rescue is needed in this suffix.
+
+All **154** executed native arrays, source anchors, speed arrays and ages match
+exactly. Independent controller and tracking-forecast reconstruction matches
+with zero error, and physical control/snapshot checks find no mismatch. The
+suffix first bridges frame 122 with frame 121's native path, obtains a new
+admissible sample at 123, bridges again at 124/125 with that native source, and
+continues sampling successfully to the endpoint. Wall time is **781.67 s**
+(13.03 min), including the roughly 52 s physical prefix replay.
+
+The before/after comparison demonstrates a recovery on this failure state.
+The input histories and vehicle states match exactly, while small render
+variations remain documented above. The baseline independently reproduces
+all 48 native body failures and five signal-only cache rejections. This is not
+proof of general signal handling, obstacle avoidance, arbitrary maps, different
+seeds, or whole-run repeatability.
+
+Artifacts in the round-10 evidence directory:
+- `native-left-exit-continuation-complete.mp4`: H.264, visually reviewed at 15.2 s;
+  banners distinguish the replayed approach and fresh-inference suffix.
+- `resume-speed4-terminal122-unknown-exit/combined-audit-summary.json`, plus the
+  six independent `*-audit.json` files in that capture directory.
+- `audit_run.py`: repeatable audit orchestration, including explicit suffix counts.
+
+## Full-run validation in progress
+
+`capture-native-four-left-speed4-unknown-exit-43/` starts from the original scene
+at t=0 with fresh inference throughout: **no prefix replay settings**. It uses
+the new full-run preset and `candidate_reserve_probe`, so all native validation,
+resampling, recent selected-cache and admitted-alternative checks are exercised.
+Started at `2fc90de`, duration cap 20 s, same route endpoint. A full-run result
+is pending; the completed continuation must not be presented as this result.
