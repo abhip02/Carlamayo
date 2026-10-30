@@ -5,6 +5,18 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
+Current evidence: two earlier controlled straight crossings completed. The newest
+left-turn test completes the route at 15.4 s after a verified 12.2 s replayed
+approach and 3.2 s of fresh inference/native retention. Every model path and
+speed array stays unchanged; actual vehicle corners remain inside the corridor.
+A fresh full run from t=0 is being checked separately. This is not yet a general
+driving fix. See [round 10](RESULTS_ROUND10.md) for the exact distinction, audits,
+rollback checkpoint and controlled-scene limitations.
+
+Local video (generated evidence, not committed to Git):
+[`native-left-exit-continuation-complete.mp4`](../../outputs/driving-investigation-10/native-left-exit-continuation-complete.mp4).
+The banners identify which portion is replayed and which uses fresh inference.
+
 See [RESULTS.md](RESULTS.md) for the initial diagnosis and
 [RESULTS_ROUND2.md](RESULTS_ROUND2.md) for camera, signal, and multiple-trajectory
 experiments. The latter are isolated on `experiment/driving-input-fixes`.
