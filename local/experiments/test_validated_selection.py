@@ -200,6 +200,38 @@ def test_completion_does_not_claim_success_outside_exit_lane(tmp_path, monkeypat
         probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
 
 
+@pytest.mark.parametrize("longer_available", [True, False])
+def test_longer_forecast_preference_preserves_native_paths_and_short_admission(
+        tmp_path, monkeypatch, longer_available):
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch)
+    options.update(validation_horizon_s=1.5, validation_prefer_horizon_s=3.,
+                   validation_green_min_target_mps=1.)
+    # Candidate 0 is initially valid and faster, but leaves the lane after 2.5 s.
+    prediction[:, :, 0] = prediction[:, :, 1].clone() * 1.4
+    prediction[:, :, 0, 25:, 1] = 2.5
+    if not longer_available:
+        prediction[:, :, 1, 25:, 1] = 2.5
+    actual, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    chosen = 1 if longer_available else 0
+    assert torch.equal(actual, prediction[:, :, chosen:chosen + 1])
+    record = json.loads((tmp_path / "frame_000.json").read_text())
+    metrics = record["selection"]["attempts"][0]["metrics"]
+    assert metrics[0]["valid"] and not metrics[0]["preferred_horizon_valid"]
+    assert metrics[1]["preferred_horizon_valid"] == longer_available
+    assert not metrics[2]["valid"]  # Longer-valid stops still fail the green floor.
+    assert len(calls) == 1
+
+
+def test_longer_forecast_preference_does_not_override_red_stop_ranking(tmp_path, monkeypatch):
+    probe, adapter, context, options, prediction, _ = fake_probe(tmp_path, monkeypatch)
+    probe.visual_signal = "red"
+    options.update(validation_prefer_horizon_s=3., validation_green_min_target_mps=1.)
+    actual, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    assert torch.equal(actual, prediction[:, :, 2:3])
+    record = json.loads((tmp_path / "frame_000.json").read_text())
+    assert all("preferred_horizon_valid" not in m for m in record["selection"]["attempts"][0]["metrics"])
+
+
 def test_trajectory_guard_does_not_block_vqa_termination():
     vocab = {"<|traj_future_start|>": 10, "<|answer_start|>": 11,
              "<|answer_end|>": 12, "<|im_end|>": 13, "<|endoftext|>": 14}

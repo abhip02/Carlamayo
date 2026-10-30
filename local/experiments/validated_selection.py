@@ -149,6 +149,11 @@ def choose(metrics, candidates, signal, current_speed, desired_speed=5.):
                     .05 * (item["ranking_progress_m"] - target * item["ranking_horizon_s"])**2)
         item["selection_cost"] = cost
     accepted = [item for item in metrics if item["valid"]]
+    # Prefer a longer checked forecast when the optional annotation is present.
+    # This never admits a path which failed the controller-coverage checks.
+    preferred = [item for item in accepted if item.get("preferred_horizon_valid")]
+    if preferred:
+        accepted = preferred
     return min(accepted, key=lambda item: item["selection_cost"])["candidate"] if accepted else None
 
 

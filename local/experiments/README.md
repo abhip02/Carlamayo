@@ -183,19 +183,22 @@ Start CARLA on Town03, source `local/env.sh`, and generate the map reference:
   --config local/configs/demo.yaml --output outputs/driving-validation-routes.json
 .venv/bin/python -m local.experiments.validated_probe capture \
   --config local/configs/demo.yaml --duration 16 --capture-frames 0 19 45 65 95 \
-  --options local/experiments/presets/validated-front-straight-43.json \
+  --options local/experiments/presets/validated-front-straight-body-42.json \
   --output outputs/my-validated-straight
 ```
 
-The corresponding left preset is `presets/validated-front-left-43.json`.
-Use a new output directory for each launch. Both presets use the default
-empty all-green scene and the original front pinhole camera only. They are
-controlled tests, not evidence that mixed signals or traffic are solved.
+Use a new output directory for each launch. This preset uses the default
+empty all-green scene and the original front pinhole camera only. The older
+`presets/validated-front-left-43.json` preserves an incomplete left-turn test
+and lacks the later body checks; it is not a demonstrated working left policy.
+These are controlled tests, not evidence that mixed signals or traffic are solved.
 
-`presets/validated-front-straight-body-43.json` additionally checks projected
+`presets/validated-front-straight-body-42.json` additionally checks projected
 vehicle-box corners using native predicted orientations and actual car
-dimensions. This configuration completed one 7.9 s straight crossing without
-near-stops or recorded corner overhang. It still needs broader validation.
+dimensions. This configuration completed an 8.5 s straight crossing on the
+corrected ranking code without near-stops or recorded corner overhang. The
+seed-43 preset completed a 7.9 s crossing on the earlier ranking checkpoint.
+These are two successful controlled tests, not a general driving fix.
 `audit_body` checks actual recorded box corners independently of prediction
 admission; its CLI takes a capture and `--output` path. Older captures need
 `--bounds` pointing to a recorded geometry JSON.
@@ -203,7 +206,8 @@ admission; its CLI takes a capture and `--output` path. Older captures need
 The wrapper admits native model samples only when their marker, finite values,
 motion direction, lane-center corridor and heading checks pass. It checks at
 least 1.5 s and extends through the original controller's actual steering
-lookahead. A failed pool triggers resampling, up to three pools of four. If
+lookahead. A failed pool triggers resampling, up to three pools of four in this preset.
+`validation_max_pools` sets that bound; `num_samples` sets candidates per pool. If
 all fail, the test explicitly terminates; no fallback or repaired path is
 executed. A separate image-based signal answer affects ranking. Map geometry
 is used to evaluate samples, not to manufacture a trajectory. See
@@ -214,6 +218,23 @@ rejected pools, allowing another generated intent as well as new motion noise.
 It leaves the first pool unchanged. Body checks require the native orientation
 trace and recorded dimensions; they do not approximate a missing orientation
 or silently disable themselves.
+
+Ranking always compares lane RMS and progress over the same 1.5 s, even when
+admission has to inspect farther ahead for the actual steering target. Optional
+`validation_green_min_target_mps` rejects low-progress native samples only when
+the image question says green; it is for the controlled empty scene. Optional
+`validation_flow_temperatures: [1, 1.5, 2]` broadens native motion noise on later
+rejected pools. These options never increase an existing path's speed or modify
+its waypoints. Left-turn experiments using them still need successful live
+validation; see the ledger before choosing a configuration.
+
+Optional `validation_prefer_horizon_s: 3` adds a longer forecast preference
+on image-reported green: among samples that pass the usual controller-coverage
+checks, prefer those that also pass the same checks for at least 3 s. If none
+does, rank the ordinarily admitted samples as before. It does not accept a
+rejected sample, change any waypoint, or override red/yellow/unknown ranking.
+This experimental preference is absent from the tested straight preset; its
+left-turn live results are recorded in the round-6 ledger.
 
 Every accepted array can be compared with its original candidate and the
 controller's input using `audit_capture`. `proposals/` retains all proposals,

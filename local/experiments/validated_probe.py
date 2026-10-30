@@ -98,6 +98,16 @@ class ValidatingProbe(native.Probe):
                              check_body=options.get("validation_check_body", False))
             require_green_progress(metrics, self.visual_signal,
                                    options.get("validation_green_min_target_mps", 0.))
+            preferred_horizon = options.get("validation_prefer_horizon_s")
+            if preferred_horizon and self.visual_signal == "green":
+                longer = assess(candidates, context, route, record["candidate_markers"],
+                                record["candidate_velocities"], preferred_horizon,
+                                yaws=record.get("candidate_yaw_rad"),
+                                check_body=options.get("validation_check_body", False))
+                for item, forecast in zip(metrics, longer):
+                    item.update(preferred_horizon_valid=forecast["valid"],
+                                preferred_horizon_s=forecast["horizon_s"],
+                                preferred_horizon_reasons=forecast["reasons"])
             chosen = choose(metrics, candidates, self.visual_signal,
                             context["measured_speed_mps"], options.get("validation_desired_speed_mps", 5.))
             attempts.append({"proposal": proposal_label, "metrics": metrics,

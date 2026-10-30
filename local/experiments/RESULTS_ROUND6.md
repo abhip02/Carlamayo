@@ -4,6 +4,28 @@ Branch: `experiment/driving-plan-validation`, starting checkpoint `5b94733`.
 Evidence root: `outputs/driving-investigation-6/`.
 Previous results: [round 5](RESULTS_ROUND5.md).
 
+## Current status
+
+Every executed path remains a native model sample. Normal launchers and the
+production controller are unchanged. The current evidence is:
+
+| Live run | Outcome | Minimum speed | Recorded box corners |
+| --- | --- | ---: | --- |
+| Front, straight, seed 43; earlier ranking | Exit at 7.9 s | 2.650 m/s | Inside, minimum clearance 0.068 m |
+| Front, straight, seed 42; current ranking | Exit at 8.5 s | 2.695 m/s | Inside, minimum clearance 0.112 m |
+| Four cameras, left, 8 samples × 3 pools | Ends at 4.5 s; no valid next path | 2.788 m/s | Inside until termination, minimum clearance 0.374 m |
+
+The two straight successes use different language seeds **and ranking
+revisions**; initial poses match but rendered images differ. They are not a
+controlled A/B pair or proof of general robustness. The left turn is not fixed.
+Red/mixed-light behavior and obstacles are not validated by these green tests.
+The body audit checks recorded corners, not swept volumes or collisions.
+
+Current straight video: `validated-front-straight-body-42.mp4`.
+Incomplete left video: `validated-native-left-short-incomplete.mp4`.
+Source/config manifests live beside each capture; all artifact paths below are
+relative to the evidence root. Read the final sections for the latest retries.
+
 The user explicitly chose to keep executed paths model-generated. There is no
 map-based fallback planner, trajectory correction, forced cruise speed, or
 production controller change. This round tests a map-assisted **selection**
@@ -351,8 +373,167 @@ The next live configuration uses eight samples per pool, with noise
 temperatures 1, 1.5 and 2 across rejected pools. Language and motion seeds also
 vary as before. The first pool uses ordinary native sampling, and all admission
 bounds remain unchanged. `capture-validated-native-four-left-expanded-43` is
-pending at this checkpoint. The retry regression also checks the requested
-native temperature sequence; all 13 focused tests pass.
+ends explicitly at **2.2 s**: all 24 samples fail the 3 s admission checks.
+Minimum actual speed is **2.7857 m/s**, final speed 5.9106 m/s, no near-stop,
+maximum center deviation 0.0844 m, and all 22 executed arrays/controls/snapshots
+match. The shorter adaptive 1.5 s/controller-coverage audit admits two samples
+from its final high-noise pool, but none from the first two pools; this does
+not make their full 3 s forecasts valid. Evidence:
+`native-four-left-expanded-control-audit.json` and
+`expanded-left-short-coverage-audit.json`. The retry regression also checks
+the native temperature sequence; all 13 focused tests pass.
+
+## Turn-distance diagnostic
+
+The native helper documents navigation instructions with a distance. The next
+frozen batch tests the expanded-pool failure frame 022 with the same eight
+samples, varying only navigation text: no distance, distance to junction entry,
+distance to the route's first 5-degree heading change, distance to its first
+30-degree heading change, and an explicit straight-then-left instruction.
+Distances are derived from map route arc length and recorded in
+`left-distance-geometry.json`; this supplies navigation text, never map-generated
+executed waypoints. All five calls / 40 native samples complete, but none
+passes the unchanged 3 s body checks. Distances are 10.671 m to entry, 15.844 m
+to the first 5-degree heading change, and 20.640 m to the first 30-degree change
+(rounded to 11, 16 and 21 in text). Best rear-axle errors remain 1.370–1.441 m,
+with body overhang. Evidence: `left-distance-body-audit.json`. No dynamic
+distance-prompt feature is implemented on this evidence.
+
+## Current-code straight verification
+
+`capture-validated-front-straight-body-42` repeats the front-only body-checked
+straight test with **language seed 42**, motion seed 42 and the corrected
+fixed-window ranking. It keeps four samples, three noise-seed retries, the
+1.5 s controller-coverage horizon and default all-green scene. It does not use
+the added green-progress floor or temperature escalation. It reaches the
+straight exit at **8.5 s**, with minimum speed **2.6945 m/s**, final speed
+4.1157 m/s and no near-stop. Maximum centerline distance is **0.7016 m**;
+all recorded box corners stay inside, with minimum clearance **0.1121 m**.
+All 85 selected arrays and controller inputs remain exact native candidates,
+with zero control/snapshot mismatch. Evidence:
+`front-straight-body-42-control-audit.json`, `front-straight-body-42-route.json`,
+`front-straight-body-42-footprint.json`, and video
+`validated-front-straight-body-42.mp4`.
+
+The sampling audit records **87 proposal calls for 85 executed steps** in the
+seed-42 crossing. The first candidate of the first pool fails body validation
+on 11 frames; frames 4.6 and 4.9 s require a second pool before proceeding.
+The previous seed-43 crossing needs third pools at 7.0 and 7.2 s. Therefore,
+these successes involve actual sample rejection/resampling, not simply accepting
+the original first sample. Frozen/native identity audits establish exact
+selection, but do not claim what an independent first-sample live run would do.
+Evidence: `validation-sampling-summary.json`.
+
+## Left test with controller-coverage horizon
+
+`capture-validated-native-four-left-expanded-short-43` repeats eight samples
+with the 1, 1.5, 2 noise sequence, original four pinhole cameras and progress
+requirement, using the same **1.5 s minimum/controller-target coverage** as the
+successful straight tests. Body, lane, direction and marker bounds are unchanged;
+this tests a shorter forecast window, not validity of the rejected 3 s plans.
+Ends explicitly at **4.5 s**, after all 24 proposals fail the unchanged body
+checks. Minimum actual speed is **2.7880 m/s**, final speed 6.2122 m/s, and no
+near-stop occurs. All recorded box corners stay in the lane, with minimum
+clearance **0.3740 m**. All 45 executed trajectories and controller inputs are
+exact native candidates, with zero control/snapshot mismatch. The car has
+only started the turn; this remains incomplete. Evidence:
+`native-four-left-expanded-short-control-audit.json`,
+`native-four-left-expanded-short-footprint.json`, and the full failure input
+`capture-validated-native-four-left-expanded-short-43/inputs/frame_045.pt`.
+
+## Frozen turn-entry alternatives
+
+At that exact 4.5 s input, five calls / 40 samples compare the original left
+instruction, holding the current lane, following the current lane, and native
+motion-noise temperatures 0.3 and 0.5. All fail the same 1.5 s/controller-coverage
+body checks. The best original candidate's predicted corner overhang is
+**0.1239 m**, versus 0.1255/0.1270 m for the lane-following texts and
+0.1992/0.1771 m for reduced noise. All eight original rear-axle prefixes remain
+inside the lane; the vehicle-box checks expose the tighter entry.
+
+The route instruction is present inside the actual prompt's native route tags.
+The eight generated intent texts are identical across these navigation wording
+changes and include straight, left and right intentions. The paths differ only
+slightly here. This is weak local instruction response, not evidence that the
+adapter dropped the instruction, and generated prose does not establish the
+model's internal cause. No held-lane retry policy is added on this evidence.
+Artifacts: `left-entry-alternatives.json`, `replay-left-entry-alternatives/`,
+`left-entry-alternatives-body-audit.json`, and `left-entry-failure-paths.png`.
+
+A follow-up batch tests 96 proposals: four new independent language/motion-seed
+pairs, three broader-noise pairs, front-only, front plus telephoto, warmer
+language sampling, route repeated in user text, and trajectory-only prompting.
+The first eight calls complete (64 trajectories), then the diagnostic stops
+because its front/telephoto variant mistakenly requests camera ID 3; the actual
+telephoto ID is 6. The error is preserved. The corrected front/telephoto call
+and remaining three calls complete separately (32 trajectories) under
+`replay-left-entry-diversity-rest/`; no omitted call is counted as a result.
+
+At this exact input, the four new ordinary-noise pools have no valid sample.
+Each of the three temperature-2 pools has at least one: five admitted samples
+in total, with target speeds 1.111–6.428 m/s. Front-only admits one sample,
+target 5.850 m/s, predicted minimum corner clearance 0.295 m. Front/telephoto,
+warmer text, repeated user-text route and trajectory-only prompting admit none.
+This supports trying broader native motion noise, not relaxing the bounds.
+These are frozen prefixes, not completed turns. Evidence:
+`left-entry-diversity-body-audit-partial.json` (all eight completed original calls
+plus the explicitly recorded camera-ID error) and
+`left-entry-diversity-rest-body-audit.json`.
+
+Before increasing the live retry limit, `left-entry-reserve.json` tests the
+exact next three pools in the existing schedule: language seeds 46–48, motion
+seeds 45–47, temperature 2, eight samples each. The first three live pools will
+be unchanged. An early reserve launch was rejected by the process lock while
+the last diagnostic was still exiting; no overlapping model load occurred.
+The rejected-launch log and completed-launch log are kept separately.
+
+## Live six-pool retry check
+
+`capture-validated-native-four-left-reserve-43` repeats the full-camera,
+eight-sample left test with only `validation_max_pools` increased from 3 to 6.
+The first three pool settings remain unchanged; later pools use the existing
+language/motion seed progression and final temperature 2. No wrapper code or
+selection bound changes are needed. The frozen exact-schedule test finds one
+admitted candidate in pool 3 and one in pool 4 (zero-based), none in pool 5.
+Evidence: `left-entry-reserve-body-audit.json`. Live result pending.
+
+## Longer-forecast selection experiment
+
+A CPU audit of the completed 4.5 s left run finds five frames where the selected
+sample passes the required controller-coverage window but fails a 3 s body
+check, while another sample in the **same pool** passes 3 s. At 1.5, 2.6, 3.0
+and 3.1 s the longer-valid alternative has a similar target speed; at 1.8 s it
+is faster (7.928 versus 6.424 m/s). Evidence:
+`left-longer-horizon-selection-opportunities.json`. This identifies a selection
+opportunity, not proof that the alternative would complete a live turn.
+
+Added opt-in `validation_prefer_horizon_s`. On image-reported green, first
+apply the unchanged controller-coverage admission checks and optional progress
+floor. If any admitted sample also passes the longer forecast, choose among
+those using the existing fixed-window score. Otherwise, use the ordinarily
+admitted samples. This does not request a map path, relax an admission bound,
+change a native speed, or apply the new preference on red/yellow/unknown.
+Each sample logs the additional horizon and its rejection reasons. Normal
+launchers and the tested straight preset do not enable the option.
+
+Three regression cases verify selection of the exact longer-valid native array,
+continued use of normally admitted samples when all fail the longer forecast,
+and preservation of red-stop ranking. All 16 focused cases pass in 2.84 s; the combined controller, adapter, dataset,
+VerifAI and selector suites pass **79 tests in 4.27 s**.
+The running six-pool full-camera capture was launched **before** this edit and
+uses its archived sources without the new option. A prepared front-camera
+comparison enables the 3 s preference, eight samples and six pools; it changes
+both camera input and selection policy and is not a controlled attribution test.
+Live result pending under `capture-validated-front-left-forecast-43`.
+
+## Upstream curvature inspection
+
+Read upstream model commit `7a8f1c7` without modifying it. Its stabilization
+changes curvature labels in `traj_to_action` and the default curvature bound.
+The driving decoder `action_to_traj` does not call that estimator or apply those
+bounds; its initial-state estimator returns velocity only. This diff does not
+establish a cause for the observed turn-entry bias. No upstream model patch or
+rollback is applied.
 
 ## Verification and rollback
 
@@ -372,7 +553,10 @@ its answer ending while driving still has to emit its trajectory marker.
 
 After body checks and their CARLA geometry regressions, **73 tests passed in
 4.60 s**. The later retry regression brings the focused suite to 11 passing
-tests; the final combined run will be recorded below.
+tests. After fixed-window ranking and optional green-progress coverage, the
+final suite contains 13 focused cases. Combined verification: **76 passed in
+4.56 s**, covering controller, adapters, dataset, VerifAI and the experimental
+selector. No normal driving source changed in this round.
 
 Production defaults, controller, VerifAI launchers, model weights and external
 model sources remain unchanged. Return to `experiment/driving-turn-instructions`

@@ -1,0 +1,22 @@
+{
+  "seed": 42,
+  "flow_seed": 42,
+  "num_samples": 4,
+  "guard_trajectory_format": true,
+  "acknowledged_preroll": true,
+  "acknowledged_controls": true,
+  "wait_for_snapshot": true,
+  "verify_signal": true,
+  "signal_check_interval": 5,
+  "validation_routes": "outputs/driving-validation-routes.json",
+  "validation_max_pools": 3,
+  "validation_horizon_s": 1.5,
+  "validation_desired_speed_mps": 5.0,
+  "validation_stop_at_exit": true,
+  "validation_route": "straight",
+  "instruction": "Continue straight through the intersection.",
+  "camera_subset": [
+    1
+  ],
+  "validation_check_body": true
+}
