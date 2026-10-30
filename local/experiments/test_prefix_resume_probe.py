@@ -126,3 +126,30 @@ def test_entrypoint_restores_process_wrappers_on_exception(monkeypatch):
     assert prefix.reserve.CandidateReserveProbe is original
     assert prefix.native.runner.TrajectoryFollower is follower
     assert prefix.ACTIVE is None
+
+
+def test_capture_audit_uses_replay_snapshot_and_does_not_call_verify_only_completion(tmp_path):
+    import csv
+    from local.experiments.audit_capture import audit
+    (tmp_path / '000_verifai').mkdir()
+    path = [[[.3, 0., 0.]]]
+    original = {'time_s': 0., 'snapshot_frame': 42, 'world_pose': {'x': 0., 'y': 0.}}
+    actual = {**original, 'snapshot_frame': 101}
+    frame = {'context': original, 'prefix_replay': {'actual_context': actual, 'fresh_inference': False},
+             'trajectory_ego': path[0], 'candidate_trajectories': path, 'selection': {'chosen': 0},
+             'trajectory_marker_present': True, 'visual_signal_check_index': 0, 'visual_signal': 'green'}
+    (tmp_path / 'frame_000.json').write_text(json.dumps(frame))
+    (tmp_path / '000_verifai/predictions.jsonl').write_text(json.dumps({'time_s': 0., 'trajectory_ego': path[0]})+'\n')
+    with (tmp_path / '000_verifai/ego.csv').open('w') as stream:
+        writer = csv.DictWriter(stream, fieldnames=['time_s','frame','x','y','yaw','speed'])
+        writer.writeheader()
+        writer.writerow({'time_s': 0., 'frame': 101, 'x': 0., 'y': 0., 'yaw': 0., 'speed': 3.})
+        writer.writerow({'time_s': .1, 'frame': 102, 'x': .3, 'y': 0., 'yaw': 0., 'speed': 3.})
+    (tmp_path / '000_verifai/summary.json').write_text(json.dumps({'termination': 'prefix_verification_complete'}))
+    (tmp_path / 'batch-summary.json').write_text('[]')
+    result = audit(tmp_path)
+    assert not result['snapshot_vs_csv_frame_mismatch_times_s']
+    assert result['replayed_prefix_records'] == 1 and result['fresh_inference_records'] == 0
+    assert result['archived_prefix_visual_check_counts'] == {'green': 1}
+    assert result['fresh_visual_check_counts'] == {}
+    assert not result['completed'] and not result['route_exit_reached']

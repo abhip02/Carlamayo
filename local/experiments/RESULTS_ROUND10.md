@@ -80,3 +80,21 @@ new full-run success.
 Saved options: `verify-prefix-speed4-terminal122.json`,
 `resume-speed4-terminal122-baseline.json`, and
 `resume-speed4-terminal122-unknown-exit.json` in the round-10 output directory.
+
+
+## Physical exit-candidate replay
+
+`replay-terminal122-source121/` reproduces the full 12.2 s original prefix and
+controls exactly, then holds the selected original native plan for a 1.5 s
+tracking diagnostic. All recorded corners remain inside through **13.7 s**,
+final x **15.7134 m**, speed **2.4417 m/s**, total left rotation **95.2454 degrees**.
+The route exit remains at x 21.2431 m, so this is not completion. Minimum
+whole-run recorded clearance is 0.204931 m, inherited from the prefix; final
+clearance is 0.548823 m. Holding beyond 0.5 s here is an explicitly labeled
+physical diagnostic, not a live age-limit change or fresh-inference success.
+
+The capture auditor now uses the new physical snapshot context for replayed
+frames, preserves the original inference context separately, and distinguishes
+archived visual answers from fresh checks. Verify-only output is never marked
+completed merely because a batch summary exists. Ten prefix tests pass in
+2.63 s, including this regression check.

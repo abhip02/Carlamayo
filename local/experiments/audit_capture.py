@@ -15,8 +15,12 @@ def audit(path):
         controller_inputs = {round(row["time_s"], 6): row for row in map(json.loads, stream)}
     consumed = []
     differences, snapshot_errors, frame_errors, checks, missing, identities = [], [], [], {}, [], []
+    prefix_checks, fresh_checks = {}, {}
+    prefix_records = 0
     for frame in frames:
-        context = frame["context"]
+        replay = frame.get("prefix_replay")
+        context = replay["actual_context"] if replay else frame["context"]
+        prefix_records += bool(replay)
         prediction = controller_inputs.get(round(context["time_s"], 6))
         if prediction is not None:
             consumed.append(prediction["trajectory_ego"] == frame["trajectory_ego"])
@@ -33,10 +37,13 @@ def audit(path):
                 frame_errors.append(context["time_s"])
         if "visual_signal_check_index" in frame:
             checks[frame["visual_signal_check_index"]] = frame["visual_signal"]
+            (prefix_checks if replay else fresh_checks)[frame["visual_signal_check_index"]] = frame["visual_signal"]
         if not frame["trajectory_marker_present"]:
             missing.append(context["time_s"])
         if frame.get("candidate_trajectories") is not None and "selection" in frame:
             identities.append(frame["trajectory_ego"] == frame["candidate_trajectories"][frame["selection"]["chosen"]])
+    summary_path = path / "000_verifai/summary.json"
+    summary = json.loads(summary_path.read_text()) if summary_path.exists() else {}
     initial = rows[0]
     yaw = math.radians(initial["yaw"])
     lateral = [(row["x"] - initial["x"]) * math.sin(yaw) -
@@ -44,7 +51,10 @@ def audit(path):
     forward = [(row["x"] - initial["x"]) * math.cos(yaw) +
                (row["y"] - initial["y"]) * math.sin(yaw) for row in rows]
     return {"capture": str(path), "simulation_seconds": rows[-1]["time_s"],
-            "completed": (path / "batch-summary.json").exists(), "inference_records": len(frames),
+            "completed": summary.get("termination") in ("duration_reached", "route_exit_reached"),
+            "route_exit_reached": (path / "route-exit-reached.json").exists(),
+            "inference_records": len(frames), "replayed_prefix_records": prefix_records,
+            "fresh_inference_records": len(frames) - prefix_records,
             "min_speed_mps": min(row["speed"] for row in rows),
             "final_speed_mps": rows[-1]["speed"], "max_abs_lateral_m": max(map(abs, lateral)),
             "forward_progress_m": forward[-1],
@@ -58,7 +68,9 @@ def audit(path):
             "selected_candidate_identity": all(identities) if identities else None,
             "controller_inputs_checked": len(consumed),
             "controller_input_identity": all(consumed) if consumed else None,
-            "visual_check_counts": {color: list(checks.values()).count(color) for color in sorted(set(checks.values()))}}
+            "visual_check_counts": {color: list(checks.values()).count(color) for color in sorted(set(checks.values()))},
+            "archived_prefix_visual_check_counts": {color: list(prefix_checks.values()).count(color) for color in sorted(set(prefix_checks.values()))},
+            "fresh_visual_check_counts": {color: list(fresh_checks.values()).count(color) for color in sorted(set(fresh_checks.values()))}}
 
 
 def main():

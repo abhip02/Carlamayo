@@ -91,14 +91,36 @@ Neither reaches the route endpoint. Evidence under `outputs/driving-investigatio
 `replay-unselected-preferred-frame071-candidate4/`, including native provenance,
 full actual states, prefix errors, controls and videos.
 
-## Live reserve test in progress
+## Live reserve test result
 
 `capture-reserve-native-four-left-margin20-43` uses the unchanged strict-20 cm
 preset, original controller, original model, eight samples per pool and at
 most six pools. The new reserve mechanism is the only policy addition. It
 retains the 0.5 s maximum age and all current physical/signal/phase checks.
 Duration cap 20 s, same route-exit stopping condition. Started at `370182a`.
-No result is claimed until the run and independent execution audits finish.
+The run ends at **7.4 s**, **45.9497 degrees** left, with no route exit.
+Actual minimum speed is **2.7880 m/s**, final speed **4.4569 m/s**, and minimum
+recorded body clearance **0.285851 m**. Wall time is **1564.7 s (26.08 min)**.
+There are **zero reserve rescues**: at termination the three remaining
+originally admitted alternatives all fail current native-corner clearance,
+as do the three selected cached plans. This is a negative live result, not
+evidence that the added reserve improves full-run behavior. Different camera
+pixels and resulting earlier selections prevent treating it as an exact paired
+counterfactual of the older strict-20 run.
+
+All 74 executed native arrays, anchors, speed arrays and ages match sources;
+all controller commands and tracking forecasts independently reproduce with
+zero error. There are 48 selected-cache uses (44 better-ranked, four after
+fresh-sampling exhaustion), 70 fresh accepted steps, 139 pools, 585 native-
+geometry admitted candidates screened, and 130 tracking rejections. Fifteen
+visual checks report green. At terminal, 32/48 candidates fail body geometry,
+six fail native reserve, and the ten geometry-admitted candidates all fail
+tracking clearance. Five post-admission retry steps add 18 pools and change
+five fresh choices; three optional speed preferences remain unmet.
+
+Evidence: `reserve-left-margin20-{control,footprint,route,retention,quality,tracking}-audit.json`
+in the round-9 output directory. Actual control/snapshot mismatches are zero.
+Both `retention-failure.json` and `candidate-reserve-failure.json` are retained.
 
 Reproduction:
 ```bash
@@ -140,4 +162,4 @@ no model call before the boundary, fresh signal refresh, mismatch rejection
 configuration), verify-only termination and wrapper restoration. An offline
 check reconstructs all 120 steps / 49 selected sources of the longer left run
 and archives 533 source files with exact native anchors, speed arrays and ages.
-Physical prefix verification is pending the current live experiment.
+Physical prefix verification is tracked in the subsequent round-10 experiment.
