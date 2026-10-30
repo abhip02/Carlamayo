@@ -184,7 +184,33 @@ The two rejected native continuations above justify investigating this region,
 but do not establish its general reliability. The new preference is opt-in;
 without it, ranking and retry behavior remain unchanged.
 
-Pending capture: `capture-tracking-native-four-left-preferred20-min10-43`.
+Completed capture: `capture-tracking-native-four-left-preferred20-min10-43`.
+It ends at **7.2 s**, **39.81882°** left rotation, without reaching the exit.
+Actual speeds range from **2.786757 to 5.130295 m/s**, ending at **4.976938 m/s**;
+there are no near-stops. Actual minimum corner clearance is **0.240475 m**,
+ending at **0.312748 m**. This is not a completed left turn or an improvement
+in completion time over the strict 20 cm run.
+
+All 72 native sources/anchors/speeds/ages match. All forecasts and original
+controller commands recompute exactly, and all fresh selection/preference
+checks pass. There are 176 proposal pools, 626 geometry-admitted candidates
+screened and 183 tracking rejections. All 54 cached executions beat fresh
+admitted choices; none bridges sampling exhaustion. Seven executed plans
+use the hard minimum below the preferred reserve. Post-admission retries
+add 65 pools across 20 steps and change 18 fresh choices. There are 46
+reserve-retry requests, 11 speed-retry requests, 11 fresh selections below
+the reserve preference and one unmet speed preference. These counts include
+fresh choices later superseded by a preferred cached plan. All 15 VQA
+checks are green. Wall time is **1908.15 s (31.8 minutes)**.
+
+At termination, 21/48 samples pass native geometry but fail the 10 cm
+tracking reserve; 25 have native body departures and two insufficient native
+reserve. Best forecast clearance is only **0.044194 m** (pool 0 candidate 2,
+native target **6.612881 m/s**). All five unexpired cached plans fail remaining
+native-body clearance, so signal recognition is not the blocker. Maximum
+observed one-step forecast overestimate is **0.009831 m**, position error
+**0.024574 m**. Evidence:
+`tracking-left-preferred20-min10-{control,footprint,route,retention,quality,tracking}-audit.json`.
 Return to `434d6c1` to remove this preference experiment alone.
 
 ## Additional offline checks during the live run
@@ -312,3 +338,110 @@ out the simple explanation that the route's corridor is inherently narrower
 than the aligned vehicle footprint everywhere in the turn. It does not prove
 dynamic feasibility or controller trackability. These map poses are used only
 for this geometry calculation and are never passed to execution.
+
+
+## Native trajectory tail diagnostic
+
+At the older strict run's terminal state, 22/48 original samples pass native
+body geometry for 1.5 seconds, 19 for 2 seconds, 10 for 3 seconds, six for
+4 seconds and none for the full 6.4-second native trajectory. Of the six that
+also pass the existing 10 cm controller forecast, four remain natively valid
+for 2 seconds and only one for 3 seconds. That three-second candidate is
+`frame_077_pool_4`, candidate 4: native target **6.722 m/s**, tracking forecast
+minimum **0.113179 m** (see exact JSON), versus the current ranking winner
+pool 1 candidate 2 with target **5.326 m/s** and forecast **0.144397 m**.
+The longer native path therefore trades against speed/short-term tracking;
+it must not be assumed better from geometry alone. No longer-horizon policy
+has been added to the running capture. The existing optional longer-horizon
+ranking remains disabled in this preset. Evidence:
+`native-horizon-terminal77-diagnostic.json`, `check_native_horizon.py`.
+
+
+## Additional paired native continuations from the strict run
+
+The two newly studied samples reproduce the complete strict-run 7.7 s prefix
+exactly and then execute only the original saved native sample for 2.0 s.
+Both native identity and unchanged original controller checks pass. No new
+inference occurs, and the held-plan duration exceeds the live cache limit.
+
+| Native sample | Actual minimum clearance | State at 9.7 s |
+| --- | --- | --- |
+| pool 1 candidate 2 (preferred-minimum ranking winner) | **0.132404 m** | **91.22614°** total left rotation, **7.996979 m/s** |
+| pool 4 candidate 4 (three-second native geometry) | **0.116794 m** | **83.85018°** total left rotation, **5.181784 m/s** |
+
+Both remain inside. The first accelerates considerably as its speed preview
+ages; the second ends slower despite its higher initial native speed target.
+Neither reaches the map route exit at x=21.243 m (endpoints x=11.257/8.217 m).
+This is evidence about two native samples, not closed-loop completion or
+proof that longer geometry checks improve a fresh-inference run. Artifacts:
+`replay-terminal-pool1-candidate2/`, `replay-terminal-pool4-candidate4/`.
+
+## Extended sampling at the new terminal state
+
+Completed frozen-input test: `replay-preferred-terminal72-extra-sampling/`.
+It first repeats original pool 0, then draws eight new seed pairs (language
+49–56, motion 48–55), each at native flow temperatures 2.0 and 1.0. The pairs
+share seeds and inputs; only the flow temperature differs within each pair.
+This supplies **128 additional native samples** beyond a reproducibility
+baseline. No waypoint edits or executed paths are introduced. Every candidate
+will be screened with the unchanged original terminal follower state and
+both existing 10 cm hard checks. This tests additional sampling capacity,
+not a relaxation of the failed criteria. Exact variants are saved in
+`terminal72-extra-sampling-variants.json`.
+
+
+The repeated baseline matches original candidate arrays, generated token IDs,
+native orientations and signed velocities exactly. **Zero of the 128 additional
+samples passes both hard checks.** At temperature 1.0, 54/64 pass native geometry
+but all fail tracking; best forecast clearance is **0.053925 m**. At temperature
+2.0, 23/64 pass native geometry but all fail tracking; best forecast clearance
+is **0.090162 m** (`extra_seed51_temp2`, candidate 2, target **6.320803 m/s**).
+Evidence: `terminal72-extra-sampling-audit.json`, `check_extended_sampling.py`.
+This weakens the hypothesis that a modestly larger pool alone resolves this state.
+
+An exact-prefix simulator replay of original terminal pool 0 candidate 2
+(the best forecast among the first 48) confirms an **actual body departure at
+7.9 s**, with **0.009133 m** corner overhang. Its constant-speed forecast minimum
+was positive (0.044194 m), so simply requiring a positive forecast would have
+admitted a failing native plan. The existing 10 cm check rejected it. The complete
+7.2 s prefix and original controls reproduce exactly. Artifact:
+`replay-preferred-terminal-pool0-candidate2/`.
+
+The best additional sample was replayed from the same prefix. Its
+source is referenced through `terminal72-extra-source-overlay/`: immutable
+symlinks to the original capture plus the unmodified frozen-input proposal.
+`source-overlay.json` records the source path and SHA-256. Original captures
+and native arrays are not rewritten. This is a diagnostic outside admission,
+not a live lowering of the threshold.
+
+
+The best extra sample's replay reproduces the prefix exactly and stays inside
+through **9.2 s**, reaching **87.69307°** total left rotation, but minimum actual
+clearance is only **0.041247 m** and final speed is **8.327651 m/s**. The forecast
+had predicted 0.090162 m minimum clearance. This is not evidence for treating
+that margin as reliable, and no live threshold is lowered. Artifact:
+`replay-preferred-terminal-extra-best/`.
+
+## Next test: earlier selection of naturally slower native samples
+
+Preset `tracking-native-four-left-preferred20-min10-speed4-43.json` changes only
+`validation_desired_speed_mps` from 5 to **4**, and the optional upper speed
+retry preference from 6 to **5 m/s**. These are sample ranking/retry preferences,
+not rewritten speed arrays, controller limits or guarantees. A hard-admitted
+native plan may still exceed the optional preference after budget exhaustion.
+All clearance thresholds, original controller, cameras, model decoder, seeds,
+cache limits and maximum six pools remain as in the preceding capture.
+
+The hypothesis is that selecting lower-speed native plans before the bend can
+avoid reaching the terminal state where extra samples either fail tracking or
+leave only centimetres of observed clearance. It tests a change to earlier
+closed-loop selection, not a claimed fix to the decoder or a causal attribution
+to speed alone (selected native geometry may also differ).
+
+Pending capture: `capture-tracking-native-four-left-preferred20-min10-speed4-43`.
+Duration cap 20 s; stop at the same map route exit. New samples remain model-only.
+
+Review artifacts for completed tests:
+- `tracking-left-preferred20-min10-incomplete.mp4` (H.264, labeled, visually checked).
+- `tracking-policy-comparison.png/.pdf` (recorded outcomes, not paired whole-run A/B).
+- `native-longer-horizon-replay.mp4` (original pool 4 candidate 4; replay only).
