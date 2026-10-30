@@ -438,8 +438,8 @@ leave only centimetres of observed clearance. It tests a change to earlier
 closed-loop selection, not a claimed fix to the decoder or a causal attribution
 to speed alone (selected native geometry may also differ).
 
-Pending capture: `capture-tracking-native-four-left-preferred20-min10-speed4-43`.
-Duration cap 20 s; stop at the same map route exit. New samples remain model-only.
+Completed capture: `capture-tracking-native-four-left-preferred20-min10-speed4-43`.
+Duration cap 20 s; same map route exit. Result below; new samples remain model-only.
 
 Review artifacts for completed tests:
 - `tracking-left-preferred20-min10-incomplete.mp4` (H.264, labeled, visually checked).
@@ -486,3 +486,69 @@ fresh samples, not yet physical continuation success. Candidate replay and
 an isolated reserve extension are the next proposed checks after the active
 speed-preference run releases the simulator. No live behavior has changed.
 Evidence: `unselected-recent-candidates-terminal-audit.json`.
+
+
+## Speed preference 4 result and exit diagnostics
+
+The fresh-inference run reaches **12.2 s and 86.2174 degrees of left rotation**,
+with all recorded vehicle corners inside the corridor. It remains incomplete:
+final x is 12.1564 m against the route exit at 21.2431 m. Actual speed ranges
+from **2.3945 to 5.8104 m/s**, ending at **2.7130 m/s**; no near-stop occurs.
+Minimum recorded corner clearance is **0.204931 m**. Wall time is 3470.9 s
+(57.85 min). This is progress on one controlled empty-green scene, not a fix
+or a causal proof that speed alone accounts for the improvement.
+
+All 122 executed native arrays, world anchors, speed arrays and ages match
+source records. The unchanged controller and tracking forecasts independently
+recompute exactly; applied controls match snapshots. There are 84 cached uses
+(82 better-ranked, two fresh-sampling exhaustion bridges), 120 accepted fresh
+steps, 300 proposal pools, and 159 tracking rejections among 1157 candidates
+that passed native geometry. Three executions fall below the optional 20 cm
+preference, never below the hard 10 cm admission threshold. Post-admission
+retries occur at 41 steps, add 145 pools and change 30 fresh choices. There
+are 105 speed-preference requests, 30 reserve requests, 18 unmet green-speed
+preferences and six unmet reserve preferences. VQA reports 23 green and two
+unknown checks. Maximum observed first-step forecast clearance overestimate
+is 0.008912 m, and position error is 0.042339 m; these are measurements, not
+bounds on future forecasts.
+
+The final 48 samples all fail native body geometry (40 also misalign with the
+route, 19 leave the center corridor, six reverse). None reaches the tracking
+screen. All five selected cached plans are rejected early by
+`reuse_requires_green`, because the current and source signal classifications
+are unknown. At 11.5 s the raw VQA answer is the string `None`, parsed as unknown.
+This classification does not prove that a signal changed or explain visibility.
+
+Two explicitly offline diagnostics isolate that gate without changing live
+behavior or original records:
+- At 11.5 s, four selected green-source plans pass physical checks if only the
+  current-signal gate is bypassed. Best is frame 110 at age 0.5 s, native
+  clearance 0.473944 m, forecast clearance 0.454945 m and native target
+  3.372575 m/s. Fresh selection instead targets 2.44098 m/s.
+- At terminal 12.2 s, all five selected unknown-source plans pass physical
+  checks if both source and current signal gates are bypassed. Best is frame
+  118 at age 0.4 s: native clearance 0.271812 m, forecast 0.354786 m and native
+  target 3.795455 m/s. No signal substitution has been executed live.
+
+Evidence: `exit-unknown-signal-cache-diagnostic.json`,
+`terminal-unknown-signal-cache-diagnostic.json`, and the corresponding
+`check_exit_signal_cache.py` / `check_terminal_signal_cache.py` scripts in the
+round-8 output directory. These establish a cache eligibility issue separate
+from the model's failed fresh samples. They do not show a completed continuation.
+
+An exact-input wording test compares the original finish-turn instruction
+against `Continue straight along the current lane.` at 11.0, 12.0 and 12.2 s.
+Each condition uses eight native samples and identical seeds. All repeated
+baselines reproduce original arrays, tokens, orientations and velocities
+exactly. Admitted counts for original versus straight wording are **5/5**,
+**6/5**, and **0/0** respectively. At 12.0 s, chosen native target speed changes
+from 2.1175 to 2.0008 m/s. Straight wording does not rescue the terminal input;
+no phase/instruction policy change is adopted. Evidence:
+`replay-aligned-exit-instruction/`, `aligned-exit-instruction-audit.json`,
+`check_aligned_exit_instruction.py`.
+
+Audits: `tracking-left-preferred20-min10-speed4-{control,footprint,route,retention,quality,tracking}-audit.json`.
+Video: `tracking-left-speed4-incomplete.mp4`, H.264, labeled incomplete and
+visually reviewed at 11.6 s. The updated `tracking-policy-comparison.png/.pdf`
+includes all five incomplete live runs and was visually checked. No recorded
+rotation-only result is labeled route completion.

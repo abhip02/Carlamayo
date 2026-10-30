@@ -25,9 +25,8 @@ under unchanged rules. Evidence and exact script:
 `outputs/driving-investigation-8/unselected-recent-candidates-terminal-audit.json`,
 `check_unselected_cache.py` in that evidence directory.
 
-These are offline validation findings, not simulator continuation results.
-Physical replays must complete after the active round-8 speed-preference run
-releases the simulator before this extension is tested live.
+These initial findings were offline validation only. Both physical replays
+have now completed; their results and the separate live test are recorded below.
 
 ## Isolated implementation
 
@@ -70,5 +69,43 @@ Real archived candidates from both failures also reconstruct exactly.
 
 The additional reserve-execution assertion passes the native retention auditor;
 the focused suite is **9 passed in 2.20 s**. Both earlier completed captures
-still pass the updated retention audit. Physical replay and live results
-are pending; no completion claim is made.
+still pass the updated retention audit. No full-route completion claim is made.
+
+
+## Physical replay results
+
+Both runs reproduce the complete original prefix and controls exactly, then
+use the archived native candidate with its original world anchor and age.
+These are model-free diagnostic continuations, not fresh-inference rollouts.
+Each holds a candidate for 1.5 s to check tracking, beyond the live cache's
+unchanged 0.5 s age bound; this does not authorize longer live retention.
+
+| Original candidate | Prefix | Final time | Total left rotation | Minimum actual clearance | Final speed |
+| --- | --- | --- | --- | --- | --- |
+| Strict 20 cm, frame 075 / pool 0 / candidate 0 | 7.7 s | 9.2 s | 80.5512 deg | 0.207976 m | 5.0040 m/s |
+| Prefer 20/min 10 cm, frame 071 / pool 3 / candidate 4 | 7.2 s | 8.7 s | 74.2850 deg | 0.130532 m | 5.1267 m/s |
+
+Both terminate at the diagnostic duration with every recorded corner inside.
+Neither reaches the route endpoint. Evidence under `outputs/driving-investigation-9/`:
+`replay-unselected-strict20-frame075-candidate0/` and
+`replay-unselected-preferred-frame071-candidate4/`, including native provenance,
+full actual states, prefix errors, controls and videos.
+
+## Live reserve test in progress
+
+`capture-reserve-native-four-left-margin20-43` uses the unchanged strict-20 cm
+preset, original controller, original model, eight samples per pool and at
+most six pools. The new reserve mechanism is the only policy addition. It
+retains the 0.5 s maximum age and all current physical/signal/phase checks.
+Duration cap 20 s, same route-exit stopping condition. Started at `370182a`.
+No result is claimed until the run and independent execution audits finish.
+
+Reproduction:
+```bash
+source local/env.sh
+.venv/bin/python -m local.experiments.candidate_reserve_probe capture \
+  --config local/configs/demo.yaml --duration 20 \
+  --capture-frames 0 19 40 50 60 64 68 74 77 80 90 100 110 120 130 \
+  --options local/experiments/presets/tracking-native-four-left-quality-margin20-43.json \
+  --output outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43
+```
