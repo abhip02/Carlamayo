@@ -138,3 +138,13 @@ start, without replay options. Started at `28d093a`; duration cap 20 s, same
 required endpoint. This
 is necessary to check the combined policy in another complete fresh run. The
 two successful continuations must not be reported as that result.
+
+
+The independent retention audit additionally cross-checks source and current
+selection labels against their recorded visual classifications. A regression
+case combines changing the current selection to green with removing eligibility
+evidence; it is still rejected. Combined suite: **219 passed in 5.03 s**.
+Both completed continuations, the earlier fresh failure, and the matched baseline
+pass this strengthened audit (154, 148, 110 and 110 commands respectively).
+This is an offline audit change; the running full test's selection policy is
+unchanged from its recorded launch commit.

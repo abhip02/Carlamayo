@@ -23,6 +23,8 @@ def audit(capture):
         checks = {
             "native_source": source["trajectory_ego"] == candidates[source["selection"]["chosen"]],
             "source_is_fresh": "retention" not in source,
+            "source_signal_classification_matches": source["selection"]["signal"] == source.get("visual_signal"),
+            "current_signal_classification_matches": current["selection"]["signal"] == current.get("visual_signal"),
             "unchanged_native_array": current["trajectory_ego"] == source["trajectory_ego"],
             "unchanged_world_path": np.array_equal(expected_world, np.asarray(row["world_trajectory"])),
             "unchanged_speed_array": np.array_equal(planned_speeds(path), np.asarray(row["speeds_mps"])),

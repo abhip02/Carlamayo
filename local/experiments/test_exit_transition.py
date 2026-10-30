@@ -16,6 +16,7 @@ def fixture():
     options.pop('validation_allow_unknown_exit_cache')
     options['validation_allow_green_unknown_exit_cache'] = True
     plan.record['selection']['signal'] = 'green'
+    plan.record['visual_signal'] = 'green'
     return route, context, options, plan
 
 
@@ -112,3 +113,14 @@ def test_retention_audit_checks_both_actual_signal_labels_and_transition_flag(tm
     options.pop('validation_allow_green_unknown_exit_cache')
     (tmp_path / 'experiment.json').write_text(json.dumps({'options': options}))
     assert not audit(tmp_path)['all_sources_anchors_speeds_and_ages_match']
+
+    # A relabeled selection plus missing eligibility evidence must not make
+    # this unknown-current step appear to be an ordinary green/green reuse.
+    options['validation_allow_green_unknown_exit_cache'] = True
+    (tmp_path / 'experiment.json').write_text(json.dumps({'options': options}))
+    current['selection']['signal'] = 'green'
+    del current['retention']['metrics'][0]['signal_reuse']
+    (tmp_path / 'frame_004.json').write_text(json.dumps(current))
+    result = audit(tmp_path)
+    assert not result['all_sources_anchors_speeds_and_ages_match']
+    assert not result['mismatches'][0]['checks']['current_signal_classification_matches']

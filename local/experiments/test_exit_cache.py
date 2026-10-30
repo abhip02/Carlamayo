@@ -16,6 +16,7 @@ def fixture():
     route.update(points=points, entry=points[0], exit_index=3)
     options.update(validation_route='left', verify_signal=True, validation_allow_unknown_exit_cache=True)
     plan.record['selection'].update(signal='unknown', route='left')
+    plan.record['visual_signal'] = 'unknown'
     plan.record['navigation_phase'] = 'finish_turn'
     return route, context, options, plan
 
