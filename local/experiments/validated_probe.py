@@ -3,6 +3,7 @@
 No trajectory is repaired or replaced with map waypoints. Exhausted sampling
 terminates the experiment explicitly. Lane checks do not model obstacles.
 """
+import copy
 import json
 import math
 import sys
@@ -74,7 +75,10 @@ class ValidatingProbe(native.Probe):
         root = self.output
         proposals = root / "proposals"
         proposals.mkdir(exist_ok=True)
-        attempts = []
+        attempts, best = [], None
+        quality_limit = options.get("validation_resample_above_target_mps")
+        if quality_limit is not None and (not math.isfinite(quality_limit) or quality_limit <= 0):
+            raise ValueError("The resampling target preference must be finite and positive")
         for attempt in range(options.get("validation_max_pools", 3)):
             trial = {**options, "instruction": instruction,
                      "flow_seed": options.get("flow_seed", 42) + attempt,
@@ -122,10 +126,26 @@ class ValidatingProbe(native.Probe):
                              "inference_seconds": record["inference_seconds"], "chosen": chosen})
             if chosen is None:
                 continue
-            selected = prediction[:, :, chosen:chosen + 1]
-            extra = {key: value[..., chosen:chosen + 1] if isinstance(value, np.ndarray) else value
-                     for key, value in extra.items()}
-            trajectory = candidates[chosen]
+            # Retry a fast but admitted selection only when explicitly enabled.
+            # Preserve the best admitted native sample even if later pools fail.
+            metric = metrics[chosen]
+            key = (not metric.get("preferred_horizon_valid", True), metric["selection_cost"])
+            if best is None or key < best["key"]:
+                best = dict(key=key, pool=attempt, chosen=chosen, record=record, metric=metric,
+                            selected=prediction[:, :, chosen:chosen + 1].detach().clone(),
+                            extra=copy.deepcopy({
+                                k: v[..., chosen:chosen + 1] if isinstance(v, np.ndarray) else v
+                                for k, v in extra.items()}))
+            retry = (quality_limit is not None and self.visual_signal == "green" and
+                     best["metric"]["target_speed_mps"] > quality_limit)
+            if quality_limit is not None:
+                attempts[-1]["retry_for_speed_preference"] = retry
+            if not retry:
+                break
+        if best is not None:
+            selected, extra, record = best["selected"], best["extra"], best["record"]
+            chosen, proposal_label = best["chosen"], best["record"]["label"]
+            trajectory = extract_trajectory_samples(selected)[0]
             tokens = record["candidate_generated_tokens"][chosen]
             velocities = record["candidate_velocities"][chosen]
             speed = planned_speeds(trajectory)
@@ -149,11 +169,17 @@ class ValidatingProbe(native.Probe):
                                      "proposal": proposal_label, "attempts": attempts,
                                      "route": options["validation_route"],
                                      "signal": self.visual_signal})
+            if quality_limit is not None:
+                record["selection"]["speed_quality_preference"] = {
+                    "resample_above_target_mps": quality_limit,
+                    "applied": self.visual_signal == "green",
+                    "met": best["metric"]["target_speed_mps"] <= quality_limit,
+                    "note": "Retry preference only; an admitted native plan may remain above it when the budget is exhausted."}
             native.write_json(root / (label + ".json"), record)
-            print(json.dumps({"selected": label, "pool": attempt, "candidate": chosen,
+            print(json.dumps({"selected": label, "pool": best["pool"], "candidate": chosen,
                               "navigation_phase": phase, "signal": self.visual_signal,
                               "target_speed_mps": record["raw_target_speed_mps"],
-                              "max_predicted_lane_distance_m": metrics[chosen]["max_lane_distance_m"]}), flush=True)
+                              "max_predicted_lane_distance_m": best["metric"]["max_lane_distance_m"]}), flush=True)
             return selected, extra
         native.write_json(root / "validation-failure.json", {
             "label": label, "context": context, "navigation_phase": phase,

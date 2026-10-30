@@ -131,6 +131,31 @@ or each frame's `retention` field to reconstruct the original world anchor.
 The live approach offered only high-speed, body-admitted candidates in several
 first pools. At 2.0 s their target speeds were 9.29 and 10.07 m/s; the existing
 5 m/s preference ranks available candidates but does not trigger another pool
-while any candidate passes. Preparing a frozen six-pool comparison at 1.9 s
-to test whether earlier retries can offer slower native plans. No speed-profile
-editing or controller change is proposed.
+while any candidate passes.
+
+Completed six frozen pools (48 samples) at 1.9 s. The baseline candidate arrays
+match the live capture **exactly**. The unchanged selector chooses candidate 2
+in pool 0: target 6.8594 m/s, predicted corner clearance 0.3108 m, score 1.324.
+Pool 2 contains a better admitted candidate 4: target **5.407 m/s**, clearance
+**0.479 m**, score **0.285**. It would never be requested by the old policy
+because pool 0 already contains admitted samples. Evidence:
+`replay-approach-speed-quality/`, `approach-speed-quality-audit.json` and
+`speed-quality-replay-variants.json`.
+
+Added optional `validation_resample_above_target_mps`, set to **6 m/s** in
+`retained-native-four-left-quality-43.json`. With a visual green signal, retry
+while the best admitted candidate still exceeds this target preference, up to
+the existing pool budget. Compare admitted candidates using the existing
+ranking (including any explicit longer-horizon preference). Store a cloned
+native tensor and matching text from the best pool; later rejected or inferior
+pools cannot overwrite it. Stop retrying once the best candidate meets the
+preference. If no better candidate is found, use the best already-admitted
+native candidate and explicitly record that the preference was unmet. This is
+not a new speed cap, modified speed profile or requirement to discard a valid
+path. Red/unknown and presets without this option retain their prior behavior.
+
+Four new cases cover better later sampling, retaining the earlier exact array
+and text when a later sample is worse or rejected, and unchanged red-stop
+selection. Combined verification: **94 passed in 5.01 s**. The new live preset
+changes only this preference relative to the completed retention run. The
+comparison capture is `capture-retained-native-four-left-quality-43` (pending).

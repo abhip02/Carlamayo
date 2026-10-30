@@ -220,6 +220,46 @@ def test_completion_does_not_claim_success_outside_exit_lane(tmp_path, monkeypat
         probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
 
 
+@pytest.mark.parametrize("later_speed,expected_pool", [(5., 1), (9., 0), (None, 0)])
+def test_quality_retry_preserves_best_native_array_and_text_even_if_later_pool_fails(
+        tmp_path, monkeypatch, later_speed, expected_pool):
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch)
+    options.update(validation_resample_above_target_mps=6., validation_green_min_target_mps=1.)
+    original_path = prediction[:, :, 1].clone()
+    generate_pool = native.Probe.evaluate
+    generated = []
+
+    def evaluate(*args, **kwargs):
+        index = len(calls)
+        speed = 7. if not index else later_speed
+        prediction[:, :, 1] = original_path * ((speed or 7.) / 3.)
+        if speed is None:
+            prediction[:, :, 1, :, 1] = 2.5
+        result, extra = generate_pool(*args, **kwargs)
+        extra['cot'][0, 0, 1] = f'pool-{index}'
+        generated.append(result[:, :, 1:2].clone())
+        return result, extra
+
+    monkeypatch.setattr(native.Probe, "evaluate", evaluate)
+    actual, extra = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    assert len(calls) == 2
+    assert torch.equal(actual, generated[expected_pool])
+    assert extra['cot'][0, 0, 0] == f'pool-{expected_pool}'
+    record = json.loads((tmp_path / 'frame_000.json').read_text())
+    assert record['selection']['proposal'] == f'frame_000_pool_{expected_pool}'
+    assert record['trajectory_ego'] == record['candidate_trajectories'][1]
+    assert record['selection']['speed_quality_preference']['met'] == (later_speed == 5.)
+    assert not (tmp_path / 'validation-failure.json').exists()
+
+
+def test_quality_retry_does_not_change_red_stop_selection(tmp_path, monkeypatch):
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch)
+    probe.visual_signal = 'red'
+    options.update(validation_resample_above_target_mps=1., validation_green_min_target_mps=1.)
+    actual, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    assert len(calls) == 1 and torch.equal(actual, prediction[:, :, 2:3])
+
+
 @pytest.mark.parametrize("longer_available", [True, False])
 def test_longer_forecast_preference_preserves_native_paths_and_short_admission(
         tmp_path, monkeypatch, longer_available):
