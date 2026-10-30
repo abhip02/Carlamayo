@@ -232,6 +232,9 @@ validation; see the ledger before choosing a configuration.
 eight-sample, six-pool test that reached 7.9 s and 52.5 degrees of left rotation.
 It remained incomplete and had 5.6 cm of final body overhang; it is for
 reproduction, not a working-left-turn recommendation.
+`presets/validated-native-four-left-margin-43.json` adds 0.10 m predicted
+clearance; its live run ends at 5.0 s with all recorded corners inside but
+without completing the turn.
 
 Optional `validation_prefer_horizon_s: 3` adds a longer forecast preference
 on image-reported green: among samples that pass the usual controller-coverage

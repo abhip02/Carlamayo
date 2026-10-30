@@ -15,11 +15,14 @@ production controller are unchanged. The current evidence is:
 | Front, straight, seed 42; current ranking | Exit at 8.5 s | 2.695 m/s | Inside, minimum clearance 0.112 m |
 | Four cameras, left, 8 samples × 3 pools | Ends at 4.5 s; no valid next path | 2.788 m/s | Inside until termination, minimum clearance 0.374 m |
 | Four cameras, left, 8 samples × 6 pools | Ends at 7.9 s, 52.5° turn; no valid next path | 2.379 m/s | Final corner overhang 0.056 m |
+| Four cameras, left, 0.10 m predicted margin | Ends at 5.0 s, 4.7° turn; no valid next path | 2.786 m/s | Inside, minimum clearance 0.392 m |
+| Front, red-light control | Stops, then rejects all new plans at 2.8 s | 0.002 m/s | Inside; sustained hold unverified |
 
 The two straight successes use different language seeds **and ranking
 revisions**; initial poses match but rendered images differ. They are not a
 controlled A/B pair or proof of general robustness. The left turn is not fixed.
-Red/mixed-light behavior and obstacles are not validated by these green tests.
+The red-light control stops but cannot continue producing admitted plans;
+mixed signals and obstacles remain unvalidated.
 The body audit checks recorded corners, not swept volumes or collisions.
 
 Current straight video: `validated-front-straight-body-42.mp4`.
@@ -596,7 +599,15 @@ and 6 none. Evidence: `left-reserve-retrospective-margin.json`,
 `capture-validated-native-four-left-margin-43` now tests the stronger four-camera
 six-pool configuration with **only the body margin changed to 0.10 m**.
 It does not enable the new longer-forecast preference or sensor-state override.
-Result pending. Live image variability still limits causal attribution.
+It ends at **5.0 s** after all 48 proposals fail. No near-stop or actual corner
+overhang occurs; minimum speed is 2.7856 m/s and minimum recorded corner
+clearance 0.3917 m. Final speed is 6.5756 m/s, heading change only 4.689°,
+and the exit remains unreached. All 50 executed plans and controller inputs
+are exact native arrays with zero command/snapshot mismatch. This is an
+incomplete approach, not a turn fix. Evidence: `native-four-left-margin-control-audit.json`,
+`native-four-left-margin-footprint.json`, `native-four-left-margin-route.json`,
+and `validated-native-left-margin-incomplete.mp4`. Live image variability still
+limits causal attribution.
 
 ## Red-light control on the straight preset
 
@@ -627,7 +638,8 @@ target is 0.2938 m/s, maximum signed speed 0.3313 m/s and full-path progress
 0.6634 m. That target is above the unchanged controller's 0.25 m/s stop threshold,
 so passing the route check does **not** establish a stationary hold. The eight
 reduced-noise sensor-state samples admit none. Evidence:
-`red-stopped-state-body-audit.json` and `red-stopped-state-comparison.json`.
+`red-stopped-state-body-audit.json`, `red-stopped-state-comparison.json`, and
+`red-initial-state-comparison.png` / `.pdf`.
 This isolates a decoder initial-state contribution to the post-stop reverse
 artifact; it does not explain the original unwanted braking or establish a
 complete red-stop fix. No live sensor-state run has been launched.
@@ -640,6 +652,23 @@ The driving decoder `action_to_traj` does not call that estimator or apply those
 bounds; its initial-state estimator returns velocity only. This diff does not
 establish a cause for the observed turn-entry bias. No upstream model patch or
 rollback is applied.
+
+## Previously accepted native-path availability (offline only)
+
+Checked the remaining fixed-world paths from the last five accepted plans at
+three terminal states, preserving original waypoints, origins, and times.
+The necessary suffix checks cover the current controller steering lookahead
+and the age-adjusted speed-preview window. At the four-camera margin run's
+5.0 s failure, the plan generated at 4.6 s retains 0.2195 m predicted corner
+clearance and a 5.3045 m/s remaining target; the other four fail clearance.
+All five previous plans fail on the front-camera margin failure. At the older
+7.9 s no-margin failure, two suffixes pass these limited checks, but the actual
+car is already outside the lane, so this is not a valid recovery claim.
+
+Evidence: `previous-native-plan-availability.json`. These are necessary offline
+checks, not a complete current-state admission test or live path reuse. They
+motivate a separate, explicitly logged model-plan retention experiment. Round 6
+never reuses a previous path after sampling exhaustion.
 
 ## Upstream troubleshooting check (2026-10-29)
 

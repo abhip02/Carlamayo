@@ -1,0 +1,27 @@
+{
+  "seed": 43,
+  "flow_seed": 42,
+  "num_samples": 8,
+  "guard_trajectory_format": true,
+  "acknowledged_preroll": true,
+  "acknowledged_controls": true,
+  "wait_for_snapshot": true,
+  "verify_signal": true,
+  "signal_check_interval": 5,
+  "validation_routes": "outputs/driving-validation-routes.json",
+  "validation_max_pools": 6,
+  "validation_horizon_s": 1.5,
+  "validation_desired_speed_mps": 5.0,
+  "validation_stop_at_exit": true,
+  "validation_route": "left",
+  "instruction": "Turn left at the intersection.",
+  "validation_check_body": true,
+  "validation_resample_language": true,
+  "validation_green_min_target_mps": 1.0,
+  "validation_flow_temperatures": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "validation_body_margin_m": 0.1
+}
