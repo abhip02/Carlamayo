@@ -74,7 +74,11 @@ def forecast(follower, state, world, speeds, age, route, bounds, horizon_s, gain
     yaw = math.radians(state["yaw"])
     result = []
     for step in range(round(horizon_s / .1)):
-        u = follower.compute_control(pose_transform(state), world, state["speed"], speeds, age + step * .1)
+        # Call the unchanged base implementation explicitly. The live follower
+        # may have experiment wrappers for logging/retention; forecasts must
+        # neither execute those wrappers nor mutate their global state.
+        u = TrajectoryFollower.compute_control(
+            follower, pose_transform(state), world, state["speed"], speeds, age + step * .1)
         curvature = math.tan(u[0] * follower.max_steer_rad * gain) / config.EGO_WHEELBASE_M
         # Integrate at 0.01 s. Speed is a scenario assumption, not an actuator command.
         for _ in range(10):

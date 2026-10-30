@@ -27,6 +27,10 @@ The separate `proactive_probe` entrypoint also compares a revalidated cached
 plan with a valid fresh choice. It archives fresh proposals under
 `accepted_frame_*.json`, including those not executed, so native provenance and
 real prediction ages remain auditable. It does not change the normal launchers.
+Controller-aware candidate screening is tracked in [RESULTS_ROUND8.md](RESULTS_ROUND8.md)
+on `experiment/driving-tracking-validation`. Its separate `tracking_probe`
+entrypoint uses an approximate forecast only to reject native candidates;
+forecast poses are never executed and the original follower remains unchanged.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
