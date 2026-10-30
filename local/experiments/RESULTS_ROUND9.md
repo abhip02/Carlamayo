@@ -163,3 +163,26 @@ configuration), verify-only termination and wrapper restoration. An offline
 check reconstructs all 120 steps / 49 selected sources of the longer left run
 and archives 533 source files with exact native anchors, speed arrays and ages.
 Physical prefix verification is tracked in the subsequent round-10 experiment.
+
+
+## Offline older-candidate follow-up
+
+While the round-10 full run occupies CARLA, an offline diagnostic rechecks all
+originally admitted candidates from the preceding **1.0 s** at this run's
+terminal 7.4 s state. Only this diagnostic's age limit changes; native clearance
+and tracking remain the original strict 20 cm, with original anchors, signal,
+phase, speed arrays, distance/alignment and controller state.
+
+Of 32 candidates, **one passes**: originally unselected `frame_067_pool_0`,
+candidate 0, age **0.7 s**, native clearance **0.343161 m**, tracking clearance
+**0.213240 m**, native target **2.737504 m/s**. It was also admitted at generation
+(native clearance 0.396492 m, tracking 0.229348 m). Distance from the current
+rear axle to its original world path is 0.092931 m; heading difference is
+1.73842 degrees. None of the candidates inside the current 0.5 s limit passes.
+The other 31 fail native clearance (29) or tracking (two).
+
+This is **offline only**, not a live age-limit change or a physical replay.
+The active full test retains 0.5 s. A physical continuation must test the older
+candidate before any longer-retention experiment is considered. Evidence in
+`outputs/driving-investigation-10/`: `check_older_admitted_candidates.py` and
+`older-admitted-terminal74-audit.json`.

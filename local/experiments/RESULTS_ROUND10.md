@@ -190,6 +190,8 @@ Artifacts in the round-10 evidence directory:
 - `resume-speed4-terminal122-unknown-exit/combined-audit-summary.json`, plus the
   six independent `*-audit.json` files in that capture directory.
 - `audit_run.py`: repeatable audit orchestration, including explicit suffix counts.
+- `native-exit-recovery.png/.pdf`: actual path, speed and clearance with the
+  replay boundary marked; visually reviewed.
 
 ## Full-run validation in progress
 
