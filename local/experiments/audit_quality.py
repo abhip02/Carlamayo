@@ -23,6 +23,26 @@ def audit(capture):
         if not identity:
             mismatches.append(frame["label"])
         preference = selection.get("speed_quality_preference")
+        admitted = [(a["proposal"], m) for a in attempts for m in a["metrics"] if m["valid"]]
+        # Reconstruct the preference ordering from archived metrics, separately
+        # from the live selection helper. This also checks choices across pools.
+        best_proposal, best_metric = min(admitted, key=lambda pair: (
+            not pair[1].get("preferred_reserve_valid", True),
+            not pair[1].get("preferred_horizon_valid", True), pair[1]["selection_cost"]))
+        rank_matches = (selection["proposal"] == best_proposal and
+                        selection["chosen"] == best_metric["candidate"])
+        reserve = selection.get("reserve_preference")
+        reserve_matches = True
+        if reserve:
+            threshold = reserve["preferred_clearance_m"]
+            reserve_matches = reserve["met"] == metric["preferred_reserve_valid"]
+            for attempt in attempts:
+                for candidate in attempt["metrics"]:
+                    forecast = candidate.get("tracking_forecast")
+                    if forecast is not None:
+                        expected = (candidate["max_corner_overhang_m"] <= -threshold and
+                                    forecast["min_corner_clearance_m"] >= threshold)
+                        reserve_matches &= candidate["preferred_reserve_valid"] == expected
         records.append({
             "label": frame["label"], "time_s": frame["context"]["time_s"],
             "first_admitted_proposal": first["proposal"], "selected_proposal": selection["proposal"],
@@ -34,7 +54,9 @@ def audit(capture):
             "first_corner_clearance_m": -first_metric["max_corner_overhang_m"],
             "selected_corner_clearance_m": -metric["max_corner_overhang_m"],
             "preference": preference, "source_array_and_tokens_match": identity,
-            "reserve_preference": selection.get("reserve_preference"),
+            "best_admitted_sample_selected": rank_matches,
+            "reserve_annotations_match": bool(reserve_matches),
+            "reserve_preference": reserve,
             "speed_retry_requests": sum(a.get("retry_for_speed_preference", False) for a in attempts[:-1]),
             "reserve_retry_requests": sum(a.get("retry_for_reserve_preference", False) for a in attempts[:-1]),
         })
@@ -49,6 +71,10 @@ def audit(capture):
             "steps_with_unmet_green_preference": sum(bool(r["preference"] and r["preference"]["applied"] and
                                                            not r["preference"]["met"]) for r in records),
             "source_array_or_token_mismatches": mismatches, "records": records,
+            "selection_mismatches": [r["label"] for r in records if not (
+                r["best_admitted_sample_selected"] and r["reserve_annotations_match"])],
+            "all_post_admission_checks_match": bool(records) and not mismatches and all(
+                r["best_admitted_sample_selected"] and r["reserve_annotations_match"] for r in records),
             "record_population": "Archived fresh proposals, including those superseded by cached plans" if fresh_sources else "Executed fresh proposals",
             "note": "Same-input first-admission comparisons; not counterfactual complete rollouts."}
 

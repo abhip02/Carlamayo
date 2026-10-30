@@ -52,7 +52,12 @@ def audit(capture, physics_reference):
                   "actual_controller_history_matches": control_error < 1e-8,
                   "real_age": abs(logged["original_plan_age_s"] - row["age_s"]) < 1e-8,
                   "measured_speed": logged["assumed_constant_speed_mps"] == context["measured_speed_mps"]}
+        if "preferred_clearance_m" in logged:
+            preferred = logged["preferred_clearance_m"]
+            checks["reserve_preference_matches"] = metric["preferred_reserve_valid"] == (
+                metric["max_corner_overhang_m"] <= -preferred and clearance >= preferred)
         item = {"time_s": row["time_s"], "source": row["source_label"], "age_s": row["age_s"],
+                "preferred_reserve_met": metric.get("preferred_reserve_valid"),
                 "recomputed_clearance_m": clearance, "forecast_error_m": delta,
                 "controller_error": control_error, "checks": checks,
                 "first_step_forecast_clearance_m": frames[0]["corner_clearance_m"],
@@ -77,6 +82,7 @@ def audit(capture, physics_reference):
             "mismatches": mismatches, "fresh_proposal_pools": len(attempts),
             "fresh_geometry_admitted_candidates_screened": len(metrics),
             "fresh_candidates_rejected_by_tracking": sum(not m["valid"] for m in metrics),
+            "executed_steps_below_preferred_reserve": sum(r["preferred_reserve_met"] is False for r in checked),
             "max_forecast_error_m": max((r["forecast_error_m"] for r in checked), default=None),
             "max_controller_error": max((r["controller_error"] for r in checked), default=None),
             "max_observed_first_step_clearance_overestimate_m": max(

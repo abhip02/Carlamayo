@@ -239,3 +239,76 @@ source local/env.sh
   --options local/experiments/presets/tracking-native-four-left-preferred20-min10-43.json \
   --output outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43
 ```
+
+
+## Frozen-input preference checks and audit additions
+
+Re-evaluating all **77** strict-run fresh decisions with the preferred-20/minimum-10
+policy reproduces **77/77** proposal/candidate choices using the same archived
+model samples and independently reconstructed original controller state.
+At the strict run's terminal frame 077, **six of 48** archived native candidates
+pass the new hard checks; none meets the preferred reserve. The top-ranked
+candidate is pool 1 candidate 2, with native clearance 0.237840 m, forecast
+clearance 0.144397 m and native target 5.326040 m/s. This candidate differs from
+the two already replayed alternatives and has not itself been physically replayed.
+These checks do not reproduce new rendered inputs or a counterfactual live run.
+Evidence and exact scripts: `preferred-reserve-frozen-prefix-comparison.json`,
+`preferred-reserve-frozen-terminal77.json`, `check_preferred_reserve_prefix.py`,
+`check_preferred_reserve_frozen.py` under the round-8 evidence root.
+
+The quality audit now independently checks the best admitted candidate across
+all observed pools and the reserve annotations against archived native/forecast
+clearances. The tracking audit also checks each executed preference flag against
+its recomputed forecast. Both completed prior runs pass the added selection
+checks. The new capture requires a full final audit after completion.
+The smaller-hard-reserve video is `tracking-left-margin10-incomplete.mp4`
+(H.264, labeled incomplete, visually checked).
+
+
+## Offline acceleration-aware validation diagnostic (not adopted)
+
+While the preference rollout runs, `check_longitudinal_forecast.py` tests a
+simple alternative forecast, using only saved data and no simulator ticks.
+It fits acceleration from prior acceleration, original throttle, original
+brake and speed on the same three older round-7 captures used for steering
+calibration, excluding the evaluated captures. The first second is excluded
+because startup/gear engagement is not represented. Coefficients are bounded
+with nonnegative throttle/braking/drag effects and acceleration memory in [0,1].
+The original controller is copied for prediction; its path/speed inputs remain
+the untouched native sample. Forecast poses are never executed.
+
+Fit: **152 steps**, acceleration RMSE **1.654 m/s²**. The fitted coefficients
+(previous acceleration, throttle, negative brake, negative speed) are
+`[0.5760644, 2.7896488, 3.0336509, 0.2132257]`. Seven already observed native
+replays are evaluated. These are diagnostic comparisons, not a new independent
+prospective test set. The running policy is unchanged.
+
+| Saved native replay | Max position error, constant → fitted (m) | Max clearance error, constant → fitted (m) |
+| --- | --- | --- |
+| `replay-native-tracking-earlier060` | 0.404 → 0.245 | 0.147 → 0.055 |
+| `replay-native-tracking-earlier064` | 0.550 → 0.198 | 0.186 → 0.102 |
+| `replay-native-tracking-earlier060-candidate7` | 0.403 → 0.322 | 0.122 → 0.074 |
+| `replay-native-tracking-source064` | 0.027 → 0.025 | 0.023 → 0.022 |
+| `replay-native-tracking-source068` | 0.027 → 0.025 | 0.021 → 0.020 |
+| `replay-terminal-pool3-candidate4` | 1.245 → 0.177 | 0.052 → 0.035 |
+| `replay-terminal-pool0-candidate2` | 2.091 → 0.192 | 0.083 → 0.124 |
+
+Position prediction improves in all seven comparisons, but clearance prediction
+gets worse for terminal pool 0 candidate 2 (0.083 → 0.124 m maximum error).
+The earlier-064 replay still has an actual corner departure while the fitted
+forecast's minimum remains slightly positive (0.005 m). Therefore this simple
+model is not sufficient to certify tracking and is **not adopted**. Its results
+are retained for a later validation study, not presented as a driving fix.
+Evidence: `longitudinal-forecast-diagnostic.json` and the exact diagnostic script.
+
+
+## Map-corridor footprint sanity check (no path execution)
+
+`route-ideal-footprint-diagnostic.json` checks the recorded Lincoln box at map
+route poses, excluding the two truncated reference ends. Aligning the actor
+center with the route leaves at least **0.568518 m** clearance. Aligning the
+rear axle with the route instead leaves at least **0.204921 m**. This rules
+out the simple explanation that the route's corridor is inherently narrower
+than the aligned vehicle footprint everywhere in the turn. It does not prove
+dynamic feasibility or controller trackability. These map poses are used only
+for this geometry calculation and are never passed to execution.
