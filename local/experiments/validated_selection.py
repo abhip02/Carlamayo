@@ -38,8 +38,10 @@ def predicted_corners(transform, candidate, yaws, bounds):
 
 
 def assess(candidates, context, route, markers, velocities, horizon_s=3., *,
-           yaws=None, check_body=False):
+           yaws=None, check_body=False, body_margin_m=0.):
     """Check native plans; optional box-corner checks are not an obstacle model."""
+    if not np.isfinite(body_margin_m) or body_margin_m < 0 or (body_margin_m and not check_body):
+        raise ValueError("A body margin must be finite, nonnegative and used with body checks")
     if check_body and (yaws is None or "vehicle_bounds" not in context):
         raise ValueError("Body validation requires native predicted yaw and recorded vehicle bounds")
     tf = pose_transform(context["world_pose"])
@@ -94,9 +96,12 @@ def assess(candidates, context, route, markers, velocities, horizon_s=3., *,
                 corner_distance, _, _, corner_width, _ = project(corners[..., :2].reshape(-1, 2), route)
                 overhang = corner_distance - corner_width
                 item.update(max_corner_lane_distance_m=float(corner_distance.max()),
-                            max_corner_overhang_m=float(overhang.max()))
+                            max_corner_overhang_m=float(overhang.max()),
+                            required_corner_clearance_m=float(body_margin_m))
                 if np.any(overhang > 0):
                     reasons.append("vehicle_corners_outside_lane_corridor")
+                elif np.any(overhang > -body_margin_m):
+                    reasons.append("insufficient_vehicle_corner_clearance")
         item.update(valid=not reasons, reasons=reasons,
                     current_rear_lane_distance_m=float(initial_distance[0]),
                     max_lane_distance_m=float(distance.max()),
@@ -164,6 +169,7 @@ def main():
     parser.add_argument("--route", choices=("left", "straight"), required=True)
     parser.add_argument("--horizon", type=float, default=3.)
     parser.add_argument("--check-body", action="store_true")
+    parser.add_argument("--body-margin", type=float, default=0.)
     parser.add_argument("--bounds", type=Path, help="Recorded dimensions for older inputs lacking vehicle bounds")
     parser.add_argument("--green-min-target", type=float, default=0.)
     parser.add_argument("--signal", choices=("red", "yellow", "green", "unknown"),
@@ -182,11 +188,13 @@ def main():
         context = {**record["context"], **({"vehicle_bounds": bounds} if bounds else {})}
         metrics = assess(candidates, context, route, record["candidate_markers"],
                          record["candidate_velocities"], args.horizon,
-                         yaws=record.get("candidate_yaw_rad"), check_body=args.check_body)
+                         yaws=record.get("candidate_yaw_rad"), check_body=args.check_body,
+                         body_margin_m=args.body_margin)
         signal = args.signal or record.get("visual_signal", "unknown")
         require_green_progress(metrics, signal, args.green_min_target)
         results.append({"label": record["label"], "route": args.route, "signal": signal,
                         "body_check": args.check_body, "bounds_source": str(args.bounds) if args.bounds else None,
+                        "body_margin_m": args.body_margin,
                         "green_min_target_mps": args.green_min_target, "metrics": metrics})
         print(record["label"], "valid", [m["candidate"] for m in metrics if m["valid"]],
               "best distance", round(min(m.get("max_lane_distance_m", float("inf")) for m in metrics), 3),

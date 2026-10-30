@@ -91,6 +91,26 @@ def test_body_check_rejects_lane_overhang_that_rear_axle_check_accepts():
     assert "vehicle_corners_outside_lane_corridor" in result["reasons"]
 
 
+def test_body_clearance_margin_rejects_a_near_edge_native_path_without_repairing_it():
+    route, context, path = fixture_data()
+    context["vehicle_bounds"] = {
+        "location": {"x": 0., "y": 0., "z": .75},
+        "extent": {"x": 2.45, "y": .92, "z": .75},
+        "rotation": {"pitch": 0., "yaw": 0., "roll": 0.}}
+    path[:, 1] = np.minimum(np.arange(1, 65) * .05, .75)
+    candidates = np.array([path])
+    original = candidates.copy()
+    args = (candidates, context, route, [True], np.full((1, 64), 3.))
+    body = dict(yaws=np.zeros((1, 64)), check_body=True)
+    assert assess(*args, **body)[0]["valid"]
+    metric = assess(*args, **body, body_margin_m=.1)[0]
+    assert not metric["valid"] and metric["max_corner_overhang_m"] < 0
+    assert "insufficient_vehicle_corner_clearance" in metric["reasons"]
+    np.testing.assert_array_equal(candidates, original)
+    with pytest.raises(ValueError, match="body margin"):
+        assess(*args, body_margin_m=.1)
+
+
 @pytest.mark.parametrize("pitch,roll,native_yaw", [(0., 0., .2), (3., 2., 0.)])
 def test_predicted_box_matches_carla_geometry_and_left_yaw_sign(pitch, roll, native_yaw):
     import carla

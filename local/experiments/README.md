@@ -228,6 +228,11 @@ rejected pools. These options never increase an existing path's speed or modify
 its waypoints. Left-turn experiments using them still need successful live
 validation; see the ledger before choosing a configuration.
 
+`presets/validated-native-four-left-reserve-43.json` preserves the four-camera,
+eight-sample, six-pool test that reached 7.9 s and 52.5 degrees of left rotation.
+It remained incomplete and had 5.6 cm of final body overhang; it is for
+reproduction, not a working-left-turn recommendation.
+
 Optional `validation_prefer_horizon_s: 3` adds a longer forecast preference
 on image-reported green: among samples that pass the usual controller-coverage
 checks, prefer those that also pass the same checks for at least 3 s. If none
@@ -235,6 +240,12 @@ does, rank the ordinarily admitted samples as before. It does not accept a
 rejected sample, change any waypoint, or override red/yellow/unknown ranking.
 This experimental preference is absent from the tested straight preset; its
 left-turn live results are recorded in the round-6 ledger.
+
+Optional `validation_body_margin_m` requires additional predicted corner
+clearance (default zero, requires body checks). A 0.10 m experimental value
+is motivated by measured tracking error in the incomplete left turn; it is
+not a certified uncertainty bound. Actual recorded footprints must still be
+audited. The frozen-pool CLI accepts the same value as `--body-margin`.
 
 Every accepted array can be compared with its original candidate and the
 controller's input using `audit_capture`. `proposals/` retains all proposals,

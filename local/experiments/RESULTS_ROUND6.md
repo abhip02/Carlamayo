@@ -14,6 +14,7 @@ production controller are unchanged. The current evidence is:
 | Front, straight, seed 43; earlier ranking | Exit at 7.9 s | 2.650 m/s | Inside, minimum clearance 0.068 m |
 | Front, straight, seed 42; current ranking | Exit at 8.5 s | 2.695 m/s | Inside, minimum clearance 0.112 m |
 | Four cameras, left, 8 samples × 3 pools | Ends at 4.5 s; no valid next path | 2.788 m/s | Inside until termination, minimum clearance 0.374 m |
+| Four cameras, left, 8 samples × 6 pools | Ends at 7.9 s, 52.5° turn; no valid next path | 2.379 m/s | Final corner overhang 0.056 m |
 
 The two straight successes use different language seeds **and ranking
 revisions**; initial poses match but rendered images differ. They are not a
@@ -22,7 +23,7 @@ Red/mixed-light behavior and obstacles are not validated by these green tests.
 The body audit checks recorded corners, not swept volumes or collisions.
 
 Current straight video: `validated-front-straight-body-42.mp4`.
-Incomplete left video: `validated-native-left-short-incomplete.mp4`.
+Latest incomplete left video: `validated-native-left-reserve-incomplete.mp4`.
 Source/config manifests live beside each capture; all artifact paths below are
 relative to the evidence root. Read the final sections for the latest retries.
 
@@ -495,7 +496,24 @@ The first three pool settings remain unchanged; later pools use the existing
 language/motion seed progression and final temperature 2. No wrapper code or
 selection bound changes are needed. The frozen exact-schedule test finds one
 admitted candidate in pool 3 and one in pool 4 (zero-based), none in pool 5.
-Evidence: `left-entry-reserve-body-audit.json`. Live result pending.
+Evidence: `left-entry-reserve-body-audit.json`.
+
+The live run reaches **7.9 s and 52.514° left rotation**, then all 48 samples
+fail admission. It does not reach the exit. Minimum actual speed is **2.3794
+m/s**, final speed 5.1705 m/s, with no near-stop. All 79 executed plans and
+controller inputs are exact native arrays, with zero command/snapshot mismatch.
+The recorded center stays within 0.7399 m of the left route, but a box corner
+crosses the lane corridor by **0.0562 m at the last recorded frame (7.9 s)**.
+This is a longer incomplete turn, not a successful lane-contained turn.
+
+The reserve is genuinely used: at 4.5, 4.6, 5.3, 5.4 and 6.0 s the chosen
+sample requires more than three pools (there may be later recoveries too; the
+complete per-step records are authoritative). Live rendering differs across
+runs, so the 4.5 versus 7.9 s durations alone are not causal proof of the budget
+change. Within this run, rejected earlier pools and accepted later pools do
+establish individual recoveries. Artifacts: `native-four-left-reserve-control-audit.json`,
+`native-four-left-reserve-footprint.json`, `native-four-left-reserve-route.json`,
+`validated-native-left-reserve-incomplete.mp4`, and `straight-and-left-current.png`.
 
 ## Longer-forecast selection experiment
 
@@ -524,7 +542,95 @@ The running six-pool full-camera capture was launched **before** this edit and
 uses its archived sources without the new option. A prepared front-camera
 comparison enables the 3 s preference, eight samples and six pools; it changes
 both camera input and selection policy and is not a controlled attribution test.
-Live result pending under `capture-validated-front-left-forecast-43`.
+That prepared configuration was not launched; the next test adds the measured
+clearance margin described below and uses a distinct output directory.
+
+## Predicted versus executed footprint / clearance margin
+
+At the final executed step (7.8 → 7.9 s), the native forecast puts the farthest
+corner **0.0154 m inside** the lane, while the actual next pose puts it
+**0.0562 m outside**. The loss of clearance is **0.0716 m**, with a 0.970°
+yaw discrepancy and maximum corresponding-corner position difference 0.0847 m.
+Across this run the largest one-step clearance loss is 0.0716 m (95th percentile
+0.0434 m). Maximum corner position discrepancy is 0.5318 m and maximum yaw
+error 7.193°; these occur at other steps and are different quantities from
+clearance loss. Evidence: `native-four-left-reserve-tracking-audit.json`.
+
+Added opt-in `validation_body_margin_m`; the original value remains zero.
+The next test requires 0.10 m predicted corner clearance under the same body
+checks, including the optional longer forecast. The margin is motivated by the
+measured one-step loss above, not a guaranteed uncertainty bound. It may simply
+exhaust the model's samples earlier; success must be checked against actual
+recorded poses. It never shifts waypoints or changes the original controller.
+A focused test verifies rejection of an otherwise in-lane path with only 0.08 m
+clearance and proves the candidate array remains unchanged. A margin without
+body checks raises instead of being silently ignored. All **17 focused tests
+pass in 2.88 s**; the combined suite passes **80 tests in 4.78 s**.
+
+`validated-front-left-margin-43.json` prepares the front-only, eight-sample,
+six-pool, 3 s forecast-preference test with 0.10 m margin. This changes multiple
+experimental settings and cannot attribute a live difference to one alone.
+This live run ends at **3.0 s**, with no admitted plan after 48 proposals.
+There is no actual near-stop or body overhang: minimum speed 2.7880 m/s,
+minimum recorded corner clearance 0.4009 m. However, final speed is 9.1606 m/s;
+this is not improved turn behavior. All 30 executed paths/controller inputs
+remain exact native arrays, with zero command/snapshot mismatch. Forty-seven
+terminal proposals cross the ordinary body corridor; one remains inside but
+has only 0.0920 m predicted clearance and fails the new 0.10 m requirement.
+The longer-forecast preference does not change the chosen candidate on any
+accepted step in this run. Its behavior is therefore covered by unit/frozen
+checks, not demonstrated as a live improvement here. Evidence:
+`front-left-margin-control-audit.json`, `front-left-margin-footprint.json` and
+`capture-validated-front-left-margin-43/validation-failure.json`.
+
+A retrospective audit of the stronger four-camera run finds 21 selected paths
+with less than 0.10 m predicted clearance, and none has a 0.10 m alternative
+in its **selected pool**. That alone does not imply no later pool can work.
+The first such step is 4.5 s. Four frozen calls / 32 samples inspect later pools
+4–7 on that exact input with the unchanged wider-noise schedule. Pool 5 contains
+three admitted candidates with 0.198–0.356 m clearance, so the existing six-pool
+budget can recover the tighter requirement locally. Pool 7 has one, pools 4
+and 6 none. Evidence: `left-reserve-retrospective-margin.json`,
+`left-reserve-margin-availability-audit.json`.
+
+`capture-validated-native-four-left-margin-43` now tests the stronger four-camera
+six-pool configuration with **only the body margin changed to 0.10 m**.
+It does not enable the new longer-forecast preference or sensor-state override.
+Result pending. Live image variability still limits causal attribution.
+
+## Red-light control on the straight preset
+
+`capture-validated-front-straight-body-red-42` uses the successful current
+straight configuration with only all lights set red; requested duration is 8 s.
+It identifies red in all six visual checks, slows and stops at 2.7 s, then ends
+at **2.8 s** because every sample in all three pools contains reverse motion.
+Minimum/final actual speed is **0.00226 m/s**, with 6.6968 m forward progress.
+All recorded body corners stay inside (minimum clearance 0.7609 m), and all
+28 executed paths/controller inputs are exact native samples with zero control
+or snapshot mismatch. This verifies an initial red stop, **not** an 8 s hold.
+Evidence: `front-straight-body-red-control-audit.json`,
+`front-straight-body-red-footprint.json` and the failure input `inputs/frame_028.pt`.
+
+At that stopped input the native history estimator reports **-0.52157 m/s**,
+while the measured signed speed is **-0.00225 m/s**. This reproduces the earlier
+post-braking initial-state artifact; the path validator correctly refuses the
+resulting reverse plans. Prepared frozen variants compare unchanged decoding,
+the existing sensor-initial-state option, the existing nonnegative estimate,
+and a broader reduced-noise sensor-state pool. Those variants change decoder
+initial-state conditioning rather than selecting from the unchanged decoder's
+outputs. They are separate diagnostics, not silently enabled in any live run.
+All four calls / 20 samples complete. With the same four sampled action arrays
+and token sequences **bitwise unchanged**, the native decoder has no admitted
+sample using its estimated -0.52157 m/s state, but candidate 1 becomes admitted
+when given the measured state or a nonnegative estimate. Its sensor-conditioned
+target is 0.2938 m/s, maximum signed speed 0.3313 m/s and full-path progress
+0.6634 m. That target is above the unchanged controller's 0.25 m/s stop threshold,
+so passing the route check does **not** establish a stationary hold. The eight
+reduced-noise sensor-state samples admit none. Evidence:
+`red-stopped-state-body-audit.json` and `red-stopped-state-comparison.json`.
+This isolates a decoder initial-state contribution to the post-stop reverse
+artifact; it does not explain the original unwanted braking or establish a
+complete red-stop fix. No live sensor-state run has been launched.
 
 ## Upstream curvature inspection
 
@@ -534,6 +640,30 @@ The driving decoder `action_to_traj` does not call that estimator or apply those
 bounds; its initial-state estimator returns velocity only. This diff does not
 establish a cause for the observed turn-entry bias. No upstream model patch or
 rollback is applied.
+
+## Upstream troubleshooting check (2026-10-29)
+
+[Upstream issue 10](https://github.com/NVlabs/alpamayo1.5/issues/10) reports
+backward/folding predictions and stopping in a separate CARLA/NuRec integration,
+including weak response to navigation wording. This is related symptom evidence,
+not reproduction of our inputs or proof of a shared cause. Its linked
+[fork commit ceba149](https://github.com/ikutasama/alpamayo1.5/commit/ceba1495836d5be769f819f0b2e6c434f32e4eba)
+changes a fine-tuning/RL loss-forward path. Our launcher already calls `eval()`
+and the adapter uses inference mode; that training patch is not applied here.
+
+In [upstream issue 21](https://github.com/NVlabs/alpamayo1.5/issues/21), a
+maintainer explains that navigation text is soft conditioning and need not
+change the generated reasoning. That is consistent with our frozen wording
+results; it does not prove why any individual trajectory fails.
+
+Also inspected [CARLA's newer Alpamayo 2 architecture](https://github.com/carla-simulator/carla/blob/ue58-dev/Docs/nvidia_alpamayo_architecture.md),
+which executes multiple control steps per inference by default. Our isolated
+runner replans every 0.1 s. This is a possible future cadence comparison, not a
+verified recommendation for the 1.5 checkpoint, and no cadence/controller
+change is made. The separate obstacle reports
+[39](https://github.com/NVlabs/alpamayo1.5/issues/39) and
+[40](https://github.com/NVlabs/alpamayo1.5/issues/40) concern other scenes and
+integrations; they are not treated as causal evidence for this empty turn.
 
 ## Verification and rollback
 
