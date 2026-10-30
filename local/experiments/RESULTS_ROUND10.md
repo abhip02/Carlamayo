@@ -127,3 +127,11 @@ outlier). Decoder speed at failure is 2.7569 m/s against measured 2.7130 m/s.
 The generated curvature, not a supplied history-initialized turn rate, creates
 the extra turn. A CPU action-integration check differs from stored native yaw
 by at most 0.00334 rad across the inspected inputs; it is not claimed exact.
+
+
+The complete combined suite after capture-auditor changes is **197 passed in
+5.01 s**. The opt-in continuation has bridged frame 122 using the exact frame
+121 native source, and fresh sampling again finds an admissible model sample
+at frame 123. This is an intermediate recovery only; the run is still active
+and must reach the route endpoint and pass full audits before any continuation
+completion claim.
