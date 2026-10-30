@@ -22,6 +22,10 @@ class RouteExitReached(RuntimeError):
         self.output, self.context = output, context
 
 
+class NoValidatedPlan(RuntimeError):
+    """All new model samples failed admission; distinct from inference errors."""
+
+
 class ValidatingProbe(native.Probe):
     def evaluate(self, adapter, data, context, instruction, options, label,
                  capture=False, capture_failures=False):
@@ -159,7 +163,7 @@ class ValidatingProbe(native.Probe):
         inputs.mkdir(exist_ok=True)
         native.torch.save({"data": {key: value.detach().cpu().clone() for key, value in data.items()},
                            "context": context, "instruction": instruction}, inputs / (label + ".pt"))
-        raise RuntimeError(f"No valid model-generated plan at {label} after {len(attempts)} pools")
+        raise NoValidatedPlan(f"No valid model-generated plan at {label} after {len(attempts)} pools")
 
 
 def main():

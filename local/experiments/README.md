@@ -18,6 +18,11 @@ Model-only validation/resampling is tracked in [RESULTS_ROUND6.md](RESULTS_ROUND
 on `experiment/driving-plan-validation`. This opt-in wrapper uses map geometry
 for sample selection, preserves the chosen model waypoints exactly, and ends the
 test explicitly if no sample passes; it does not provide a fallback planner.
+Short-lived retention of previously accepted native paths is tracked separately
+in [RESULTS_ROUND7.md](RESULTS_ROUND7.md), on
+`experiment/driving-native-plan-retention`. It preserves the original world
+anchor and prediction time, revalidates against the current state, and logs
+every reuse and rejected new pool. It is an opt-in empty-green-scene experiment.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
