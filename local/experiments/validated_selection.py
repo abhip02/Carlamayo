@@ -104,6 +104,9 @@ def assess(candidates, context, route, markers, velocities, horizon_s=3., *,
                     rms_lane_distance_m=float(np.sqrt(np.mean(distance**2))),
                     max_heading_error_deg=float(error[moving].max()) if np.any(moving) else 0.,
                     route_progress_m=float(arc[-1] - initial_arc[0]),
+                    ranking_horizon_s=min(limit, 15) * .1,
+                    ranking_progress_m=float(arc[min(limit, 15) - 1] - initial_arc[0]),
+                    ranking_lane_rms_m=float(np.sqrt(np.mean(distance[:15]**2))),
                     target_speed_mps=float(speed[10:15].mean()),
                     min_signed_velocity_mps=float(signed.min()),
                     max_signed_velocity_mps=float(signed.max()),
@@ -112,6 +115,19 @@ def assess(candidates, context, route, markers, velocities, horizon_s=3., *,
                     horizon_s=limit * .1)
         result.append(item)
     return result
+
+
+def require_green_progress(metrics, signal, minimum_speed):
+    """Optional liveness requirement for the controlled empty green-light test.
+
+    This rejects native low-progress samples; it never increases a trajectory's
+    speed. It must not be treated as an obstacle-aware rule for arbitrary roads.
+    """
+    if signal == "green" and minimum_speed > 0:
+        for item in metrics:
+            if item.get("target_speed_mps", 0) < minimum_speed:
+                item["valid"] = False
+                item["reasons"].append("green_progress_requirement")
 
 
 def choose(metrics, candidates, signal, current_speed, desired_speed=5.):
@@ -125,9 +141,12 @@ def choose(metrics, candidates, signal, current_speed, desired_speed=5.):
         if signal in ("red", "yellow"):
             cost = float((speed.sum() * .1)**2 + item["target_speed_mps"]**2)
         else:
-            cost = (4 * item["rms_lane_distance_m"]**2 +
+            # Admission may look farther ahead for short/slow plans. Rank every
+            # admitted plan over the same 1.5 s so later acceleration cannot
+            # compensate for an immediate near-stop merely by changing horizon.
+            cost = (4 * item["ranking_lane_rms_m"]**2 +
                     .25 * (item["target_speed_mps"] - target)**2 +
-                    .05 * (item["route_progress_m"] - target * item["horizon_s"])**2)
+                    .05 * (item["ranking_progress_m"] - target * item["ranking_horizon_s"])**2)
         item["selection_cost"] = cost
     accepted = [item for item in metrics if item["valid"]]
     return min(accepted, key=lambda item: item["selection_cost"])["candidate"] if accepted else None
@@ -139,16 +158,31 @@ def main():
     parser.add_argument("--routes", type=Path, required=True)
     parser.add_argument("--route", choices=("left", "straight"), required=True)
     parser.add_argument("--horizon", type=float, default=3.)
+    parser.add_argument("--check-body", action="store_true")
+    parser.add_argument("--bounds", type=Path, help="Recorded dimensions for older inputs lacking vehicle bounds")
+    parser.add_argument("--green-min-target", type=float, default=0.)
+    parser.add_argument("--signal", choices=("red", "yellow", "green", "unknown"),
+                        help="Explicit diagnostic signal; otherwise use the record's image-based answer")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     route = json.loads(args.routes.read_text())["routes"][args.route]
+    bounds = json.loads(args.bounds.read_text()) if args.bounds else None
     results = []
     for path in sorted(args.replay.glob("frame_*.json")):
         record = json.loads(path.read_text())
+        if record.get("status") in ("error", "oom", "skipped"):
+            results.append({"label": record["label"], "status": record["status"], "metrics": []})
+            continue
         candidates = np.asarray(record["candidate_trajectories"] or [record["trajectory_ego"]])
-        metrics = assess(candidates, record["context"], route, record["candidate_markers"],
-                         record["candidate_velocities"], args.horizon)
-        results.append({"label": record["label"], "route": args.route, "metrics": metrics})
+        context = {**record["context"], **({"vehicle_bounds": bounds} if bounds else {})}
+        metrics = assess(candidates, context, route, record["candidate_markers"],
+                         record["candidate_velocities"], args.horizon,
+                         yaws=record.get("candidate_yaw_rad"), check_body=args.check_body)
+        signal = args.signal or record.get("visual_signal", "unknown")
+        require_green_progress(metrics, signal, args.green_min_target)
+        results.append({"label": record["label"], "route": args.route, "signal": signal,
+                        "body_check": args.check_body, "bounds_source": str(args.bounds) if args.bounds else None,
+                        "green_min_target_mps": args.green_min_target, "metrics": metrics})
         print(record["label"], "valid", [m["candidate"] for m in metrics if m["valid"]],
               "best distance", round(min(m.get("max_lane_distance_m", float("inf")) for m in metrics), 3),
               "targets", [round(m.get("target_speed_mps", 0), 2) for m in metrics])

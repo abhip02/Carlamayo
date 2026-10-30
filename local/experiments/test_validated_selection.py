@@ -8,7 +8,7 @@ import torch
 
 from local.experiments import inference_probe as native
 from local.experiments.validated_probe import RouteExitReached, ValidatingProbe
-from local.experiments.validated_selection import assess, choose, pose_transform, predicted_corners
+from local.experiments.validated_selection import assess, choose, pose_transform, predicted_corners, require_green_progress
 from module.config import EGO_REAR_AXLE_X
 
 
@@ -42,6 +42,28 @@ def test_green_prefers_progress_and_red_prefers_model_stop():
     metrics = assess(candidates, context, route, [True, True], np.array([[0.] * 64, [3.] * 64]))
     assert choose(metrics, candidates, "green", 3) == 1
     assert choose(metrics, candidates, "red", 3) == 0
+
+
+def test_optional_green_progress_requirement_does_not_reject_red_or_unknown_stops():
+    for signal in ("green", "red", "unknown"):
+        metrics = [{"valid": True, "reasons": [], "target_speed_mps": .1},
+                   {"valid": True, "reasons": [], "target_speed_mps": 2.}]
+        require_green_progress(metrics, signal, 1.)
+        assert metrics[0]["valid"] == (signal != "green")
+        assert metrics[1]["valid"]
+        assert metrics[0]["target_speed_mps"] == .1
+
+
+def test_ranking_compares_same_time_window_despite_different_steering_horizons():
+    route, context, path = fixture_data()
+    candidates = np.zeros((2, 64, 3), dtype=np.float32)
+    velocities = np.array([[1.] * 64, [.1] * 15 + [3.] * 49])
+    candidates[:, :, 0] = np.cumsum(velocities * .1, axis=1)
+    metrics = assess(candidates, context, route, [True, True], velocities, horizon_s=1.5)
+    assert all(item["valid"] for item in metrics)
+    assert metrics[0]["horizon_s"] != metrics[1]["horizon_s"]
+    assert metrics[0]["ranking_horizon_s"] == metrics[1]["ranking_horizon_s"] == 1.5
+    assert choose(metrics, candidates, "green", 3) == 0
 
 
 def test_short_horizon_still_checks_actual_controller_lookahead():
@@ -148,7 +170,7 @@ def test_no_valid_candidate_terminates_without_executed_path(tmp_path, monkeypat
 
 def test_retry_can_resample_language_and_return_an_exact_native_candidate(tmp_path, monkeypatch):
     probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch, all_bad=True)
-    options.update(seed=43, validation_resample_language=True)
+    options.update(seed=43, validation_resample_language=True, validation_flow_temperatures=[1., 1.5])
     generate_pool = native.Probe.evaluate
 
     def evaluate(*args, **kwargs):
@@ -160,6 +182,7 @@ def test_retry_can_resample_language_and_return_an_exact_native_candidate(tmp_pa
     actual, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
     assert [c["seed"] for c in calls] == [43, 44]
     assert [c["flow_seed"] for c in calls] == [42, 43]
+    assert [c["flow_temperature"] for c in calls] == [1., 1.5]
     assert torch.equal(actual, prediction[:, :, 1:2])
     record = json.loads((tmp_path / "frame_000.json").read_text())
     assert [attempt["chosen"] for attempt in record["selection"]["attempts"]] == [None, 1]

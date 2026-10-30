@@ -11,7 +11,7 @@ import numpy as np
 
 from local.experiments import inference_probe as native
 from local.experiments.audit_turn import project
-from local.experiments.validated_selection import assess, choose
+from local.experiments.validated_selection import assess, choose, require_green_progress
 from module.inference import extract_trajectory_samples
 from module.trajectory_follower import planned_speeds
 
@@ -79,6 +79,9 @@ class ValidatingProbe(native.Probe):
             if attempt and (options.get("validation_resample_language", False) or
                             all(not m["marker_present"] for m in attempts[-1]["metrics"])):
                 trial["seed"] += attempt
+            temperatures = options.get("validation_flow_temperatures")
+            if temperatures:
+                trial["flow_temperature"] = temperatures[min(attempt, len(temperatures) - 1)]
             proposal_label = f"{label}_pool_{attempt}"
             self.output = proposals
             try:
@@ -93,10 +96,13 @@ class ValidatingProbe(native.Probe):
                              record["candidate_velocities"], options.get("validation_horizon_s", 3.),
                              yaws=record.get("candidate_yaw_rad"),
                              check_body=options.get("validation_check_body", False))
+            require_green_progress(metrics, self.visual_signal,
+                                   options.get("validation_green_min_target_mps", 0.))
             chosen = choose(metrics, candidates, self.visual_signal,
                             context["measured_speed_mps"], options.get("validation_desired_speed_mps", 5.))
             attempts.append({"proposal": proposal_label, "metrics": metrics,
                              "flow_seed": trial["flow_seed"], "seed": trial.get("seed", 43),
+                             "flow_temperature": trial.get("flow_temperature", 1.),
                              "inference_seconds": record["inference_seconds"], "chosen": chosen})
             if chosen is None:
                 continue

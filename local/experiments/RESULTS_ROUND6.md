@@ -252,11 +252,107 @@ unless every trajectory marker was absent. The first pool stays the same.
 An additional regression confirms a second-pool recovery returns the exact
 candidate and records both changed seeds. All 11 focused tests pass.
 
-Next live test `capture-validated-four-left-body-43` uses all four cameras with
+`capture-validated-four-left-body-43` uses all four cameras with
 the existing equidistant rendering experiment, default all-green empty scene,
 body checks, 1.5 s minimum controller-coverage horizon, and this broader retry.
 It is a new camera configuration relative to the front-only run; defaults in
-normal CarlaMayo are unchanged.
+normal CarlaMayo are unchanged. It terminates at **2.1 s** after near-stopping
+(actual speed 0.00862 m/s); all 12 retries contain reverse motion. All five
+image signal checks say green, and recorded simulator signals are also green.
+All 21 executed arrays remain native, with no control/snapshot mismatch and
+no recorded corner overhang. Audits: `four-left-body-control-audit.json` and
+`four-left-body-footprint.json`.
+
+## Correcting the experimental ranking horizon
+
+The adaptive admission horizon introduced a **ranking bug**: progress error
+was evaluated over a different duration for each candidate. A plan that stopped
+now and moved later could beat a steadier plan because its checked horizon was
+shorter. This is a flaw in the experimental selector, not a diagnosis of the
+original CarlaMayo model.
+
+On the exact saved pool at full-camera frame 019, the old selector chooses
+candidate 2, target **0.1805 m/s** (5.6 s admission horizon), over candidate 1,
+target **1.0530 m/s** (6.4 s admission horizon). The new ranking compares lane
+RMS and progress over the same **1.5 s** for every admitted sample. Admission
+still extends through the actual controller lookahead and checks native body
+corners. With identical arrays, new ranking chooses candidate 1. Evidence:
+`ranking-horizon-audit.json`; the regression covers unequal steering horizons.
+
+An optional `validation_green_min_target_mps: 1.0` adds a simple progress
+requirement for this **empty green-light test**. Low-progress samples trigger
+resampling; paths are never sped up or repaired. Red and unknown signals do
+not enable this requirement. It is not an obstacle-aware rule for arbitrary
+roads. Exhausting the sampling budget still ends the test explicitly.
+
+`replay-left-progress-pools/` completes six calls / 24 samples at frame 019:
+five language/motion seed pairs and one explicitly supplied green-intent
+prompt diagnostic. The initial pool already contains the valid 1.053 m/s
+candidate. None of the four additional ordinary pools has a body-valid target
+above 1 m/s. The supplied-intent diagnostic has two (1.258 and 1.394 m/s), but
+this is supplied conditioning, not a model-generated explanation, and is not
+used in the next live test. Evidence: `left-progress-audit.json`.
+
+`capture-validated-four-left-progress-43` tests corrected ranking plus the
+1 m/s requirement, keeping full-camera equidistant input, native sampling,
+body validation, three pools and varied language on rejection. It ends explicitly at **2.3 s**: all 12 samples fail the 1 m/s
+progress requirement (maximum target 0.914 m/s). Actual speed stays at least
+**1.4620 m/s**, so it avoids the prior full stop but still cannot continue the
+turn. All 23 controller inputs are native and all controls/snapshots match.
+Evidence: `four-left-progress-control-audit.json` and the saved failure input.
+All 13 focused regressions pass before launch; the combined suite subsequently
+passes **76 tests in 4.37 s**.
+
+The next controlled left test, `capture-validated-native-four-left-progress-43`,
+uses the **original four pinhole cameras** instead of the equidistant rendering
+experiment, plus a **3 s** minimum admission horizon. The longer horizon is
+intended to reject a missed turn before the vehicle arrives too fast. Ranking
+still uses the same 1.5 s interval for every candidate. It retains body checks,
+the green-progress requirement and three native pools. It ends at **3.8 s**
+when all 12 proposals fail predicted lane/body checks. Actual minimum speed
+is **1.3441 m/s**, final speed 4.7756 m/s, no near-stop, maximum center
+deviation 0.1231 m, and minimum recorded corner clearance 0.6581 m. All 38
+executed arrays are native, with exact control/snapshot matching. Evidence:
+`native-four-left-progress-control-audit.json` and
+`native-four-left-progress-footprint.json`.
+
+## Larger native pools at the turn failure
+
+`replay-left-expanded-pools/` uses the exact native-four-camera failure input
+at frame 038. Six successful calls produce 44 native proposals: 4, 8 and 12
+ordinary samples; 8 each at native motion-noise temperatures 1.5 and 2; and
+4 with an explicitly supplied green/left intent. CUDA execution is synchronous
+for this diagnostic (`CUDA_LAUNCH_BLOCKING=1`), recorded separately in
+`left-expanded-pools-environment.json`. No model source or weights are changed.
+
+- Four ordinary samples: none passes the same 3 s body and progress checks.
+- Eight or twelve ordinary samples: candidate 5 passes, target about 7.50 m/s,
+  predicted corner clearance 0.096 / 0.102 m respectively.
+- Temperature 1.5, eight samples: candidate 5 passes, but only 0.003 m of
+  predicted corner clearance.
+- Temperature 2, eight samples: candidate 4 passes, target **5.694 m/s**,
+  predicted corner clearance **0.298 m**.
+- Supplied green/left intent: none passes the body checks.
+
+A subsequent four-sample guided call exhausts GPU memory; the next guided
+variant is explicitly skipped. Maximum allocation for ordinary twelve samples
+is 20.33 / 14.52 GiB across the two model GPUs. These trials demonstrate native
+candidate availability at a failed state, not a completed turn.
+
+`replay-left-single-guidance-sync/` then completes three memory-bounded native
+guidance calls at weights 1.5, 2 and 3 with one sample and synchronous CUDA.
+All three still fail body/lane checks; stronger guidance increases their worst
+centerline error from 2.698 to 3.192 m. This successful execution does not prove
+the earlier asynchronous failures' cause, since input/camera/batch settings
+also differ. Evidence: `left-expanded-body-audit.json` and
+`left-guidance-sync-body-audit.json`.
+
+The next live configuration uses eight samples per pool, with noise
+temperatures 1, 1.5 and 2 across rejected pools. Language and motion seeds also
+vary as before. The first pool uses ordinary native sampling, and all admission
+bounds remain unchanged. `capture-validated-native-four-left-expanded-43` is
+pending at this checkpoint. The retry regression also checks the requested
+native temperature sequence; all 13 focused tests pass.
 
 ## Verification and rollback
 
