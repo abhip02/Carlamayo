@@ -135,3 +135,18 @@ The complete combined suite after capture-auditor changes is **197 passed in
 at frame 123. This is an intermediate recovery only; the run is still active
 and must reach the route endpoint and pass full audits before any continuation
 completion claim.
+
+
+`resume-boundary-input-comparison.json` confirms original, baseline and opt-in
+resume inputs have bit-identical world poses, ego XYZ/rotation histories and
+camera indices. Images differ: original-to-baseline mean absolute RGB-channel
+difference 1.5616/255 (25.95% unequal channels), baseline-to-option 1.8611/255
+(29.41%). This is a physically matched continuation comparison, not an exact
+pixel-input A/B. The baseline nevertheless reproduces the all-48-samples native
+body failure and the same five signal-only cache rejections.
+
+A separate full-run preset, `tracking-native-four-left-speed4-unknown-exit-43.json`,
+adds only the opt-in unknown-exit flag to the preceding speed-4 preset. It contains
+no prefix replay settings. Use `candidate_reserve_probe` to test the current
+combined native validation/resampling package from the original scene start.
+The run is planned after the resumed comparison ends and passes its audits.
