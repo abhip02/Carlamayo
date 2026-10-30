@@ -76,7 +76,7 @@ The opt-in comparison bridges frame 110 using exactly `accepted_frame_109`,
 then retains it at ages 0.2–0.5 s while comparing newly admitted but slower native
 samples. It switches to a new native source at frame 115 and has continued beyond
 12.0 s. The five green-to-unknown uses preserve both original signal labels.
-The complete route outcome and final audits remain pending.
+The complete route outcome and independent audits pass; details are below.
 
 Offline evidence: `check_terminal110_transition_policy.py`,
 `terminal110-transition-policy-audit.json` in the round-11 output directory.
@@ -88,3 +88,52 @@ and camera indices. Mean absolute RGB differences are 1.61947/255
 (original–baseline) and 1.67155/255 (baseline–option), with 27.28% and 28.60%
 unequal channels respectively. Thus physics/history match exactly but renders
 do not; the baseline independently reproduces the same all-48 native-body failure.
+
+
+## Completed native continuation
+
+`resume-terminal110-exit-transition/` reaches the required endpoint at **14.8 s**,
+final x **21.3056 m** (required 21.2431 m), total left rotation **91.7301 degrees**,
+actual final speed **3.52803 m/s**. No recorded corner leaves the corridor. Minimum
+actual speed is **2.50915 m/s**, maximum **5.17615 m/s**. Minimum whole-run
+clearance is **0.130955 m**, inherited from the replayed prefix; minimum clearance
+after the resume boundary is **0.331761 m**. No near-stop occurs.
+
+This comprises an **11.0 s verified replayed prefix + 3.8 s fresh continuation**,
+not a new full fresh-run success. All **148** native arrays, fixed world anchors,
+speed arrays and true ages match exactly. Independent controller and tracking
+reconstruction have zero error; applied controls and snapshots match. All
+post-admission selection/ranking checks pass. Wall time is **1,090.11 s (18.17 min)**.
+
+The suffix has 38 commands, 70 fresh pools (560 native candidates), and 33 fresh
+admitted planning steps. Eleven fresh choices are executed, while 22 are
+superseded by better-ranked recent native sources. There are 27 cache uses:
+five after fresh-sampling exhaustion, 22 better-ranked. Five uses at frames
+110–114 have explicit green-to-unknown transition evidence; the remaining 22
+use the preceding matching-unknown exit rule. Eight fresh visual checks report
+unknown. No unselected-reserve rescue is needed. Every live age is at most 0.5 s.
+Fresh inference resumes admitting candidates at 111 and supplies the executed
+source at 115. Later exhausted steps 121, 129, 131 and 132 are bridged with newer
+native sources, followed by successful fresh sampling.
+
+The generated prose remains unreliable as an explanation: fresh candidates at
+11.2/11.3 s say `Resume speed` while targeting 0.61240/0.40483 m/s. They are
+preserved in the evidence and superseded by better-ranked unchanged native
+samples. No target speed is rewritten. The model's underlying inconsistency is
+not fixed by the cache policy.
+
+Artifacts under `outputs/driving-investigation-11/`:
+- `native-left-exit-transition-continuation-complete.mp4`: H.264; banners separate
+  replay and fresh suffix; visually reviewed at 14.6 s.
+- `native-exit-transition-recovery.png/.pdf`: audited physical path, speed and
+  clearance, with the 11.0 s boundary explicit; visually reviewed.
+- `resume-terminal110-exit-transition/combined-audit-summary.json`, six independent
+  audits and `sampling-audit.json`.
+
+## Fresh-from-start validation pending
+
+`capture-native-four-left-exit-transition-43/` will use `candidate_reserve_probe`
+and `tracking-native-four-left-exit-transition-43.json` from the original scene
+start, without replay options. Duration cap 20 s, same required endpoint. This
+is necessary to check the combined policy in another complete fresh run. The
+two successful continuations must not be reported as that result.
