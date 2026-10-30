@@ -18,6 +18,7 @@ from pathlib import Path
 import random
 import re
 import subprocess
+import sys
 import time
 
 import numpy as np
@@ -559,12 +560,14 @@ def main():
             "local/experiments/inference_probe.py", "local/experiments/camera_projection.py",
             "local/experiments/candidate_selection.py", "local/experiments/frame_sync.py",
             "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
-            "local/experiments/validated_selection.py", "local/experiments/retained_probe.py")}
+            "local/experiments/validated_selection.py", "local/experiments/retained_probe.py",
+            "local/experiments/proactive_probe.py")}
         for name, content in sources.items():
             snapshot = args.output / "source_snapshot" / name
             snapshot.parent.mkdir(parents=True, exist_ok=True)
             snapshot.write_bytes(content)
         write_json(args.output / "experiment.json", {
+            "entrypoint": sys.argv[0],
             "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=runner.ROOT, text=True).strip(),
             "arguments": {key: str(value) for key, value in vars(args).items()},
             "options": json.loads(args.options.read_text()) if args.options else None,

@@ -6,7 +6,8 @@ from pathlib import Path
 
 def audit(capture):
     records, mismatches = [], []
-    for path in sorted(capture.glob("frame_*.json")):
+    fresh_sources = sorted(capture.glob("accepted_frame_*.json"))
+    for path in fresh_sources or sorted(capture.glob("frame_*.json")):
         frame = json.loads(path.read_text())
         if "retention" in frame:
             continue
@@ -41,6 +42,7 @@ def audit(capture):
             "steps_with_unmet_green_preference": sum(bool(r["preference"] and r["preference"]["applied"] and
                                                            not r["preference"]["met"]) for r in records),
             "source_array_or_token_mismatches": mismatches, "records": records,
+            "record_population": "Archived fresh proposals, including those superseded by cached plans" if fresh_sources else "Executed fresh proposals",
             "note": "Same-input first-admission comparisons; not counterfactual complete rollouts."}
 
 

@@ -33,8 +33,21 @@ def audit(capture):
             detail = current.get("retention", {})
             checks["explicit_retention"] = (detail.get("source_label") == row["source_label"] and
                                               abs(detail.get("age_s", -100) - row["age_s"]) < 1e-8)
-            checks["rejection_preserved"] = (capture / "replan-rejections" / (current["label"] + ".json")).exists()
-            reused.append({"time_s": row["time_s"], "source": row["source_label"], "age_s": row["age_s"]})
+            reason = detail.get("reason", "fresh_sampling_exhausted")
+            if reason == "cached_plan_ranked_better":
+                fresh_path = capture / (detail["fresh_candidate_source"] + ".json")
+                fresh = json.loads(fresh_path.read_text())
+                proposal = json.loads((capture / "proposals" / (fresh["selection"]["proposal"] + ".json")).read_text())
+                checks["fresh_candidate_preserved"] = (
+                    "retention" not in fresh and fresh["context"] == current["context"] and
+                    fresh["trajectory_ego"] == proposal["candidate_trajectories"][fresh["selection"]["chosen"]] and
+                    fresh["generated_token_ids"] == proposal["candidate_generated_tokens"][fresh["selection"]["chosen"]])
+                checks["cached_rank_is_better"] = (detail["metrics"][detail["chosen_cache_index"]]["selection_cost"] <
+                                                   detail["fresh_selection_cost"])
+            else:
+                checks["rejection_preserved"] = (capture / "replan-rejections" / (current["label"] + ".json")).exists()
+            reused.append({"time_s": row["time_s"], "source": row["source_label"], "age_s": row["age_s"],
+                           "reason": reason})
         if not all(checks.values()):
             mismatches.append({"time_s": row["time_s"], "checks": checks})
     return {"capture": str(capture), "controller_steps_checked": len(rows),

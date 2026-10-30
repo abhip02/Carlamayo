@@ -7,15 +7,16 @@ Previous results: [round 6](RESULTS_ROUND6.md).
 ## Current status
 
 The left turn is still incomplete. Every executed path remains model-generated.
-The two completed tests are:
+The completed tests are:
 
 | Test | Outcome | Actual speed range | Minimum actual corner clearance |
 | --- | --- | --- | --- |
 | Retention, 0.10 m predicted margin | Ends 4.6 s, 11.5° left; 2 reused steps | 2.783–9.543 m/s | 0.319 m |
 | Retention + speed-quality retries | Ends 8.3 s, 59.8° left; 7 reused steps | 1.759–6.468 m/s | 0.029 m |
+| Same, 0.20 m predicted margin | Ends 5.3 s, 5.2° left; 4 reused steps | 2.788–6.031 m/s | 0.243 m |
 
-Both remain inside the recorded lane corridor and have no near-stop below
-0.25 m/s, but neither reaches the exit. The second has a much steadier approach
+All remain inside the recorded lane corridor and have no near-stop below
+0.25 m/s, but none reaches the exit. The second has a much steadier approach
 followed by a mid-turn slowdown and very small clearance. Whole-rollout
 comparisons are descriptive because rendered inputs differ. Exact frozen-input
 and same-input pool comparisons are recorded below. Review video:
@@ -70,6 +71,9 @@ its existing `elapsed_sec` argument for real prediction age. The video uses the
 original path origin/time. Each reused record names its source and age and
 preserves all rejected fresh pools in `replan-rejections/`. A controller-input
 log independently records actual arrays, age, control and controller diagnostics.
+The 0.5 s limit applies when admitting a control step; the post-step video can
+show age 0.6 s after that step advances simulation by 0.1 s. No new control is
+admitted at age 0.6 s under these presets.
 `audit_retention.py` checks native provenance, source freshness, exact array
 identity, world anchor, unchanged speeds, real age and explicit rejection logs.
 
@@ -253,6 +257,7 @@ clearance at the vertex is 0.1697 m versus actual 0.0289 m. The front of this
 vehicle extends about 3.83 m ahead of the rear axle, so a small heading error
 can have a substantial footprint effect. This is a diagnostic comparison,
 not a calibrated tracking-error bound.
+The spatial comparison is saved in `cached-pose-tracking-comparison.json`.
 
 Prepare `retained-native-four-left-quality-margin20-43.json`, changing only
 the required predicted body clearance from **0.10 to 0.20 m**. It retains
@@ -262,4 +267,57 @@ predicted clearance, while another native path at 2.564 m/s has 0.269 m.
 The new requirement will change such selections or request more samples;
 it will not alter any path. Capture extra mid-turn inputs at frames 65, 68,
 70, 76 and 83 to make the next diagnostic reproducible. The comparison
-`capture-retained-native-four-left-quality-margin20-43` is pending.
+`capture-retained-native-four-left-quality-margin20-43` ends at **5.3 s**,
+with **5.2228°** left rotation and no route exit. Minimum speed is 2.7880 m/s,
+maximum 6.0312 m/s and final 4.5696 m/s; no near-stop. Minimum actual corner
+clearance is **0.2427 m**. All 53 executed native arrays, fixed anchors, speed
+arrays and ages match; no control or snapshot mismatch. There are 131 proposal
+calls, 11 green VQA checks and four reused steps (4.2, 4.5, 5.0, 5.1 s).
+The three eligible cached plans at termination all fail remaining clearance;
+all 48 fresh samples also fail admission. Wall time is 1374.7 s (22.9 minutes).
+Larger margin does not complete this turn. Different rendered inputs and the
+changed history prevent attributing the earlier endpoint solely to the margin.
+Evidence: `native-left-margin20-{control,footprint,route,retention,quality}-audit.json`.
+Retrospectively, 20 of the previous run's fresh selections have less than
+0.20 m predicted clearance. At 6.6 s, already observed pools contain five
+alternatives meeting 0.20 m, the best targeting 4.761 m/s. At 6.9 s and several
+later steps, none of the already observed candidates meets it. This describes
+sample availability only; a different earlier selection changes later inputs.
+Evidence: `quality-retrospective-margin20-availability.json`.
+
+## Proactive comparison of native plans
+
+On the recorded 0.10 m quality run, 61 of its 76 fresh execution states also
+have an older plan that passes the unchanged current-state cache checks and
+has a better existing 1.5 s ranking score. At 6.7–7.1 s, source 066 remains
+admitted with targets declining from 4.572 to 4.308 m/s and 0.195 m predicted
+clearance. At 7.0 and 7.1 s, fresh choices instead target 1.647 and 1.267 m/s.
+The exhaustion-only policy never considers this alternative because a fresh
+sample passes. Evidence: `proactive-cache-retrospective-audit.json`. These are
+recorded-state availability comparisons, not alternative live outcomes.
+
+Added a separate `proactive_probe.py` entrypoint. It still samples and validates
+fresh candidates, but then compares the accepted fresh plan with revalidated
+recent native plans using the same existing score. A strictly better cached
+plan may be selected before fresh sampling exhausts. The existing 0.5 s age,
+green signal, phase, distance, heading, full-body and remaining-horizon checks
+remain unchanged. There is no new switching penalty or path modification.
+Longer-forecast preference is explicitly unsupported in this comparison so
+the fresh and cached rankings remain comparable.
+
+Every accepted fresh proposal is saved separately in `accepted_frame_*.json`,
+even if it is not executed. Such a proposal can remain in the cache until its
+original age expires. Root `frame_*.json` always describes the executed sample;
+`retention.reason = cached_plan_ranked_better` distinguishes comparison from
+fresh-sampling exhaustion. The fresh proposal's original arrays, text and
+score are preserved, and no false rejection is logged. Controller records
+point to the immutable source file. The retention audit verifies both source
+identity and the preserved comparison; the quality audit explicitly identifies
+its population as accepted fresh proposals, including superseded ones.
+
+Three new tests cover a better cached choice, a better fresh choice and an
+expired cache, including distinct native source files, associated text and
+unchanged original age. Combined verification: **97 passed in 4.93 s**.
+The next live comparison uses the same margin-20 preset via `proactive_probe`,
+changing only the final fresh-versus-cached selection rule. Pending capture:
+`capture-proactive-native-four-left-quality-margin20-43`.

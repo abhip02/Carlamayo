@@ -23,6 +23,10 @@ in [RESULTS_ROUND7.md](RESULTS_ROUND7.md), on
 `experiment/driving-native-plan-retention`. It preserves the original world
 anchor and prediction time, revalidates against the current state, and logs
 every reuse and rejected new pool. It is an opt-in empty-green-scene experiment.
+The separate `proactive_probe` entrypoint also compares a revalidated cached
+plan with a valid fresh choice. It archives fresh proposals under
+`accepted_frame_*.json`, including those not executed, so native provenance and
+real prediction ages remain auditable. It does not change the normal launchers.
 
 Capture a short run with full native camera/pose inputs and raw model outputs:
 
