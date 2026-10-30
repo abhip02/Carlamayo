@@ -1,0 +1,13 @@
+{
+  "base_config": "local/configs/demo.yaml",
+  "base_options": "local/experiments/presets/tracking-native-four-left-exit-transition-43.json",
+  "policy_commit": "cc9da24",
+  "note": "Predeclared fresh runs, unchanged policy, same empty all-green Town03 junction. A duration limit is not route completion. No replay or tuning between scenarios.",
+  "scenarios": [
+    {"name": "01-straight-centered", "route": "straight", "duration_s": 10, "distance_before_intersection_m": 5, "lateral_offset_m": 0, "speed_mps": 3, "heading_offset_deg": 0, "seed": 44, "flow_seed": 43},
+    {"name": "02-straight-offset-faster", "route": "straight", "duration_s": 10, "distance_before_intersection_m": 5, "lateral_offset_m": 0.25, "speed_mps": 4, "heading_offset_deg": -2, "seed": 45, "flow_seed": 44},
+    {"name": "03-straight-opposite-offset", "route": "straight", "duration_s": 10, "distance_before_intersection_m": 10, "lateral_offset_m": -0.25, "speed_mps": 3, "heading_offset_deg": 2, "seed": 46, "flow_seed": 45},
+    {"name": "04-left-centered", "route": "left", "duration_s": 12, "distance_before_intersection_m": 5, "lateral_offset_m": 0, "speed_mps": 3, "heading_offset_deg": 0, "seed": 44, "flow_seed": 43},
+    {"name": "05-left-offset-faster", "route": "left", "duration_s": 12, "distance_before_intersection_m": 5, "lateral_offset_m": 0.2, "speed_mps": 4, "heading_offset_deg": -2, "seed": 45, "flow_seed": 44}
+  ]
+}
