@@ -148,7 +148,7 @@ A separate full-run preset, `tracking-native-four-left-speed4-unknown-exit-43.js
 adds only the opt-in unknown-exit flag to the preceding speed-4 preset. It contains
 no prefix replay settings. Use `candidate_reserve_probe` to test the current
 combined native validation/resampling package from the original scene start.
-The full run is active after the resumed comparison passed its audits; see below.
+The full run has ended unsuccessfully; its independent audits and failure are below.
 
 
 ## Completed native continuation
@@ -193,11 +193,46 @@ Artifacts in the round-10 evidence directory:
 - `native-exit-recovery.png/.pdf`: actual path, speed and clearance with the
   replay boundary marked; visually reviewed.
 
-## Full-run validation in progress
+## Full fresh validation: incomplete at 11.0 seconds
 
 `capture-native-four-left-speed4-unknown-exit-43/` starts from the original scene
 at t=0 with fresh inference throughout: **no prefix replay settings**. It uses
 the new full-run preset and `candidate_reserve_probe`, so all native validation,
 resampling, recent selected-cache and admitted-alternative checks are exercised.
-Started at `2fc90de`, duration cap 20 s, same route endpoint. A full-run result
-is pending; the completed continuation must not be presented as this result.
+Started at `2fc90de`, duration cap 20 s, same route endpoint. It ends at **11.0 s**
+after all 48 new samples fail native body geometry. Final x is **9.18081 m**,
+about 12 m before the endpoint, with **82.1193 degrees** of left rotation.
+The visual answer changes from green to `None`/unknown at this terminal step.
+All five recent selected plans and 31 admitted alternatives fail the signal
+eligibility gate. The matching-unknown exception never activates: their source
+labels are green. This full result is negative, despite the completed earlier
+continuation. No model or simulator error caused the termination.
+
+All **110** executed native arrays, world anchors, speed arrays and ages match
+exactly. Controller and tracking reconstruction have zero error; applied controls
+and physical snapshots match. No recorded corner leaves the corridor. Actual
+speed spans **2.78803–5.17615 m/s**, final **4.86875 m/s**, and minimum recorded
+body clearance is **0.130955 m**. The car does not stop on its own; the experiment
+terminates explicitly when validation cannot supply another eligible native plan.
+
+There are 107 fresh admitted planning steps, 357 sampled pools (2,856 native
+candidates), and 70 executed cache uses: 67 better-ranked choices and three after
+fresh exhaustion. No unselected-reserve rescue or unknown-exit reuse occurs.
+There are 22 green visual checks attached to executed frames and one additional
+unknown check at the failed terminal step. The capture audit's executed-frame
+count omits that terminal check; the original proposal records preserve it.
+Wall time is **4,118.74 s (68.65 min)**, including **4,021.88 s** of recorded pool
+inference. Of 2,856 candidates, 794 pass hard checks. Rejection counts overlap:
+1,560 native body departures, 314 tracking-clearance failures, 172 native-clearance
+failures, 224 center-corridor departures, 98 misalignment, 81 reverse motion,
+65 insufficient green progress, and four malformed trajectory markers.
+
+Terminal-only counts: all 48 fail native body geometry; 19 also misalign, nine
+leave the center corridor, six reverse, and one lacks the trajectory marker.
+A separate frozen-input sampler comparison is in progress at this exact saved
+observation; it changes neither live eligibility nor generated trajectories.
+
+Artifacts: `native-left-fresh-11s-incomplete.mp4` (explicitly labeled incomplete),
+`capture-native-four-left-speed4-unknown-exit-43/combined-audit-summary.json`,
+six independent audit files and `sampling-audit.json`. `audit_sampling.py`
+excludes replayed-prefix pools when used on continuation captures.

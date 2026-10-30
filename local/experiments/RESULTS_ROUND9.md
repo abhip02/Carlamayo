@@ -186,3 +186,21 @@ The active full test retains 0.5 s. A physical continuation must test the older
 candidate before any longer-retention experiment is considered. Evidence in
 `outputs/driving-investigation-10/`: `check_older_admitted_candidates.py` and
 `older-admitted-terminal74-audit.json`.
+
+
+### Older admitted candidate: physical replay completed
+
+The queued round-10 replay `replay-older-strict74-frame067-candidate0/` reproduces
+all 7.4 s of the strict run's states and original-controller commands exactly,
+then holds the unchanged frame-067/pool-0/candidate-0 native path for 1.5 s.
+Every source array remains exact. It reaches **8.9 s** without a recorded body
+departure, final speed **2.33675 m/s**, yaw **18.2935 degrees**, final x **3.1110 m**.
+Minimum continuation clearance is **0.199018 m**, final **0.588952 m**. The
+forecast's 0.213240 m minimum therefore overstates the actual minimum slightly;
+this replay is not evidence that the 0.2 m forecast provides a physical bound.
+The maximum applied-control representation difference is 2.89e-8.
+
+This diagnostic deliberately starts with a 0.7 s old sample and holds beyond the
+live age cap. It uses no fresh inference and does not complete the route. The
+live 0.5 s age limit is unchanged. The result supports further study of older
+native alternatives, but no age-limit extension has been adopted.

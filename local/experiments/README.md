@@ -9,13 +9,17 @@ Current evidence: two earlier controlled straight crossings completed. The newes
 left-turn test completes the route at 15.4 s after a verified 12.2 s replayed
 approach and 3.2 s of fresh inference/native retention. Every model path and
 speed array stays unchanged; actual vehicle corners remain inside the corridor.
-A fresh full run from t=0 is being checked separately. This is not yet a general
-driving fix. See [round 10](RESULTS_ROUND10.md) for the exact distinction, audits,
+A separate fresh full run ends at 11.0 s when all 48 new samples fail geometry
+and recent green-labeled paths are ineligible after an unknown signal answer.
+It has no recorded corridor departure or near-stop, but does not finish. This is
+not yet a general driving fix. See [round 10](RESULTS_ROUND10.md) for the exact distinction, audits,
 rollback checkpoint and controlled-scene limitations.
 
 Local video (generated evidence, not committed to Git):
 [`native-left-exit-continuation-complete.mp4`](../../outputs/driving-investigation-10/native-left-exit-continuation-complete.mp4).
 The banners identify which portion is replayed and which uses fresh inference.
+The separate [fresh-run video](../../outputs/driving-investigation-10/native-left-fresh-11s-incomplete.mp4)
+is labeled incomplete at 11.0 s.
 
 See [RESULTS.md](RESULTS.md) for the initial diagnosis and
 [RESULTS_ROUND2.md](RESULTS_ROUND2.md) for camera, signal, and multiple-trajectory
