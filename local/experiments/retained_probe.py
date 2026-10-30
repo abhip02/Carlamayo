@@ -14,6 +14,7 @@ import numpy as np
 
 from local.experiments import inference_probe as native, validated_probe as validated
 from local.experiments.audit_turn import project
+from local.experiments.exit_cache import unknown_exit_evidence
 from local.experiments.validated_selection import choose, pose_transform, predicted_corners
 from module import config
 from module.trajectory_follower import planned_speeds, trajectory_to_world
@@ -56,7 +57,11 @@ def assess_retained(plan, context, route, signal, phase, options):
     if age <= 0 or age > maximum_age + 1e-6:
         reasons.append("expired_or_nonpast_plan")
     if signal != "green" or record["selection"]["signal"] != "green":
-        reasons.append("reuse_requires_green")
+        evidence = unknown_exit_evidence(record, context, route, signal, phase, options)
+        if evidence is None:
+            reasons.append("reuse_requires_green")
+        else:
+            item["signal_reuse"] = evidence
     if phase != record["navigation_phase"]:
         reasons.append("navigation_phase_changed")
     if reasons:

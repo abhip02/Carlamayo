@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from local.experiments.validated_selection import pose_transform, selection_rank
+from local.experiments.exit_cache import unknown_exit_evidence
 from module.trajectory_follower import planned_speeds, trajectory_to_world
 
 
@@ -47,6 +48,17 @@ def audit(capture):
             detail = current.get("retention", {})
             checks["explicit_retention"] = (detail.get("source_label") == row["source_label"] and
                                               abs(detail.get("age_s", -100) - row["age_s"]) < 1e-8)
+            selected_metric = detail["metrics"][detail["chosen_cache_index"]]
+            if "signal_reuse" in selected_metric:
+                options = json.loads((capture / "experiment.json").read_text())["options"]
+                routes = json.loads((capture / "route-reference.json").read_text())["routes"]
+                evidence = unknown_exit_evidence(source, current["context"],
+                    routes[current["selection"]["route"]], current["visual_signal"],
+                    current["navigation_phase"], options)
+                checks["unknown_exit_eligibility_matches"] = evidence == selected_metric["signal_reuse"]
+                checks["unknown_signal_not_relabelled"] = (
+                    source["selection"]["signal"] == current["visual_signal"] ==
+                    current["selection"]["signal"] == "unknown")
             reason = detail.get("reason", "fresh_sampling_exhausted")
             if reason == "cached_plan_ranked_better":
                 fresh_path = capture / (detail["fresh_candidate_source"] + ".json")

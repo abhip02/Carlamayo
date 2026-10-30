@@ -562,7 +562,7 @@ def main():
             "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
             "local/experiments/validated_selection.py", "local/experiments/retained_probe.py",
             "local/experiments/proactive_probe.py", "local/experiments/tracking_probe.py",
-            "local/experiments/tracking_forecast.py")}
+            "local/experiments/tracking_forecast.py", "local/experiments/exit_cache.py")}
         for name, content in sources.items():
             snapshot = args.output / "source_snapshot" / name
             snapshot.parent.mkdir(parents=True, exist_ok=True)
