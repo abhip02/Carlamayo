@@ -55,14 +55,36 @@ and age rejection, unchanged green pairs, and provenance-audit tampering.
 The full-run preset `tracking-native-four-left-exit-transition-43.json` adds only
 this flag to the preceding preset. It has **not** been validated from t=0.
 
-## Matched continuations in progress
+## Matched continuations
 
 Options in `outputs/driving-investigation-11/` replay and verify the same 11.0 s
 prefix, then resume fresh sampling with the transition flag off or on:
 `resume-terminal110-baseline.json`, `resume-terminal110-exit-transition.json`.
 The baseline runs first. Every replayed state and controller command must match;
 camera renders may differ. Completion would be a verified-prefix continuation,
-not a new full fresh-run success. Results are pending.
+not a new full fresh-run success.
+
+The baseline reproduces the failure at **11.0 s**: 48/48 new samples fail native
+body geometry, 20 also misalign, 12 leave the center corridor and six reverse.
+The 110 prefix commands and positions/orientations reproduce exactly; maximum
+float32 context-speed difference is 3.76e-7 m/s. Independent native/controller,
+physical snapshot and tracking audits pass. Six new pools are attempted and no
+new command is executed after the prefix. The zero completed fresh-step count
+must not be read as zero model calls. Wall time is **130.25 s**.
+
+The opt-in comparison bridges frame 110 using exactly `accepted_frame_109`,
+then retains it at ages 0.2–0.5 s while comparing newly admitted but slower native
+samples. It switches to a new native source at frame 115 and has continued beyond
+12.0 s. The five green-to-unknown uses preserve both original signal labels.
+The complete route outcome and final audits remain pending.
 
 Offline evidence: `check_terminal110_transition_policy.py`,
 `terminal110-transition-policy-audit.json` in the round-11 output directory.
+
+
+`resume-boundary-input-comparison.json` confirms the original, baseline and
+opt-in boundary have identical world poses, instruction, XYZ/rotation histories
+and camera indices. Mean absolute RGB differences are 1.61947/255
+(original–baseline) and 1.67155/255 (baseline–option), with 27.28% and 28.60%
+unequal channels respectively. Thus physics/history match exactly but renders
+do not; the baseline independently reproduces the same all-48 native-body failure.
