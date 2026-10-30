@@ -130,10 +130,11 @@ Artifacts under `outputs/driving-investigation-11/`:
 - `resume-terminal110-exit-transition/combined-audit-summary.json`, six independent
   audits and `sampling-audit.json`.
 
-## Fresh-from-start validation pending
+## Fresh-from-start validation in progress
 
-`capture-native-four-left-exit-transition-43/` will use `candidate_reserve_probe`
+`capture-native-four-left-exit-transition-43/` uses `candidate_reserve_probe`
 and `tracking-native-four-left-exit-transition-43.json` from the original scene
-start, without replay options. Duration cap 20 s, same required endpoint. This
+start, without replay options. Started at `28d093a`; duration cap 20 s, same
+required endpoint. This
 is necessary to check the combined policy in another complete fresh run. The
 two successful continuations must not be reported as that result.
