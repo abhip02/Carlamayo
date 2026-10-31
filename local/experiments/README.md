@@ -17,10 +17,13 @@ result, five videos, measured plots, rejection evidence and limitations. These
 are variants at one empty, all-green junction, not five maps or traffic scenes;
 the batch takes about 3 h 35 min of wall time.
 
-An isolated follow-up on `experiment/driving-phase-transition` tests whether a
-compatible left-turn instruction transition should preserve eligibility of a
-recent native path; see [round 13](RESULTS_ROUND13.md). The five-case benchmark
-remains unchanged while this hypothesis is tested separately.
+An isolated follow-up on `experiment/driving-phase-transition` fixes one
+unnecessary phase-label veto: the matched baseline fails at 5.7 s, while the
+opt-in continuation reaches the endpoint at 10.2 s with one phase-cache use.
+This is a verified 5.7 s replay plus 4.5 s of fresh continuation; a full fresh run
+and the five-case regression remain pending. See [round 13](RESULTS_ROUND13.md)
+for physical replays, audits, videos, rollback and a separate frozen-input
+sampling lead for low target speeds. The five-case benchmark remains unchanged.
 
 The prior full fresh left turn completed at 13.4 s, with 134 unchanged native
 commands, minimum speed 2.788 m/s and minimum clearance 0.109 m. Two earlier
