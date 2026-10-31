@@ -5,24 +5,34 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Current evidence: a **full fresh left turn reaches the endpoint at 13.4 s**,
-with all 134 executed paths/speed arrays unchanged from their native model
-sources and the original controller. No recorded corner leaves the corridor
-and speed never falls below 2.788 m/s. Minimum clearance is only **0.109 m**;
-repeatability remains unverified and inference takes about 70 minutes. This is
-one successful controlled empty, all-green case, not a general driving fix.
-Two earlier controlled straight crossings and two verified-prefix left-turn
-continuations also completed. See [round 11](RESULTS_ROUND11.md) for the new
-transition rule, full-run audits, separate reproduced physical speed jump,
-rollback checkpoint and limitations. The preceding full fresh run failed at
-11.0 s, as documented in [round 10](RESULTS_ROUND10.md).
+Current evidence: **one of five new, predeclared short scenario variants
+reaches the endpoint** with the unchanged experimental policy. The offset left
+turn completes at 11.9 s; two straight runs and the centered left turn exhaust
+validation, while the third straight run reaches its 10 s cap short of the exit
+and slows below 1 m/s. This is not a reliable driving fix. All 405 executed
+commands preserve native model paths/speeds and match the original controller;
+no recorded corner leaves the corridor. The successful case has minimum speed
+2.552 m/s and clearance 0.189 m. See [round 12](RESULTS_ROUND12.md) for every
+result, five videos, measured plots, rejection evidence and limitations. These
+are variants at one empty, all-green junction, not five maps or traffic scenes;
+the batch takes about 3 h 35 min of wall time.
+
+The prior full fresh left turn completed at 13.4 s, with 134 unchanged native
+commands, minimum speed 2.788 m/s and minimum clearance 0.109 m. Two earlier
+controlled straight crossings and two verified-prefix left continuations also
+completed. [Round 11](RESULTS_ROUND11.md) preserves that earlier evidence, the
+exit-transition rule, rollback checkpoint and separate physical speed-jump
+replay. The preceding fresh run failed at 11.0 s; see [round 10](RESULTS_ROUND10.md).
 
 Local videos (generated evidence, not committed to Git):
 
+- [All five new scenario variants, with outcomes](../../outputs/driving-investigation-12/five-scenarios-comparison.mp4).
+- [New completed offset left turn, 11.9 s](../../outputs/driving-investigation-12/05-left-offset-faster-review.mp4).
 - [Completed fresh left turn, 13.4 s](../../outputs/driving-investigation-11/native-left-full-exit-transition-complete.mp4).
 - [Newest completed continuation](../../outputs/driving-investigation-11/native-left-exit-transition-continuation-complete.mp4).
 - [Earlier completed continuation](../../outputs/driving-investigation-10/native-left-exit-continuation-complete.mp4).
 - [Earlier incomplete fresh run](../../outputs/driving-investigation-10/native-left-fresh-11s-incomplete.mp4).
+
 Banners explicitly identify replayed portions and incomplete results.
 
 See [RESULTS.md](RESULTS.md) for the initial diagnosis and
