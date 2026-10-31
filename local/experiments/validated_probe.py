@@ -77,9 +77,15 @@ class ValidatingProbe(native.Probe):
         proposals.mkdir(exist_ok=True)
         attempts, best = [], None
         quality_limit = options.get("validation_resample_above_target_mps")
+        low_speed_limit = options.get("validation_resample_below_target_mps")
         preferred_reserve = options.get("validation_preferred_reserve_m")
         if quality_limit is not None and (not math.isfinite(quality_limit) or quality_limit <= 0):
             raise ValueError("The resampling target preference must be finite and positive")
+        if low_speed_limit is not None:
+            if not math.isfinite(low_speed_limit) or low_speed_limit <= 0:
+                raise ValueError("The low-speed resampling preference must be finite and positive")
+            if quality_limit is not None and low_speed_limit > quality_limit:
+                raise ValueError("The low-speed preference must not exceed the upper preference")
         for attempt in range(options.get("validation_max_pools", 3)):
             trial = {**options, "instruction": instruction,
                      "flow_seed": options.get("flow_seed", 42) + attempt,
@@ -127,7 +133,7 @@ class ValidatingProbe(native.Probe):
                              "inference_seconds": record["inference_seconds"], "chosen": chosen})
             if chosen is None:
                 continue
-            # Retry a fast but admitted selection only when explicitly enabled.
+            # Retry admitted selections only for explicitly enabled preferences.
             # Preserve the best admitted native sample even if later pools fail.
             metric = metrics[chosen]
             if preferred_reserve is not None and "preferred_reserve_valid" not in metric:
@@ -141,13 +147,17 @@ class ValidatingProbe(native.Probe):
                                 for k, v in extra.items()}))
             retry_speed = (quality_limit is not None and self.visual_signal == "green" and
                            best["metric"]["target_speed_mps"] > quality_limit)
+            retry_low_speed = (low_speed_limit is not None and self.visual_signal in ("green", "unknown") and
+                               best["metric"]["target_speed_mps"] < low_speed_limit)
             retry_reserve = (preferred_reserve is not None and
                              not best["metric"]["preferred_reserve_valid"])
             if quality_limit is not None:
                 attempts[-1]["retry_for_speed_preference"] = retry_speed
+            if low_speed_limit is not None:
+                attempts[-1]["retry_for_low_speed_preference"] = retry_low_speed
             if preferred_reserve is not None:
                 attempts[-1]["retry_for_reserve_preference"] = retry_reserve
-            if not (retry_speed or retry_reserve):
+            if not (retry_speed or retry_low_speed or retry_reserve):
                 break
         if best is not None:
             selected, extra, record = best["selected"], best["extra"], best["record"]
@@ -182,6 +192,12 @@ class ValidatingProbe(native.Probe):
                     "applied": self.visual_signal == "green",
                     "met": best["metric"]["target_speed_mps"] <= quality_limit,
                     "note": "Retry preference only; an admitted native plan may remain above it when the budget is exhausted."}
+            if low_speed_limit is not None:
+                record["selection"]["low_speed_preference"] = {
+                    "resample_below_target_mps": low_speed_limit,
+                    "applied": self.visual_signal in ("green", "unknown"),
+                    "met": best["metric"]["target_speed_mps"] >= low_speed_limit,
+                    "note": "Retry preference only; unchanged ranking and pool budget may retain a slower native plan. Controlled empty-scene experiment."}
             if preferred_reserve is not None:
                 record["selection"]["reserve_preference"] = {
                     "preferred_clearance_m": preferred_reserve,

@@ -353,3 +353,11 @@ committed. After saving/committing experiment code, return to the baseline with
 `git switch feature/verifai-server-client`. Stop the owned CARLA container with
 `bash local/server.sh stop` when finished. No dependency/environment changes are
 required for this investigation.
+
+## Bounded low-speed retry investigation
+
+[Round 14](RESULTS_ROUND14.md) tests the opt-in
+`validation_resample_below_target_mps` preference. It searches additional native
+pools when the chosen target is low, within the existing budget and ranking.
+It does not increase a native speed or reject a slow plan solely for missing
+the preference. Defaults remain unchanged; targeted live validation is pending.
