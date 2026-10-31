@@ -92,7 +92,8 @@ def test_rescue_only_after_parent_exhaustion_preserves_native_clock_and_failure_
         return metric
 
     def exhausted(*args, **kwargs):
-        reserve.native.write_json(tmp_path / 'validation-failure.json', {'attempts': [{'inference_seconds': 1.2}]})
+        reserve.native.write_json(tmp_path / 'validation-failure.json', {
+            'navigation_phase': 'approach', 'attempts': [{'inference_seconds': 1.2}]})
         reserve.native.write_json(tmp_path / 'retention-failure.json', {'metrics': [], 'selected_only_failed': True})
         raise reserve.validated.NoValidatedPlan('fresh and selected cache failed')
 

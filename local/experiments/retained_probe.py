@@ -14,7 +14,7 @@ import numpy as np
 
 from local.experiments import inference_probe as native, validated_probe as validated
 from local.experiments.audit_turn import project
-from local.experiments.exit_cache import unknown_exit_evidence
+from local.experiments.exit_cache import left_phase_transition_evidence, unknown_exit_evidence
 from local.experiments.validated_selection import choose, pose_transform, predicted_corners
 from module import config
 from module.trajectory_follower import planned_speeds, trajectory_to_world
@@ -63,7 +63,11 @@ def assess_retained(plan, context, route, signal, phase, options):
         else:
             item["signal_reuse"] = evidence
     if phase != record["navigation_phase"]:
-        reasons.append("navigation_phase_changed")
+        evidence = left_phase_transition_evidence(record, context, route, signal, phase, options)
+        if evidence is None:
+            reasons.append("navigation_phase_changed")
+        else:
+            item["phase_reuse"] = evidence
     if reasons:
         return item
     if not np.isfinite([*context["world_pose"].values(), context["measured_speed_mps"]]).all():

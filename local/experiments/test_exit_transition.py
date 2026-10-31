@@ -100,7 +100,7 @@ def test_retention_audit_checks_both_actual_signal_labels_and_transition_flag(tm
                        ('route-reference.json', {'routes': {'left': route}})]:
         (tmp_path / name).write_text(json.dumps(data))
     (tmp_path / 'replan-rejections').mkdir()
-    (tmp_path / 'replan-rejections/frame_004.json').write_text('{}')
+    (tmp_path / 'replan-rejections/frame_004.json').write_text('{"navigation_phase":"finish_turn"}')
     (tmp_path / 'controller-inputs.jsonl').write_text(json.dumps({
         'time_s': .4, 'source_label': plan.record['label'], 'source_context': plan.record['context'],
         'age_s': .4, 'world_trajectory': plan.world.tolist(), 'speeds_mps': plan.speeds.tolist()}) + '\n')

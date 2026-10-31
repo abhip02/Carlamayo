@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from local.experiments.validated_selection import pose_transform, selection_rank
-from local.experiments.exit_cache import unknown_exit_evidence
+from local.experiments.exit_cache import left_phase_transition_evidence, unknown_exit_evidence
 from module.trajectory_follower import planned_speeds, trajectory_to_world
 
 
@@ -51,6 +51,17 @@ def audit(capture):
             checks["explicit_retention"] = (detail.get("source_label") == row["source_label"] and
                                               abs(detail.get("age_s", -100) - row["age_s"]) < 1e-8)
             selected_metric = detail["metrics"][detail["chosen_cache_index"]]
+            checks["phase_eligibility_logged"] = (
+                source["navigation_phase"] == current["navigation_phase"] or
+                "phase_reuse" in selected_metric)
+            if "phase_reuse" in selected_metric:
+                options = json.loads((capture / "experiment.json").read_text())["options"]
+                routes = json.loads((capture / "route-reference.json").read_text())["routes"]
+                evidence = left_phase_transition_evidence(source, current["context"],
+                    routes[current["selection"]["route"]], current["visual_signal"],
+                    current["navigation_phase"], options)
+                checks["left_phase_eligibility_matches"] = (
+                    evidence is not None and evidence == selected_metric["phase_reuse"])
             checks["signal_eligibility_logged"] = (
                 source["selection"]["signal"] == current["selection"]["signal"] == "green" or
                 "signal_reuse" in selected_metric)
@@ -69,6 +80,8 @@ def audit(capture):
             if reason == "cached_plan_ranked_better":
                 fresh_path = capture / (detail["fresh_candidate_source"] + ".json")
                 fresh = json.loads(fresh_path.read_text())
+                checks["current_phase_matches_decision"] = (
+                    current["navigation_phase"] == fresh["navigation_phase"])
                 proposal = json.loads((capture / "proposals" / (fresh["selection"]["proposal"] + ".json")).read_text())
                 checks["fresh_candidate_preserved"] = (
                     "retention" not in fresh and fresh["context"] == current["context"] and
@@ -83,7 +96,11 @@ def audit(capture):
                 if "fresh_selection_rank" in detail:
                     checks["fresh_rank_preserved"] = detail["fresh_selection_rank"] == list(selection_rank(fresh_metric))
             else:
-                checks["rejection_preserved"] = (capture / "replan-rejections" / (current["label"] + ".json")).exists()
+                rejection = capture / "replan-rejections" / (current["label"] + ".json")
+                checks["rejection_preserved"] = rejection.exists()
+                checks["current_phase_matches_decision"] = (
+                    rejection.exists() and json.loads(rejection.read_text()).get("navigation_phase") ==
+                    current["navigation_phase"])
             reused.append({"time_s": row["time_s"], "source": row["source_label"], "age_s": row["age_s"],
                            "reason": reason})
         if not all(checks.values()):

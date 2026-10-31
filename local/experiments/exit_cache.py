@@ -1,4 +1,4 @@
-"""Narrow opt-in eligibility for unchanged native exit plans under unknown signals.
+"""Narrow opt-in eligibility for unchanged native plans across label transitions.
 
 Controlled empty scene only. This does not infer green, resolve signal
 applicability, detect obstacles, or authorize approaching an unknown signal.
@@ -10,6 +10,46 @@ from local.experiments.audit_turn import project
 
 def angle_error(a, b):
     return abs((a - b + 180) % 360 - 180)
+
+
+def left_phase_transition_evidence(record, context, route, signal, phase, options):
+    """Allow the same left maneuver across its existing 60-degree phase boundary.
+
+    This only removes a label veto. Original age, native geometry, tracking,
+    speed and current-state checks still determine whether the plan is usable.
+    """
+    if (not options.get('validation_allow_left_phase_cache', False) or
+            not options.get('verify_signal') or options.get('validation_route') != 'left' or
+            record['selection']['route'] != 'left' or
+            record['navigation_phase'] != 'approach' or phase != 'finish_turn' or
+            signal != 'green' or record['selection']['signal'] != 'green' or
+            record.get('visual_signal') != 'green'):
+        return None
+    entry = route['entry']
+    total_turn = (entry['yaw'] - route['exit']['yaw'] + 180) % 360 - 180
+    if not np.isfinite(total_turn) or not 60 <= total_turn <= 120:
+        return None
+    _, entry_arc, _, _, _ = project(np.array([[entry['x'], entry['y']]]), route)
+    states = []
+    for label, item in (('source', record['context']), ('current', context)):
+        pose = item['world_pose']
+        if not np.isfinite([pose[k] for k in ('x', 'y', 'yaw')]).all():
+            return None
+        distance, arc, _, width, _ = project(np.array([[pose['x'], pose['y']]]), route)
+        turn = (entry['yaw'] - pose['yaw'] + 180) % 360 - 180
+        if (not np.isfinite([distance[0], arc[0], width[0], turn]).all() or
+                distance[0] > width[0] or arc[0] <= entry_arc[0]):
+            return None
+        states.append({'state': label, 'left_rotation_deg': float(turn),
+                       'center_distance_m': float(distance[0]), 'route_arc_m': float(arc[0])})
+    if not (0 <= states[0]['left_rotation_deg'] < 60 <= states[1]['left_rotation_deg'] < 120 and
+            states[1]['route_arc_m'] >= states[0]['route_arc_m']):
+        return None
+    return {'policy': 'approach_to_finish_left_turn', 'route': 'left',
+            'source_phase': 'approach', 'current_phase': 'finish_turn',
+            'source_signal': 'green', 'current_signal': 'green',
+            'transition_turn_deg': 60, 'states': states,
+            'note': 'Original phase labels retained. All physical and age checks still apply.'}
 
 
 def unknown_exit_evidence(record, context, route, signal, phase, options):
