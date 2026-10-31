@@ -28,7 +28,7 @@ def test_bounded_retry_preserves_best_native_sample(tmp_path, monkeypatch, signa
         speed = 1. if not index else later_speed
         prediction[:, :, 1] = original * ((speed or 1.) / 3.)
         if speed is None:
-            prediction[:, :, 1, :, 1] = 2.5
+            prediction[:, :, :, :, 1] = 2.5
         result, extra = generate(*args, **kwargs)
         extra["cot"][0, 0, 1] = f"pool-{index}"
         generated.append(result[:, :, 1:2].clone())
@@ -45,6 +45,8 @@ def test_bounded_retry_preserves_best_native_sample(tmp_path, monkeypatch, signa
     frame = json.loads((tmp_path / "frame_000.json").read_text())
     selection = frame["selection"]
     assert selection["proposal"] == f"frame_000_pool_{expected_pool}"
+    if later_speed is None:
+        assert selection["attempts"][-1]["chosen"] is None
     assert selection["low_speed_preference"]["met"] == met
     assert frame["trajectory_ego"] == frame["candidate_trajectories"][1]
     metric = selection["attempts"][expected_pool]["metrics"][1]
@@ -94,3 +96,15 @@ def test_invalid_retry_band_fails_before_sampling(tmp_path, monkeypatch, thresho
     with pytest.raises(ValueError, match="preference"):
         probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
     assert not calls
+
+
+def test_already_met_preference_uses_one_pool(tmp_path, monkeypatch):
+    probe, adapter, context, options, prediction, calls = fake_probe(tmp_path, monkeypatch)
+    prediction[:, :, 1] *= 4. / 3.
+    options.update(validation_resample_below_target_mps=3., validation_max_pools=6)
+    selected, _ = probe.evaluate(adapter, {}, context, "Go straight", options, "frame_000")
+    assert len(calls) == 1
+    assert torch.equal(selected, prediction[:, :, 1:2])
+    frame = json.loads((tmp_path / "frame_000.json").read_text())
+    assert frame["selection"]["low_speed_preference"]["met"]
+    assert not frame["selection"]["attempts"][0]["retry_for_low_speed_preference"]

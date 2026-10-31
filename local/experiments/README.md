@@ -5,7 +5,7 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Current evidence: **one of five new, predeclared short scenario variants
+Latest complete five-case benchmark (round 12): **one of five predeclared short scenario variants
 reaches the endpoint** with the unchanged experimental policy. The offset left
 turn completes at 11.9 s; two straight runs and the centered left turn exhaust
 validation, while the third straight run reaches its 10 s cap short of the exit
@@ -25,6 +25,15 @@ and the five-case regression remain pending. See [round 13](RESULTS_ROUND13.md)
 for physical replays, audits, videos, rollback and a separate frozen-input
 sampling lead for low target speeds. The five-case benchmark remains unchanged.
 
+The next isolated change, `validation_resample_below_target_mps`, requests
+additional native pools within the existing budget and ranking. In the matched
+straight slowdown diagnostic, the baseline stops and fails at 10.1 s; the
+retry-enabled continuation reaches the endpoint at 10.7 s with minimum fresh
+speed 3.015 m/s. Both replay the same verified 9.0 s prefix. All audits and 155
+experiment tests pass; full fresh-run validation is still pending. See
+[round 14](RESULTS_ROUND14.md) for videos, measured results, sampling cost and
+rollback. The option is disabled by default and never raises a native speed.
+
 The prior full fresh left turn completed at 13.4 s, with 134 unchanged native
 commands, minimum speed 2.788 m/s and minimum clearance 0.109 m. Two earlier
 controlled straight crossings and two verified-prefix left continuations also
@@ -34,10 +43,13 @@ replay. The preceding fresh run failed at 11.0 s; see [round 10](RESULTS_ROUND10
 
 Local videos (generated evidence, not committed to Git):
 
+- [Newest straight slowdown comparison](../../outputs/driving-investigation-14/slowdown-comparison.mp4).
+- [Left phase-transition comparison](../../outputs/driving-investigation-13/phase-transition-comparison.mp4).
+
 - [All five new scenario variants, with outcomes](../../outputs/driving-investigation-12/five-scenarios-comparison.mp4).
 - [New completed offset left turn, 11.9 s](../../outputs/driving-investigation-12/05-left-offset-faster-review.mp4).
 - [Completed fresh left turn, 13.4 s](../../outputs/driving-investigation-11/native-left-full-exit-transition-complete.mp4).
-- [Newest completed continuation](../../outputs/driving-investigation-11/native-left-exit-transition-continuation-complete.mp4).
+- [Earlier left exit-transition continuation](../../outputs/driving-investigation-11/native-left-exit-transition-continuation-complete.mp4).
 - [Earlier completed continuation](../../outputs/driving-investigation-10/native-left-exit-continuation-complete.mp4).
 - [Earlier incomplete fresh run](../../outputs/driving-investigation-10/native-left-fresh-11s-incomplete.mp4).
 
@@ -353,11 +365,3 @@ committed. After saving/committing experiment code, return to the baseline with
 `git switch feature/verifai-server-client`. Stop the owned CARLA container with
 `bash local/server.sh stop` when finished. No dependency/environment changes are
 required for this investigation.
-
-## Bounded low-speed retry investigation
-
-[Round 14](RESULTS_ROUND14.md) tests the opt-in
-`validation_resample_below_target_mps` preference. It searches additional native
-pools when the chosen target is low, within the existing budget and ranking.
-It does not increase a native speed or reject a slow plan solely for missing
-the preference. Defaults remain unchanged; targeted live validation is pending.
