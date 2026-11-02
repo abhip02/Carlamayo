@@ -119,3 +119,28 @@ The separately declared 0.3 s launcher comparison is running at `86ec832`.
 Automatically generated route geometry matches the original reference exactly.
 The centered-left full fresh check remains queued; the five-case benchmark has
 not been rerun.
+
+## Remaining upper-speed retry gap
+
+The completed straight run selects native targets 5.62, 5.97, 7.19, 7.76 and
+7.34 m/s at 7.5–7.9 s. Every candidate in these first pools is admitted, but
+the upper-speed preference explicitly reports `applied: false`: the visual
+label is `unknown`, and the original upper retry runs only for green. At 7.8 s
+even the slowest candidate is 7.76 m/s. The next pool at 8.0 s returns a 3.56 m/s
+selection, creating an avoidable target-speed swing.
+
+An additional, default-off option `validation_resample_fast_unknown` extends
+the existing upper-speed retry to unknown visual labels. It does not label an
+unknown signal green, change the ranking, clamp a target, modify a path, add
+pools beyond the existing budget, or change red/yellow behavior. An admitted
+fast sample remains available if subsequent pools are worse or invalid.
+The independent audit now checks upper-speed annotations and each retry request
+against archived pools. All 197 experiment tests pass in 4.50 s; the completed
+baseline also passes the extended audit (85 fresh source decisions).
+
+This option has not yet been physically validated or enabled in the launcher
+profile. The interval comparison remains unchanged at its launch revision.
+Before recommending the new option, run the same full fresh straight condition
+with it enabled, then the full centered-left check with the resulting proposed
+launcher configuration. Preserve the unmodified full straight and interval
+results alongside these additional checks. No new five-case benchmark is claimed.

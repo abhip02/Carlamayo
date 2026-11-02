@@ -145,7 +145,9 @@ class ValidatingProbe(native.Probe):
                             extra=copy.deepcopy({
                                 k: v[..., chosen:chosen + 1] if isinstance(v, np.ndarray) else v
                                 for k, v in extra.items()}))
-            retry_speed = (quality_limit is not None and self.visual_signal == "green" and
+            upper_speed_applies = (self.visual_signal == "green" or
+                (self.visual_signal == "unknown" and options.get("validation_resample_fast_unknown", False)))
+            retry_speed = (quality_limit is not None and upper_speed_applies and
                            best["metric"]["target_speed_mps"] > quality_limit)
             retry_low_speed = (low_speed_limit is not None and self.visual_signal in ("green", "unknown") and
                                best["metric"]["target_speed_mps"] < low_speed_limit)
@@ -189,7 +191,7 @@ class ValidatingProbe(native.Probe):
             if quality_limit is not None:
                 record["selection"]["speed_quality_preference"] = {
                     "resample_above_target_mps": quality_limit,
-                    "applied": self.visual_signal == "green",
+                    "applied": upper_speed_applies,
                     "met": best["metric"]["target_speed_mps"] <= quality_limit,
                     "note": "Retry preference only; an admitted native plan may remain above it when the budget is exhausted."}
             if low_speed_limit is not None:

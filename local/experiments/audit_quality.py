@@ -4,6 +4,38 @@ import json
 from pathlib import Path
 
 
+def upper_speed_annotations_match(frame, selected_metric):
+    """Check the recorded upper-speed policy independently, including unknown."""
+    selection = frame["selection"]
+    threshold = frame["options"].get("validation_resample_above_target_mps")
+    preference = selection.get("speed_quality_preference")
+    attempts = selection["attempts"]
+    if threshold is None:
+        return preference is None and all("retry_for_speed_preference" not in a for a in attempts)
+    signal = selection["signal"]
+    applied = signal == "green" or (signal == "unknown" and
+        frame["options"].get("validation_resample_fast_unknown", False))
+    if not preference or not (
+            preference["resample_above_target_mps"] == threshold and
+            preference["applied"] == applied and
+            preference["met"] == (selected_metric["target_speed_mps"] <= threshold) and
+            len(attempts) <= frame["options"].get("validation_max_pools", 3)):
+        return False
+    admitted = []
+    for attempt in attempts:
+        admitted.extend(m for m in attempt["metrics"] if m["valid"])
+        if attempt["chosen"] is None:
+            if "retry_for_speed_preference" in attempt:
+                return False
+            continue
+        best = min(admitted, key=lambda m: (
+            not m.get("preferred_reserve_valid", True),
+            not m.get("preferred_horizon_valid", True), m["selection_cost"]))
+        if attempt.get("retry_for_speed_preference") != (applied and best["target_speed_mps"] > threshold):
+            return False
+    return True
+
+
 def low_speed_annotations_match(frame, selected_metric):
     """Independently check the opt-in retry evidence against archived pools."""
     selection = frame["selection"]
@@ -86,6 +118,7 @@ def audit(capture):
             "preference": preference, "source_array_and_tokens_match": identity,
             "best_admitted_sample_selected": rank_matches,
             "reserve_annotations_match": bool(reserve_matches),
+            "upper_speed_annotations_match": upper_speed_annotations_match(frame, metric),
             "low_speed_annotations_match": low_speed_annotations_match(frame, metric),
             "low_speed_preference": selection.get("low_speed_preference"),
             "reserve_preference": reserve,
@@ -108,9 +141,11 @@ def audit(capture):
                                                            not r["preference"]["met"]) for r in records),
             "source_array_or_token_mismatches": mismatches, "records": records,
             "selection_mismatches": [r["label"] for r in records if not (
-                r["best_admitted_sample_selected"] and r["reserve_annotations_match"] and r["low_speed_annotations_match"])],
+                r["best_admitted_sample_selected"] and r["reserve_annotations_match"] and
+                r["upper_speed_annotations_match"] and r["low_speed_annotations_match"])],
             "all_post_admission_checks_match": bool(records) and not mismatches and all(
-                r["best_admitted_sample_selected"] and r["reserve_annotations_match"] and r["low_speed_annotations_match"] for r in records),
+                r["best_admitted_sample_selected"] and r["reserve_annotations_match"] and
+                r["upper_speed_annotations_match"] and r["low_speed_annotations_match"] for r in records),
             "record_population": "Archived fresh proposals, including those superseded by cached plans" if fresh_sources else "Executed fresh proposals",
             "note": "Same-input first-admission comparisons; not counterfactual complete rollouts."}
 
