@@ -95,6 +95,30 @@ def audit(capture):
                                                    selection_rank(fresh_metric))
                 if "fresh_selection_rank" in detail:
                     checks["fresh_rank_preserved"] = detail["fresh_selection_rank"] == list(selection_rank(fresh_metric))
+            elif reason == "scheduled_native_execution":
+                from types import SimpleNamespace
+                from local.experiments.plan_interval_probe import scheduled_evidence, preference_met
+                from local.experiments.retained_probe import assess_retained
+                from local.experiments.validated_selection import predicted_corners
+                options = json.loads((capture / "experiment.json").read_text())["options"]
+                route = json.loads((capture / "route-reference.json").read_text())["routes"][current["selection"]["route"]]
+                evidence = scheduled_evidence(source, current["context"], route, current["visual_signal"],
+                    current["navigation_phase"], current["visual_signal_check_index"], options)
+                native_plan = SimpleNamespace(record=source, world=expected_world, speeds=planned_speeds(path),
+                    corners=predicted_corners(pose_transform(source["context"]["world_pose"]), path,
+                        np.asarray(source["candidate_yaw_rad"][source["selection"]["chosen"]]),
+                        source["context"]["vehicle_bounds"]))
+                geometry = assess_retained(native_plan, current["context"], route, current["visual_signal"],
+                    current["navigation_phase"], options)
+                checks["scheduled_eligibility_matches"] = evidence is not None and evidence == detail.get("schedule")
+                checks["scheduled_native_geometry_matches"] = geometry["valid"] and all(
+                    selected_metric.get(k) == v for k, v in geometry.items())
+                checks["scheduled_preference_met"] = preference_met(selected_metric, options)
+                checks["scheduled_tracking_present"] = selected_metric.get("tracking_forecast", {}).get("valid", False)
+                checks["scheduled_no_fresh_inference"] = (
+                    current.get("inference_performed") is False and current["inference_seconds"] == 0 and
+                    not list((capture / "proposals").glob(current["label"] + "_pool_*.json")) and
+                    not (capture / ("accepted_" + current["label"] + ".json")).exists())
             else:
                 rejection = capture / "replan-rejections" / (current["label"] + ".json")
                 checks["rejection_preserved"] = rejection.exists()

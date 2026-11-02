@@ -17,10 +17,12 @@ def audit(path):
     differences, snapshot_errors, frame_errors, checks, missing, identities = [], [], [], {}, [], []
     prefix_checks, fresh_checks = {}, {}
     prefix_records = 0
+    scheduled_records = 0
     for frame in frames:
         replay = frame.get("prefix_replay")
         context = replay["actual_context"] if replay else frame["context"]
         prefix_records += bool(replay)
+        scheduled_records += frame.get("inference_performed") is False
         prediction = controller_inputs.get(round(context["time_s"], 6))
         if prediction is not None:
             consumed.append(prediction["trajectory_ego"] == frame["trajectory_ego"])
@@ -54,7 +56,8 @@ def audit(path):
             "completed": summary.get("termination") in ("duration_reached", "route_exit_reached"),
             "route_exit_reached": (path / "route-exit-reached.json").exists(),
             "inference_records": len(frames), "replayed_prefix_records": prefix_records,
-            "fresh_inference_records": len(frames) - prefix_records,
+            "scheduled_execution_records": scheduled_records,
+            "fresh_inference_records": len(frames) - prefix_records - scheduled_records,
             "min_speed_mps": min(row["speed"] for row in rows),
             "final_speed_mps": rows[-1]["speed"], "max_abs_lateral_m": max(map(abs, lateral)),
             "forward_progress_m": forward[-1],

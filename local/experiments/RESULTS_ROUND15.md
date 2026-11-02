@@ -35,3 +35,32 @@ First run: `02-straight-offset-faster`. Second run is queued manually after the
 first is inspected, so implementation revisions cannot silently change a running
 batch. All outcomes, source hashes, inputs, proposals and audits are retained
 under `outputs/driving-investigation-15/`. Results pending at this checkpoint.
+
+
+## Separate bounded planning-interval experiment
+
+While the unchanged combined-policy full run executes, a separate
+`plan_interval_probe` entrypoint adds optional 0.3 s planning intervals. Every
+0.1 s control tick revalidates the last executed native plan against actual pose,
+unchanged body/age/distance/heading bounds and original-controller tracking.
+Reuse additionally requires source/current green, a still-current visual check,
+no instruction-phase or endpoint transition, and the configured speed/clearance
+preferences. Any failed gate immediately invokes the existing fresh sampler.
+Unknown/red/yellow signals therefore continue normal fresh planning. The default
+interval is 0.1 s. No native path/speed or controller parameter is edited.
+
+This targets unnecessary per-tick plan changes and inference cost. It is not
+assumed to improve driving until physically tested. Source clocks are never reset;
+new per-frame evidence explicitly records zero new inference, and the audit
+recomputes native geometry and scheduling eligibility in addition to original
+controller forecasts. Requested raw input captures remain available on skipped
+inference steps. Summary counts separate executed commands, scheduled native
+execution, fresh planning and actual sampled pools. The complete 179-test suite passes in 4.09 s, including wrapper restoration,
+requested input capture, native identity, audit tampering and failed-gate cases.
+
+Predeclared next comparison: the same offset/faster straight initial condition,
+with fresh inference from time zero and the same 15 s cap, changing only the
+0.3 s interval and its explicit entrypoint. Preserve both full-run outcomes.
+Preset: `presets/native-driving-interval.json`. This new code is not imported by
+the already running combined-policy baseline, whose recorded source hashes and
+launch commit remain `2d512a2`.
