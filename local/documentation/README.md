@@ -90,3 +90,18 @@ existing native Slides copy was not changed.
 - Updated SHA-256: `6d23030c82a9158774f75f822086849d65ae720bf4aba67de767d3fccfb9ed18`
 - To undo this update, restore `outputs/documentation-verifai-20261028/original.pptx`
   to Drive file `1yKSWESk_3YMKYPaRN6RDF43gdp5yf-PY` with a raw-byte update.
+
+## Server wording — 2026-11-01
+
+Updated the two VerifAI overview/control slides (17–18 in the current 19-slide
+deck) to describe the actual server/client implementation: the VerifAI server
+samples and triggers episodes through the persistent CarlaMayo client, evaluates
+the returned summaries, and supplies sampler feedback. The launch command is now
+`bash local/run_verifai_server.sh`; CARLA itself is still started separately.
+Removed the obsolete statement that no VerifAI server is started.
+
+`update_verifai_server_slides.py` changes only these slides' text and notes.
+All other ZIP parts, including the four videos and the user's recent slide edits,
+are preserved. The latest source backup, updated deck, manifest and rendered
+preview are in `outputs/documentation-verifai-server-20261101/`. Restore its
+`original.pptx` to the same Drive ID to undo just this wording update.
