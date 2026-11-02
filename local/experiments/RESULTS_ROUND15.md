@@ -92,3 +92,30 @@ including launcher validation and unchanged user-config input. Physical launcher
 validation remains pending here; the running baseline still uses its original
 entrypoint and source snapshot. Expanded source capture includes the launcher,
 route exporter, candidate reserve, original runner, adapter, and inference code.
+
+## Full fresh straight result
+
+The combined policy reaches the original straight endpoint at **8.9 s**, starting
+all inference at time zero. This is the same initial condition that previously
+failed at 4.5 s. Minimum/maximum measured speed is **3.236 / 5.837 m/s**; minimum
+recorded vehicle-corner clearance is **0.430 m**. No recorded near-stop, corner
+departure, or collision occurs. All 89 original-controller commands, native
+source arrays/anchors/ages, snapshot timing, tracking and retry-evidence audits
+pass. Forty commands use a revalidated earlier native plan; no source history
+was replayed. Sampling uses 172 pools / 1,376 candidates, with seven low-speed
+retry requests. Capture wall time including startup is 2,074.9 s (34.6 min).
+
+The result establishes a complete crossing in this controlled scene. Speed is
+not constant: native targets rise to 7.76 m/s near the exit, followed by a
+slowdown; measured speed remains above 3.236 m/s. This does not establish smooth
+comfort behavior, arbitrary traffic handling, or five-case reliability.
+
+[Full fresh straight video](../../outputs/driving-investigation-15/02-straight-offset-faster-review.mp4)
+and [measured speed/clearance](../../outputs/driving-investigation-15/full-fresh-speed-clearance.png).
+The raw capture, combined audit and sampling audit are under
+`outputs/driving-investigation-15/02-straight-offset-faster/`.
+
+The separately declared 0.3 s launcher comparison is running at `86ec832`.
+Automatically generated route geometry matches the original reference exactly.
+The centered-left full fresh check remains queued; the five-case benchmark has
+not been rerun.

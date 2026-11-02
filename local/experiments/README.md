@@ -5,6 +5,15 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
+Latest full fresh follow-up: the combined phase/low-speed profile completes the
+previously failing offset straight crossing at **8.9 s**, with minimum speed
+3.236 m/s, minimum recorded corner clearance 0.430 m, and all native/controller
+audits passing. No prefix is replayed. The new `local/run_driving.sh` launcher
+generates its own lane-reference data. The interval comparison and centered-left
+check are pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
+comparison, exact configuration, video, limitations and rollback. These targeted
+checks do not replace the five-case benchmark below.
+
 Latest complete five-case benchmark (round 12): **one of five predeclared short scenario variants
 reaches the endpoint** with the unchanged experimental policy. The offset left
 turn completes at 11.9 s; two straight runs and the centered left turn exhaust

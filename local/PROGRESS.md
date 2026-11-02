@@ -1,5 +1,9 @@
 # CarlaMayo progress — 2026-10-28
 
+Latest driving work is recorded in [the experiment index](experiments/README.md)
+and [round 15](experiments/RESULTS_ROUND15.md). The sections below preserve the
+original integration and rollout history.
+
 ## What is working
 
 - Created the separate `carlamayo/` repository on branch `local/sharded-intersection`, based on upstream `4914558`.
