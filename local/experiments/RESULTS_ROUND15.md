@@ -144,3 +144,11 @@ Before recommending the new option, run the same full fresh straight condition
 with it enabled, then the full centered-left check with the resulting proposed
 launcher configuration. Preserve the unmodified full straight and interval
 results alongside these additional checks. No new five-case benchmark is claimed.
+
+The next profile is `presets/native-driving-balanced.json`: it keeps the
+successful **0.1 s** replanning schedule and adds only the unknown upper-speed
+retry, plus automatic reference export. `native-driving-balanced-checks.json`
+declares the same straight/left starts and 15 s caps. This isolates the remaining
+speed retry fix from the optional 0.3 s scheduling experiment. The launcher's
+default manifest will be switched only after the fresh straight check succeeds;
+the centered-left run will then exercise that proposed default end to end.
