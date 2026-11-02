@@ -9,8 +9,9 @@ Latest full fresh follow-up: the combined phase/low-speed profile completes the
 previously failing offset straight crossing at **8.9 s**, with minimum speed
 3.236 m/s, minimum recorded corner clearance 0.430 m, and all native/controller
 audits passing. No prefix is replayed. The new `local/run_driving.sh` launcher
-generates its own lane-reference data. The interval comparison and centered-left
-check are pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
+generates its own lane-reference data. Its optional 0.3 s interval also completes
+a full fresh straight crossing at 8.6 s with all execution audits passing.
+The speed-band follow-up and centered-left check are pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
 comparison, exact configuration, video, limitations and rollback. These targeted
 checks do not replace the five-case benchmark below.
 

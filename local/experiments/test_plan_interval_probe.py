@@ -127,3 +127,30 @@ def test_entrypoint_restores_wrapper_on_failure(monkeypatch):
     with pytest.raises(RuntimeError,match='test failure'):
         interval.main()
     assert reserve.CandidateReserveProbe is original
+
+
+def test_summary_survives_parent_cleanup_and_counts_real_inference(tmp_path, monkeypatch):
+    original = reserve.CandidateReserveProbe
+    monkeypatch.setattr(interval, 'ACTIVE', None)
+    monkeypatch.setattr(reserve.CandidateReserveProbe, '__init__',
+                        lambda self, model, output: setattr(self, 'output', output))
+    def run():
+        reserve.CandidateReserveProbe(None, tmp_path)
+        folder = tmp_path / '000_verifai'
+        folder.mkdir()
+        (folder / 'summary.json').write_text(json.dumps({'inference_calls': 4}))
+        for index, performed in enumerate((True, False, False, True)):
+            (tmp_path / f'frame_{index:03d}.json').write_text(json.dumps({'inference_performed': performed}))
+        proposals = tmp_path / 'proposals'
+        proposals.mkdir()
+        for name in ('frame_000_pool_0.json', 'frame_003_pool_0.json', 'frame_003_pool_1.json'):
+            (proposals / name).write_text('{}')
+        # This is what retained.main() actually does before interval.main returns.
+        monkeypatch.setattr(retained, 'ACTIVE', None)
+    monkeypatch.setattr(reserve, 'main', run)
+    interval.main()
+    summary = json.loads((tmp_path / '000_verifai/summary.json').read_text())
+    assert summary['planning_steps'] == 4 and summary['scheduled_native_execution_steps'] == 2
+    assert summary['inference_calls'] == 2 and summary['model_pool_calls'] == 3
+    assert summary['replayed_planning_steps'] == 0
+    assert reserve.CandidateReserveProbe is original and interval.ACTIVE is None

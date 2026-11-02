@@ -152,3 +152,27 @@ declares the same straight/left starts and 15 s caps. This isolates the remainin
 speed retry fix from the optional 0.3 s scheduling experiment. The launcher's
 default manifest will be switched only after the fresh straight check succeeds;
 the centered-left run will then exercise that proposed default end to end.
+
+## Full fresh interval result
+
+The user-facing launcher completes the same straight crossing at **8.6 s** with
+the optional 0.3 s interval. Minimum/maximum measured speed is **3.206 / 5.751
+m/s**; minimum recorded corner clearance is **0.496 m**. No near-stop, recorded
+corner departure or collision occurs. All native/controller, geometry, tracking,
+sampling and extended retry audits pass. Generated route geometry is identical
+to the original reference. There are 86 executed decisions, 24 scheduled native
+execution steps, 62 fresh planning decisions and 139 sampled pools. Wall time
+including startup is 1,785.7 s (29.8 min), versus 34.6 min for the 0.1 s run.
+These different closed-loop trajectories are not a general performance benchmark.
+
+The run exposes a reporting-only bug: the interval finalizer reads the parent's
+active-probe reference after the parent has cleared it, so the original summary
+reports 86 inference calls rather than 62 fresh decisions. Independent audits
+already count the 24 scheduled steps correctly. The original summary is preserved;
+`interval-inference-count-correction.json` records corrected counts and its hash.
+The finalizer now retains its own instance through cleanup. A test reproduces the
+actual parent-cleanup order; the complete **198-test** suite passes in 4.24 s.
+The execution policy is unchanged by this correction.
+
+The interval remains optional. The next full straight check uses the declared
+0.1 s balanced-speed profile, followed by the centered-left launcher check.

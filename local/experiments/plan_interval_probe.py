@@ -17,6 +17,8 @@ from local.experiments import inference_probe as native
 from local.experiments.audit_turn import project
 from local.experiments.validated_selection import choose
 
+ACTIVE = None
+
 
 def replanning_interval(options):
     interval = options.get('validation_replan_interval_s', .1)
@@ -67,6 +69,11 @@ def preference_met(metric, options):
 
 
 class PlanIntervalProbe(reserve.CandidateReserveProbe):
+    def __init__(self, model, output):
+        global ACTIVE
+        super().__init__(model, output)
+        ACTIVE = self
+
     def evaluate(self, adapter, data, context, instruction, options, label,
                  capture=False, capture_failures=False):
         plan = self.executing_plan
@@ -116,13 +123,15 @@ class PlanIntervalProbe(reserve.CandidateReserveProbe):
 
 
 def main():
+    global ACTIVE
     original = reserve.CandidateReserveProbe
+    previous_active, ACTIVE = ACTIVE, None
     reserve.CandidateReserveProbe = PlanIntervalProbe
     try:
         reserve.main()
     finally:
         reserve.CandidateReserveProbe = original
-        active = retained.ACTIVE
+        active, ACTIVE = ACTIVE, previous_active
         if isinstance(active, PlanIntervalProbe):
             path = active.output / '000_verifai/summary.json'
             if path.exists():
