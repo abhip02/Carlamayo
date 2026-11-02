@@ -64,3 +64,31 @@ with fresh inference from time zero and the same 15 s cap, changing only the
 Preset: `presets/native-driving-interval.json`. This new code is not imported by
 the already running combined-policy baseline, whose recorded source hashes and
 launch commit remain `2d512a2`.
+
+
+## Footprint-horizon diagnostic (rejected lead)
+
+`screen_body_horizon.py` screens all 96 saved candidates from the original
+centered/offset straight terminal failures with native footprint limited to
+1.5 seconds, while retaining center/heading/reverse checks over all required
+controller inputs and the unchanged tracking forecast. It admits zero candidates
+in either case. This does not support shortening native footprint checks; no
+validation threshold or horizon was changed. No candidate was executed.
+Evidence: `body-horizon-screening.json` and its log.
+
+## Reproducible launcher
+
+`bash local/run_driving.sh --route straight` (or `--route left`) resolves the
+predeclared full-run settings. It generates lane-reference geometry from the
+configured CARLA map, removing the dependency on ignored investigation files.
+`--print-config` previews settings without connecting; `--duration`, `--seed`,
+`--flow-seed`, and a one-rollout `--config` provide explicit overrides. The caller
+starts/stops the existing server normally. Recordings and exact resolved settings
+are saved under the requested `--output`, which must not already exist.
+
+The default replan interval remains 0.1 seconds. `--replan-interval 0.3` selects
+the separate interval experiment. The 190-test suite passes in 4.13 seconds,
+including launcher validation and unchanged user-config input. Physical launcher
+validation remains pending here; the running baseline still uses its original
+entrypoint and source snapshot. Expanded source capture includes the launcher,
+route exporter, candidate reserve, original runner, adapter, and inference code.

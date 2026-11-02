@@ -343,6 +343,12 @@ def capture(args, output):
     def connect(*values):
         client, world = original_connect(*values)
         active["world"] = world
+        if options.get("validation_routes") == "auto":
+            from local.experiments.junction_routes import export
+            route_path = output / "generated-routes.json"
+            write_json(route_path, export(world.get_map(), config["junction_entry"]))
+            options["validation_routes"] = str(route_path.resolve())
+            write_json(output / "resolved-options.json", options)
         return client, world
 
     def synchronized_tick(interface):
@@ -557,12 +563,15 @@ def main():
         args.output.mkdir(parents=True, exist_ok=False)
         sources = {name: (runner.ROOT / name).read_bytes() for name in (
             "module/config.py", "module/trajectory_follower.py",
+            "module/inference.py", "module/adapters/alpamayo_1_5.py",
+            "local/run_intersection.py", "local/run_driving.py",
             "local/experiments/inference_probe.py", "local/experiments/camera_projection.py",
             "local/experiments/candidate_selection.py", "local/experiments/frame_sync.py",
             "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
             "local/experiments/validated_selection.py", "local/experiments/retained_probe.py",
             "local/experiments/proactive_probe.py", "local/experiments/tracking_probe.py",
             "local/experiments/tracking_forecast.py", "local/experiments/exit_cache.py",
+            "local/experiments/candidate_reserve_probe.py", "local/experiments/junction_routes.py",
             "local/experiments/plan_interval_probe.py")}
         for name, content in sources.items():
             snapshot = args.output / "source_snapshot" / name
