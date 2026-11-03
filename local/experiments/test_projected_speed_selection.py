@@ -67,3 +67,25 @@ def test_invalid_or_reversing_trajectory_cannot_win_speed_ranking():
     assert np.isinf(speed_score(item)[0])
     item=candidate(4.);item['reverse_velocity_steps']=1
     assert np.isinf(speed_score(item)[0])
+
+
+def soft_cache(self,record,result,context,options):
+    old=candidate(2.8)
+    old.update(label='proposal_old',retention={'age_s':.5})
+    return (.2,1.2),(old['trajectory_ego'],{'label':'proposal_old'}),old
+
+
+def test_soft_cache_does_not_end_search_before_a_better_fresh_plan(tmp_path,monkeypatch):
+    monkeypatch.setattr(SpeedSelectedProbe,'consider_retained',soft_cache)
+    _,calls,record=run(tmp_path,monkeypatch,[.1,4.])
+    assert len(calls)==2 and record['controller_preview_speed_mps']==4.
+    assert 'retention' not in record
+
+
+def test_soft_cache_wins_after_budget_when_all_fresh_plans_are_slower(tmp_path,monkeypatch):
+    monkeypatch.setattr(SpeedSelectedProbe,'consider_retained',soft_cache)
+    _,calls,record=run(tmp_path,monkeypatch,[.1,.2,.3])
+    assert len(calls)==3 and record['controller_preview_speed_mps']==2.8
+    assert record['selection']['selected_proposal']=='proposal_old'
+    assert not record['selection']['preference_met']
+    assert record['selection']['preference_distance_mps']==.2

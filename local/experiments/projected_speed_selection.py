@@ -60,10 +60,9 @@ class SpeedSelectedProbe(SingleSampleProbe):
             if visual_stop or best is None or score < best[0]:
                 best = score, result, record
             retained = self.consider_retained(record, result, context, options)
-            if not visual_stop and score[0] != 0 and retained is not None:
+            if not visual_stop and score[0] != 0 and retained is not None and retained[0] < best[0]:
                 best = retained
-                break
-            if visual_stop or score[0] == 0:
+            if visual_stop or best[0][0] == 0:
                 break
         score, result, record = best
         if not math.isfinite(score[0]):
@@ -73,6 +72,7 @@ class SpeedSelectedProbe(SingleSampleProbe):
             selection=dict(kind='bounded_native_speed_preference', selected_proposal=selected,
                 proposals=proposals, attempts=len(proposals), budget=attempts,
                 preference_mps=[low, high], preference_met=score[0] == 0,
+                preference_distance_mps=score[0],
                 visual_stop_preserved=visual_stop))
         native.write_json(self.output / (label + '.json'), record)
         self.selected(record)

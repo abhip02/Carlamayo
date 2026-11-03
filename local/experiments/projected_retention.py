@@ -54,8 +54,11 @@ def assess(plan, context, route, options):
     target_speed=debug['target_speed_kmh']/3.6
     checks.update(target_speed_mps=target_speed,forward_m=forward,
                   route_progress_m=float(arc[1]-arc[0]),
+                  preference_distance_mps=max(low-target_speed,target_speed-high,0.),
                   raw_preview_mps=float(plan['speeds'][step+10:step+15].mean()))
-    checks['valid']=bool(low<=target_speed<=high and forward>1. and arc[1]-arc[0]>.25)
+    # The preferred band is a ranking preference, not a reason to discard a
+    # moving native plan in favor of a much slower fresh prediction.
+    checks['valid']=bool(1.<=target_speed<=high and forward>1. and arc[1]-arc[0]>.25)
     return checks
 
 
@@ -84,8 +87,8 @@ class RetainedSpeedProbe(SpeedSelectedProbe):
         for plan in self.history:
             check=assess(plan,context,self.route,options)
             if check['valid']:
-                # Prefer the freshest currently valid original plan.
-                choices.append((check['age_s'],plan,check))
+                # First prefer the speed band, then the freshest original plan.
+                choices.append(((check['preference_distance_mps'],check['age_s']),plan,check))
         if not choices:
             return None
         _,plan,check=min(choices,key=lambda x:x[0])
@@ -95,7 +98,8 @@ class RetainedSpeedProbe(SpeedSelectedProbe):
             raw_target_speed_mps=check['raw_preview_mps'],controller_preview_speed_mps=check['raw_preview_mps'],
             retention=dict(source_context=copy.deepcopy(plan['record']['context']),
                            source_proposal=plan['record']['label'],age_s=check['age_s'],checks=check))
-        return (0.,abs(check['target_speed_mps']-4.)),plan['result'],old
+        midpoint=sum(options.get('speed_preference_mps',[3.,5.]))/2
+        return (check['preference_distance_mps'],abs(check['target_speed_mps']-midpoint)),plan['result'],old
 
     def selected(self,record):
         self.execution_record=record

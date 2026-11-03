@@ -97,3 +97,14 @@ def test_three_second_plan_uses_real_age_and_expires_at_declared_limit():
     probe=object.__new__(cache.RetainedSpeedProbe)
     with pytest.raises(ValueError,match='native maximum'):
         probe.consider_retained(plan['record'],plan['result'],context,{**options,'projection_cache_age_s':3.1})
+
+
+def test_moving_cached_plan_below_preferred_band_remains_a_ranked_alternative():
+    route,context,plan,options=scene()
+    raw=candidate(2.8)['trajectory_ego']
+    plan['record']['trajectory_ego']=raw
+    plan['world']=np.asarray(raw);plan['world'][:,0]-=1.3886
+    plan['speeds']=np.full(64,2.8);context['world_pose']['x']=1.4
+    check=cache.assess(plan,context,route,options)
+    assert check['valid']
+    assert check['preference_distance_mps']==pytest.approx(.2)

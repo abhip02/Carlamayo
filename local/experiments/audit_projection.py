@@ -128,7 +128,13 @@ def audit(capture):
             check(saved['debug']['target_speed_kmh']/3.6 <= speed_cap+1e-6,'speed_ceiling_applied')
         if retention:
             low,high=selection['preference_mps']
-            check(low-1e-6<=debug['target_speed_kmh']/3.6<=high+1e-6,'retained_current_speed_preference')
+            retained_speed=debug['target_speed_kmh']/3.6
+            check(1.-1e-6<=retained_speed<=high+1e-6,'retained_moving_target')
+            retained_gap=max(low-retained_speed,retained_speed-high,0.)
+            check(retained_gap<=min(ranks)[0]+1e-5,'retained_no_worse_than_fresh_speed_preference')
+            if 'preference_distance_mps' in selection:
+                check(abs(retained_gap-selection['preference_distance_mps'])<1e-5,'retained_preference_distance')
+                check(selection['preference_met']==(selection['preference_distance_mps']==0),'retained_preference_flag')
             offset=np.asarray(projected[:2])-[axle.x,axle.y]
             yaw=math.radians(tf.rotation.yaw)
             check(float(np.dot(offset,[math.cos(yaw),math.sin(yaw)]))>1.,'retained_target_ahead')

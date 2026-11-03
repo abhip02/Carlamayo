@@ -182,4 +182,45 @@ centered straight and left with unchanged caps and all other settings.
   --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 3
 ```
 
-Three-second reuse results pending at this checkpoint.
+## Three-second reuse results
+
+All 256 software tests pass before launch `f432895`. **Both fresh captures pass**
+the declared driving and independent execution checks:
+
+| Maneuver | Correct exit | Speed range | Minimum corner clearance | Calls / steps | Reuses / maximum age |
+| --- | --- | --- | --- | --- | --- |
+| Straight | 9.7 s | 1.599–4.628 m/s | +0.832 m | 152 / 97 | 44 / 3.0 s |
+| Left | 10.8 s | 2.673–4.613 m/s | +0.137 m | 118 / 108 | 44 / 2.0 s |
+
+Evidence: `outputs/driving-investigation-18-retained3/`. Straight still hesitates
+near the exit. At 7.8–8.1 s, a cached native plan has a valid target growing from
+2.590 to 2.970 m/s. It is excluded by the hard 3 m/s reuse gate, while fresh targets
+of 0.852, 0.468, 0.347 and 0.316 m/s are executed. The saved
+`late-slowdown-threshold-diagnostic.json` records the precise missed alternative;
+it is an offline assessment, not itself a physical rerun.
+
+## Predeclared preference-ranking correction and five-case run
+
+Treat the 3–5 m/s band as a preference when comparing fresh and cached plans.
+A cached plan still needs forward route progress, the current body inside the
+corridor, valid original timing, no reverse motion, and a moving controller target
+of at least 1 m/s. Within that valid set, prefer the speed band, then recency.
+A below-preference cached candidate must rank better than the best fresh one;
+it does not stop the search early. Continue the six-attempt budget looking for
+a preferred-speed native plan, retaining the best available alternative if none
+appears. This changes candidate selection, not the model's speeds or coordinates.
+
+Freeze this correction with the same 4.5 m/s ceiling, 1.18 gain and 3 s age bound,
+then run **all five original starting conditions fresh**, with their original
+10/12 s duration caps. No earlier success is substituted into this new batch.
+
+```bash
+.venv/bin/python -m local.experiments.run_projection_suite \
+  --output outputs/driving-investigation-18-five \
+  --single-gpu-model --server-script local/experiments/projected_server.sh \
+  --steering-modes route --speed-selection-attempts 6 \
+  --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 3 \
+  --cases 1 2 3 4 5
+```
+
+Five-case results pending at this checkpoint.
