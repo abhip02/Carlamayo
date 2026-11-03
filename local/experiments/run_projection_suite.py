@@ -1,0 +1,114 @@
+"""Run four fresh matched single-sample comparisons and preserve every outcome."""
+import argparse
+import copy
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+import carla
+import yaml
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output',type=Path,required=True)
+    args=parser.parse_args()
+    root=Path(__file__).resolve().parents[2]
+    out=args.output.resolve()
+    out.mkdir(parents=True,exist_ok=False)
+    manifest=json.loads((root/'local/experiments/presets/five-short-scenarios.json').read_text())
+    base=yaml.safe_load((root/manifest['base_config']).read_text())
+    status=dict(state='preparing',started_unix=time.time(),results=[],
+        git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
+        model_gpus=os.environ.get('CUDA_VISIBLE_DEVICES'),
+        scope='Matched native versus nearest-driving-lane target; one sample per step, no retries or cached path selection. Centered straight and left only.')
+    sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
+             for folder in ('module','local') for p in (root/folder).rglob('*.py')}
+    status['source_sha256']=sources
+    def save():
+        temporary=out/'status.tmp'
+        temporary.write_text(json.dumps(status,indent=2)+'\n')
+        temporary.replace(out/'status.json')
+    jobs=[]
+    for index in (0,3):
+        case=manifest['scenarios'][index]
+        for mode in ('native','map'):
+            name=f"{case['route']}-{mode}"
+            config=copy.deepcopy(base)
+            config['duration_s']=case['duration_s']
+            config['rollouts']=[{k:case[k] for k in ('name','distance_before_intersection_m','lateral_offset_m','speed_mps','heading_offset_deg')}]
+            options=dict(steering_mode=mode,num_samples=1,seed=case['seed'],flow_seed=case['flow_seed'],
+                flow_temperature=1.,guard_trajectory_format=True,acknowledged_preroll=True,
+                acknowledged_controls=True,wait_for_snapshot=True,verify_signal=True,
+                signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
+                instruction='Turn left at the intersection.' if case['route']=='left' else 'Continue straight through the intersection.')
+            config['instruction']=options['instruction']
+            config_path,options_path=out/(name+'.yaml'),out/(name+'-options.json')
+            config_path.write_text(yaml.safe_dump(config,sort_keys=False))
+            options_path.write_text(json.dumps(options,indent=2)+'\n')
+            command=[sys.executable,'-m','local.experiments.projected_probe','capture',
+                '--config',str(config_path),'--options',str(options_path),'--duration',str(case['duration_s']),
+                '--capture-frames','0','--output',str(out/name)]
+            jobs.append((name,command))
+    status['queue']=[n for n,_ in jobs]
+    save()
+    try:
+        subprocess.run(['bash','local/server.sh','start'],cwd=root,check=True)
+        for _ in range(60):
+            try:
+                client=carla.Client('127.0.0.1',2000)
+                client.set_timeout(2)
+                client.get_server_version()
+                break
+            except RuntimeError:
+                time.sleep(2)
+        else:
+            raise RuntimeError('CARLA did not become ready')
+        for name,command in jobs:
+            for path,digest in sources.items():
+                if hashlib.sha256((root/path).read_bytes()).hexdigest()!=digest:
+                    raise RuntimeError(f'Frozen source changed: {path}')
+            status.update(state='running',current=name)
+            status['queue'].remove(name)
+            save()
+            print('START',name,flush=True)
+            started=time.monotonic()
+            with (out/(name+'.log')).open('w') as stream:
+                completed=subprocess.run(command,cwd=root,stdout=stream,stderr=subprocess.STDOUT)
+            result=dict(name=name,returncode=completed.returncode,wall_seconds=time.monotonic()-started)
+            capture=out/name
+            if list(capture.glob('control_*.json')):
+                with (out/(name+'-audit.log')).open('w') as stream:
+                    audited=subprocess.run([sys.executable,'-m','local.experiments.audit_projection',str(capture)],
+                        cwd=root,stdout=stream,stderr=subprocess.STDOUT)
+                result['audit_returncode']=audited.returncode
+                report=capture/'projection-audit.json'
+                if report.exists():
+                    data=json.loads(report.read_text())
+                    result['audit']={k:v for k,v in data.items() if k not in ('projection_trace','near_stop_times_s','body_departure_times_s')}
+                source=capture/'000_verifai/overhead.mp4'
+                video=out/(name+'-review.mp4')
+                if source.exists():
+                    convert=subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-i',str(source),
+                        '-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p',
+                        '-movflags','+faststart','-an',str(video)])
+                    result['video_returncode']=convert.returncode
+                    result['video']=str(video)
+            status['results'].append(result)
+            save()
+            print('FINISHED',json.dumps(result),flush=True)
+        status.update(state='completed',current=None,finished_unix=time.time())
+    except BaseException as exc:
+        status.update(state='interrupted',error=repr(exc),finished_unix=time.time())
+        raise
+    finally:
+        status['server_stop_returncode']=subprocess.run(['bash','local/server.sh','stop'],cwd=root).returncode
+        save()
+
+
+if __name__=='__main__':
+    main()
