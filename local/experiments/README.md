@@ -5,13 +5,24 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Latest experiment: [map-projected steering, round 17](RESULTS_ROUND17.md) has
-completed all six single-sample captures. Restricting projection to the commanded
-route reaches both exits: straight stays inside its recorded corridor; left has
-up to 0.29 m corner overhang. Both nearly stop and none of the six captures passes
-all driving checks. All 236 experiment tests pass. This opt-in experiment allows
-map-derived steering targets and has no resampling; standard launchers retain
-their existing behavior. See the report for annotated videos and reproduction.
+Latest experiment: [route projection with native-plan selection, round 18](RESULTS_ROUND18.md)
+combines the commanded-route steering projection, a 4.5 m/s target-speed ceiling,
+1.18 steering calibration, and age-checked reuse of original model plans for up
+to 3 s. **Four of five fresh cases pass** their original caps, with no recorded
+near-stop, collision or corner departure in any case. The remaining straight
+case reaches its 10 s limit 1.644 m short; a separate fresh repeat with a 12 s
+allowance passes at 10.7 s. Every starting condition now has a successful full
+run, while the original benchmark remains 4/5. All 606 executed-command audits
+and all 259 experiment tests pass.
+The report preserves every earlier failure and the exact launch profile. Raw
+model arrays, original world anchors and prediction times remain auditable.
+Existing driving and VerifAI launchers retain their original behavior.
+
+The preceding [round 17](RESULTS_ROUND17.md) completed six single-sample captures.
+Restricting projection to the commanded route reaches both exits, but both runs
+nearly stop and left has up to 0.29 m corner overhang. None of those six captures
+passes all driving checks. Historical nearest-lane lookup is compared using the
+current follower, not the entire historical controller.
 
 The completed [round-16 five-case benchmark](../../outputs/driving-investigation-16/suite-results.json)
 passes three of five under the native validation profile: it reuses two existing

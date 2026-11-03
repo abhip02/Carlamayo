@@ -6,7 +6,8 @@ The only upstream code change is optional checkpoint-path and attention-backend
 arguments in `module/adapters/alpamayo_1_5.py`. The batch runner lives here.
 
 For a concise record of completed work, runs, limitations and slides, see
-[PROGRESS.md](PROGRESS.md).
+[PROGRESS.md](PROGRESS.md). The latest opt-in driving work and fresh validation
+are recorded in [round 18](experiments/RESULTS_ROUND18.md).
 
 ## Driving examples with validation
 
@@ -66,19 +67,35 @@ rollback details are preserved in [round 15](experiments/RESULTS_ROUND15.md).
 
 ## Map-projected steering experiment
 
-Branch `experiment/projected-steering-comparison` compares native targets,
-historical CarlaMayo nearest-driving-lane projection, and projection constrained
-to the commanded route. Six fresh runs use one model sample per step without
-resampling. The route-constrained straight reaches the exit inside its corridor;
-left reaches its exit with up to 0.29 m corner overhang. Both nearly stop, so
-driving is not fully fixed. The historical map lookup is tested with the current
-follower, not the full old PID controller or its minimum-speed rule.
+The current experiment is on `experiment/projected-speed-selection`. It projects
+the model's selected steering target onto the commanded route, adds an explicit
+4.5 m/s target-speed ceiling and 1.18 steering calibration, and uses bounded
+native-plan selection/reuse to bridge bad replans. Raw model trajectories stay
+unchanged; reuse preserves their original world anchors and prediction times.
+It adds no synthetic full map path or minimum-speed rule.
 
-Watch [straight](../outputs/driving-investigation-17-route/straight-route-targets.mp4)
-and [left](../outputs/driving-investigation-17-route/left-route-targets.mp4).
-[Round 17](experiments/RESULTS_ROUND17.md) records all outcomes, comparison
-videos, exact scope and launch commands. Projection has its own opt-in entrypoint;
-the existing driving and VerifAI launchers retain their original behavior.
+The final profile passes **four of five fresh cases** at their original caps,
+with no recorded near-stop, collision or corner departure in any case. The
+remaining capture ends at its 10 s duration limit 1.644 m short of the endpoint.
+A separate fresh repeat with a 12 s allowance **passes at 10.7 s**. All five
+starting conditions therefore have a successful full run, while the original
+benchmark remains 4/5. All 606 executed-command audits and all 259 experiment
+tests pass. See
+[round 18](experiments/RESULTS_ROUND18.md) for the exact profile, all failed and
+successful trials, execution audits, videos and reproduction commands. Its
+entrypoint is `python -m local.experiments.run_projection_suite`; the report
+includes the required flags and owned renderer/model GPU allocation. Existing
+driving and VerifAI launchers retain their original behavior.
+
+This remains scoped to one empty, all-green Town03 junction. The model still
+produces unsuitable predictions, and left-turn corner clearance is narrow.
+Recorded-corner checks are not a swept-body or obstacle-safety guarantee.
+
+[Round 17](experiments/RESULTS_ROUND17.md) preserves the preceding six
+single-sample comparisons: native, unrestricted nearest-lane projection and
+commanded-route projection. Those do not pass all driving checks. The historical
+CarlaMayo map lookup is tested with the current follower; it is not a full
+reproduction of the old PID controller or its minimum-speed rule.
 
 ## Run
 

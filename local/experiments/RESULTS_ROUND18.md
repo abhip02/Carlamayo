@@ -3,6 +3,13 @@
 Branch: `experiment/projected-speed-selection`. Rollback: round-17 branch
 `experiment/projected-steering-comparison`, commit `6bc992a`.
 
+Current checkpoint: **4/5 original cases pass, all five fresh**. The remaining
+case stays in lane and moving but reaches its 10 s cap 1.644 m short. All 499
+execution audits and 259 software tests pass. A separate fresh repeat with a
+12 s allowance **completes at 10.7 s**, also passing all checks. Thus each of the
+five starting conditions has a full successful run, while the original benchmark
+remains 4/5. Videos and metrics are below; earlier failures remain in the record.
+
 The preceding route projection reaches both exits but nearly stops and surges
 to about 10.17 m/s. The left vehicle also overhangs its route corridor by 0.29 m.
 Recorded native targets before the stops are only 0.25–0.30 m/s. Projection
@@ -223,4 +230,169 @@ then run **all five original starting conditions fresh**, with their original
   --cases 1 2 3 4 5
 ```
 
-Five-case results pending at this checkpoint.
+## Five-case simulator startup and recovery
+
+All 259 experiment tests pass for selection commit `da986b3`. The first two
+launches, `outputs/driving-investigation-18-five/` and
+`outputs/driving-investigation-18-five-retry/`, fail in CARLA camera setup before
+any control steps. The owned renderer exits with SIGSEGV (139), not an OOM kill.
+Each folder preserves `startup-failure.json` and `simulator-crash.log`; neither
+startup is counted as a driving outcome. Their supervisors/model workers were
+stopped before retrying.
+
+Commit `65d035a` allows an explicitly named owned renderer container. The active
+batch uses a fresh container on another idle TITAN RTX with the same immutable
+CARLA 0.9.16 image, model GPU, scene settings and frozen driving code. Ownership
+and GPU checks remain enforced. This is renderer recovery, not a simulator or
+backend replacement. Allocation details are in `renderer-allocation.json`.
+
+```bash
+export CARLAMAYO_MODEL_GPUS=GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b
+export CARLAMAYO_RENDER_GPU=GPU-78628c0c-fb9d-2814-d558-6117b62e7739
+export CARLAMAYO_PROJECTION_CONTAINER=apomalap-carlamayo-projection-clean
+source local/env.sh
+.venv/bin/python -m local.experiments.run_projection_suite \
+  --output outputs/driving-investigation-18-five-clean \
+  --single-gpu-model --server-script local/experiments/projected_server.sh \
+  --steering-modes route --speed-selection-attempts 6 \
+  --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 3 \
+  --cases 1 2 3 4 5
+```
+
+All five fresh cases use this single allocation/profile. Existing output
+directories are deliberately refused; use a new output path when reproducing.
+The runner starts and stops its owned server, freezes Python source hashes, saves
+every candidate, independently audits each capture, and creates H.264 videos.
+The 0.1 s control interval still invokes fresh inference every step; cache reuse
+avoids additional retries, not the first inference. Six is a maximum number of
+single-candidate attempts per decision, not a fixed batch size.
+
+## Five fresh original-case results
+
+Frozen driving source `da986b3`, launch `65d035a`: **four of five pass** their
+original duration caps. All **499 executed commands** pass the independent
+raw-source/world-anchor/time/controller audits. Every case stays above 2.66 m/s
+with no recorded collision or corner departure. Case 3 remains incomplete because
+its 10 s cap ends 1.644 m before the endpoint. No earlier success is reused.
+
+| Case | Outcome / exit time | Measured speed | Minimum corner clearance | Calls / steps | Reuses | Wall incl. startup | Video |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Centered straight | Pass / 9.2 s | 2.664–4.610 m/s | +0.832 m | 112 / 92 | 48 | 6.17 min | [Watch](../../outputs/driving-investigation-18-five-clean/01-straight-centered-route-targets.mp4) |
+| Offset faster straight | Pass / 9.4 s | 3.083–4.592 m/s | +0.496 m | 94 / 94 | 36 | 5.80 min | [Watch](../../outputs/driving-investigation-18-five-clean/02-straight-offset-faster-route-targets.mp4) |
+| Opposite-offset straight | Incomplete / 10 s cap | 2.688–4.617 m/s | +0.496 m | 110 / 100 | 50 | 6.00 min | [Watch](../../outputs/driving-investigation-18-five-clean/03-straight-opposite-offset-route-targets.mp4) |
+| Centered left | Pass / 10.4 s | 2.664–4.621 m/s | +0.128 m | 144 / 104 | 45 | 6.82 min | [Watch](../../outputs/driving-investigation-18-five-clean/04-left-centered-route-targets.mp4) |
+| Offset faster left | Pass / 10.9 s | 3.062–4.584 m/s | +0.157 m | 109 / 109 | 26 | 6.18 min | [Watch](../../outputs/driving-investigation-18-five-clean/05-left-offset-faster-route-targets.mp4) |
+
+Full machine-readable [results](../../outputs/driving-investigation-18-five-clean/suite-results.json)
+and [speed, clearance and projection plots](../../outputs/driving-investigation-18-five-clean/speed-clearance-projection.png)
+are retained. The batch takes 31.29 minutes including simulator startup,
+model loading and per-case audits/video conversion; the two earlier setup crashes
+are additional wall time and are recorded separately. It uses 569 native
+inferences across 499 decisions (1.14 per decision), with 205 plan reuses.
+Each decision still performs at least one fresh inference. Counts include every
+proposal, not just the chosen one. This is synchronous, far slower than real time.
+
+The original native-validation benchmark was 3/5, with two existing successes
+reused. This 4/5 result is a new map-assisted profile with all five captures fresh;
+it is not a comparison holding the controller or validation policy constant.
+The centered straight hesitation improves to a minimum 2.664 m/s, versus
+1.599 m/s in the preceding three-second-cache trial. Centered left still slows
+near the exit (final speed 2.694 m/s), and both left turns have narrow clearance.
+Neither the VLA itself nor general traffic handling is established as fixed.
+
+Video overlays: cyan is executed motion, yellow the original full native plan,
+magenta the native lookahead target, green the executed projected target.
+The footer gives the plan age at the control decision; the recorder header gives
+its age at the subsequent image timestamp (one 0.1 s tick later).
+
+## Predeclared case-3 duration check
+
+The fresh five-case run's opposite-offset straight reaches its 10 s cap with no
+recorded corner departure or near-stop: speed 2.688–4.617 m/s, clearance +0.496 m,
+all 100 execution audits pass. It ends 1.644 m short of the required endpoint,
+at 3.732 m/s. This remains an **incomplete** benchmark outcome.
+
+After all five original cases finish, run case 3 fresh from time zero with only
+the duration cap increased to 12 s. Preserve the same scene, seeds, model,
+controller, cache age and hardware. This tests the duration explanation; it
+neither alters the original benchmark nor changes the driving policy to rush
+the endpoint. Evidence will be in
+`outputs/driving-investigation-18-case3-duration12/`.
+
+## Case-3 duration check completed
+
+The fresh 12 s repeat **passes at 10.7 s**, with speed
+2.730–4.643 m/s, final speed 4.553 m/s, and minimum recorded corner
+clearance +0.496 m. All 107 execution checks pass, with no recorded near-stop,
+collision or corner departure. It uses 121 calls and 53 plan reuses (maximum
+age 2.0 s); capture wall time including model startup is 6.81 minutes.
+
+[Watch the fresh 12 s duration check](../../outputs/driving-investigation-18-case3-duration12/03-straight-opposite-offset-route-targets.mp4).
+[Original versus follow-up data](../../outputs/driving-investigation-18-case3-duration12/comparison-to-original.json)
+preserves the original timeout. Configuration/options comparisons confirm that
+only the duration changes; all Python source hashes match the five-case batch.
+This supports the duration-limit explanation, without claiming a bit-for-bit
+continuation. The original benchmark remains **4/5**, not a relabeled 5/5.
+Across the original batch and this repeat, all **606 executed commands** pass the
+independent execution audits. Both supervisors finish and stop their owned server.
+
+To reproduce that duration check after generating the five-case inputs above,
+use a new output directory and the same exported GPU/container settings:
+
+```bash
+source local/env.sh
+.venv/bin/python - <<'PYCONFIG'
+from pathlib import Path
+import yaml
+source = Path('outputs/driving-investigation-18-five-clean')
+out = Path('outputs/case3-duration12-repeat')
+out.mkdir(exist_ok=False)
+name = '03-straight-opposite-offset-route'
+config = yaml.safe_load((source / (name + '.yaml')).read_text())
+config['duration_s'] = 12
+(out / 'config.yaml').write_text(yaml.safe_dump(config, sort_keys=False))
+(out / 'options.json').write_bytes((source / (name + '-options.json')).read_bytes())
+PYCONFIG
+bash local/experiments/projected_server.sh start
+.venv/bin/python -m local.experiments.projected_probe capture \
+  --config outputs/case3-duration12-repeat/config.yaml \
+  --options outputs/case3-duration12-repeat/options.json \
+  --duration 12 --capture-frames 0 \
+  --output outputs/case3-duration12-repeat/capture
+.venv/bin/python -m local.experiments.audit_projection \
+  outputs/case3-duration12-repeat/capture
+bash local/experiments/projected_server.sh stop
+```
+
+The recorded follow-up uses `run_followup.py` in its output folder to additionally
+assert source hashes, matching options/configuration, matching GPU allocation,
+and automatic server cleanup. A fresh simulation is not a bit-for-bit replay of
+the original prefix even with the same configured seeds.
+
+## Code and rollback
+
+- `projected_probe.py` is the isolated capture entrypoint; `run_projection_suite.py`
+  runs the preset comparisons and manages the owned simulator lifecycle.
+- `projected_steering.py` applies the declared steering-target projection,
+  optional target-speed ceiling and steering gain around the original follower.
+- `projected_speed_selection.py` handles the finite native-candidate budget;
+  `projected_retention.py` rechecks original model plans at their true age.
+- `audit_projection.py` independently checks source arrays, original world anchors,
+  elapsed time, declared control changes, applied controls and recorded geometry.
+- `projected_server.sh` only manages the explicitly owned CARLA container/GPU.
+  It uses the same pinned CARLA 0.9.16 image.
+
+The current branch is `experiment/projected-speed-selection`. Native rollback is
+`fix/driving-native-validation` at `0d380ad`; projection-only rollback is
+`experiment/projected-steering-comparison` at `6bc992a`. The preceding centered
+straight/left success with three-second reuse is `f432895`. All changes are local
+commits; nothing has been pushed. Existing driving/VerifAI launchers opt into none
+of this, and their files and `module/` are unchanged versus the native branch.
+
+The 259 passing experiment tests cover selection ranking, invalid/stop cases,
+cache age/anchor handling and controller limits, alongside the previous tests.
+The physical results establish only the recorded empty, all-green Town03 cases.
+The model still produces low-speed or otherwise unsuitable proposals; target
+projection and selection mitigate them. Speed oscillations remain, left clearance
+is narrow, and recorded-corner checks do not cover swept volume, obstacles,
+traffic interaction, new maps or general reliability.
