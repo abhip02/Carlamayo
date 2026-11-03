@@ -16,15 +16,20 @@ import yaml
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--single-gpu-model',action='store_true')
+    parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
     args=parser.parse_args()
     root=Path(__file__).resolve().parents[2]
     out=args.output.resolve()
+    server_script=args.server_script.resolve()
     out.mkdir(parents=True,exist_ok=False)
     manifest=json.loads((root/'local/experiments/presets/five-short-scenarios.json').read_text())
     base=yaml.safe_load((root/manifest['base_config']).read_text())
     status=dict(state='preparing',started_unix=time.time(),results=[],
         git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
         model_gpus=os.environ.get('CUDA_VISIBLE_DEVICES'),
+        model_placement='single_gpu' if args.single_gpu_model else 'sharded',
+        server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
         scope='Matched native versus nearest-driving-lane target; one sample per step, no retries or cached path selection. Centered straight and left only.')
     sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
              for folder in ('module','local') for p in (root/folder).rglob('*.py')}
@@ -47,6 +52,8 @@ def main():
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
                 instruction='Turn left at the intersection.' if case['route']=='left' else 'Continue straight through the intersection.')
             config['instruction']=options['instruction']
+            if args.single_gpu_model:
+                options['model_placement']='single_gpu'
             config_path,options_path=out/(name+'.yaml'),out/(name+'-options.json')
             config_path.write_text(yaml.safe_dump(config,sort_keys=False))
             options_path.write_text(json.dumps(options,indent=2)+'\n')
@@ -57,7 +64,7 @@ def main():
     status['queue']=[n for n,_ in jobs]
     save()
     try:
-        subprocess.run(['bash','local/server.sh','start'],cwd=root,check=True)
+        subprocess.run(['bash',str(server_script),'start'],cwd=root,check=True)
         for _ in range(60):
             try:
                 client=carla.Client('127.0.0.1',2000)
@@ -106,7 +113,7 @@ def main():
         status.update(state='interrupted',error=repr(exc),finished_unix=time.time())
         raise
     finally:
-        status['server_stop_returncode']=subprocess.run(['bash','local/server.sh','stop'],cwd=root).returncode
+        status['server_stop_returncode']=subprocess.run(['bash',str(server_script),'stop'],cwd=root).returncode
         save()
 
 

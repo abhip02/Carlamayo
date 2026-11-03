@@ -71,7 +71,7 @@ def capture(args, output):
     if mode not in ('native', 'map') or options.get('num_samples') != 1:
         raise ValueError('Explicit native/map steering mode and one sample required')
     runner = native.runner
-    originals = runner.TrajectoryFollower, runner.connect_world, native.Probe
+    originals = runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model
     # Native capture has already saved the shared sources; add experiment-specific code.
     experiment_path = output / 'experiment.json'
     experiment = json.loads(experiment_path.read_text())
@@ -103,7 +103,22 @@ def capture(args, output):
         (output / 'map.xodr').write_text(world.get_map().to_opendrive())
         return client, world
 
+    def load_single(args, adapter):
+        import torch
+        if torch.cuda.device_count() != 1 or torch.cuda.get_device_capability(0)[0] < 8:
+            raise RuntimeError('Single-GPU comparison requires one visible GPU with native BF16 support')
+        checkpoint = args.checkpoint or str(runner.ROOT.parent /
+            'cache/huggingface/hub/models--nvidia--Alpamayo-1.5-10B/snapshots' / runner.SNAPSHOT)
+        print('Loading unchanged BF16 model on one GPU for single-sample comparison', flush=True)
+        model, processor = adapter.load_model(checkpoint_path=checkpoint,
+            attn_implementation='sdpa', device_map={'': 0}, max_memory={0: '23GiB'})
+        model.eval()
+        print(f'Model allocated: {torch.cuda.memory_allocated(0)/2**30:.2f} GiB', flush=True)
+        return model, processor
+
     runner.TrajectoryFollower, runner.connect_world, native.Probe = LoggingFollower, connect, SingleSampleProbe
+    if options.get('model_placement') == 'single_gpu':
+        runner.load_sharded_model = load_single
     try:
         ORIGINAL_CAPTURE(args, output)
     except RouteExitReached as exc:
@@ -115,7 +130,7 @@ def capture(args, output):
         native.write_json(path, summary)
         native.write_json(output / 'batch-summary.json', [summary])
     finally:
-        runner.TrajectoryFollower, runner.connect_world, native.Probe = originals
+        runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model = originals
 
 
 ORIGINAL_CAPTURE = native.capture
