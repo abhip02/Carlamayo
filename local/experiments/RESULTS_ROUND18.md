@@ -94,4 +94,54 @@ independently as well as unchanged raw model predictions.
   --speed-cap-mps 4.5 --steering-gain 1.18
 ```
 
-Follow-up results pending at this checkpoint.
+## Controller-limit follow-up completed
+
+All 250 software tests pass before launch `bd71616`. Neither run completes:
+
+| Maneuver | End | Speed range | Minimum corner clearance | Inference calls |
+| --- | --- | --- | --- | --- |
+| Straight | Sampling exhausted at 3.6 s | 0.002–4.611 m/s | +0.832 m | 130 |
+| Left | Sampling exhausted at 5.6 s | 0.531–4.626 m/s | +0.181 m | 139 |
+
+The ceiling controls the speed surge. The calibrated left run stays inside its
+recorded corridor until termination, but it has not completed the turn, so this
+does not establish full-turn tracking success. Several consecutive decisions
+produce only slowing/reversing candidates despite a green visual signal. Some
+generated explanations say to accelerate even while the trajectory decelerates;
+the sampled text alone is not an adequate explanation of trajectory behavior.
+
+Evidence: `outputs/driving-investigation-18-limited/`. Both captures pass the
+corrected independent integrity audit. The first left audit flagged four steer
+differences of 1.00–1.24e-6: the independent map projection retained double
+precision while CARLA's Location API stores float32. The auditor now reproduces
+that API conversion without loosening the tolerance. Original audit reports and
+status fields are retained; no recorded control or outcome was changed.
+
+## Predeclared native-plan reuse follow-up
+
+Keep the ceiling, calibration and six-attempt budget. After each fresh candidate,
+allow a previously sampled model plan to bridge a low-speed prediction if it is
+at most **1.0 s old** and passes current checks. Require the actual car's recorded
+corners inside the corridor, a projected target ahead along the commanded route,
+and an age-adjusted controller target within 3–5 m/s. A visual red/yellow forbids
+reuse. Unknown visual labels remain unknown; this experiment continues to require
+the explicitly configured empty all-green simulator scene.
+
+The native waypoint array, world anchor and prediction time remain original.
+The controller receives real elapsed time, and the video uses the original plan
+origin/time too. Every reused source and current check is logged. Fresh inference
+still runs every step; a usable cached candidate can avoid further retries.
+This adds no map-based full path or minimum-speed rule. It is a separate opt-in
+extension, not evidence that the underlying VLA has stopped making bad predictions.
+
+Run fresh centered straight and left with the same conditions and criteria:
+
+```bash
+.venv/bin/python -m local.experiments.run_projection_suite \
+  --output outputs/driving-investigation-18-retained \
+  --single-gpu-model --server-script local/experiments/projected_server.sh \
+  --steering-modes route --speed-selection-attempts 6 \
+  --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 1
+```
+
+Reuse-follow-up results pending at this checkpoint.

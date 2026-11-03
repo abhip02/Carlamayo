@@ -79,12 +79,14 @@ def capture(args, output):
     if mode not in ('native', 'map', 'route') or options.get('num_samples') != 1:
         raise ValueError('Explicit native/map/route steering mode and one sample required')
     runner = native.runner
-    originals = runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model
+    originals = (runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model,
+                 runner.trajectory_to_world, runner.OverheadRecorder)
+    cache_enabled=bool(options.get('projection_cache_age_s'))
     # Native capture has already saved the shared sources; add experiment-specific code.
     experiment_path = output / 'experiment.json'
     experiment = json.loads(experiment_path.read_text())
     for name in ('projected_steering.py', 'projected_probe.py', 'audit_projection.py',
-                 'projected_speed_selection.py'):
+                 'projected_speed_selection.py', 'projected_retention.py'):
         relative = 'local/experiments/' + name
         content = (runner.ROOT / relative).read_bytes()
         path = output / 'source_snapshot' / relative
@@ -103,6 +105,11 @@ def capture(args, output):
             self.index = 0
 
         def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
+            if cache_enabled:
+                from local.experiments.projected_retention import ACTIVE
+                elapsed_sec=ACTIVE.execution_age
+                if not np.array_equal(world,ACTIVE.execution_world):
+                    raise RuntimeError('Cached world anchor changed before control')
             control = super().compute_control(tf, world, speed, speeds, elapsed_sec)
             native.write_json(output / f'control_{self.index:03d}.json', json_finite({
                 'time_s': self.index * .1, 'world_trajectory': np.asarray(world).tolist(),
@@ -135,6 +142,23 @@ def capture(args, output):
         if mode != 'route' or not options.get('verify_signal'):
             raise ValueError('Speed selection requires commanded-route projection and signal checks')
         probe_class = SpeedSelectedProbe
+    if cache_enabled:
+        from local.experiments import projected_retention as retaining
+        from local.experiments.validated_selection import pose_transform
+        if probe_class is SingleSampleProbe:
+            raise ValueError('Projected retention requires bounded speed selection')
+        probe_class=retaining.RetainedSpeedProbe
+        class RetainingRecorder(originals[5]):
+            def add_frame(self,*args,**kwargs):
+                active=retaining.ACTIVE
+                if kwargs.get('prediction') is not None and active.execution_record is not None:
+                    record=active.execution_record
+                    source=record.get('retention',{}).get('source_context',record['context'])
+                    kwargs.update(prediction=np.vstack((runner.rear_axle_xyz(pose_transform(source['world_pose'])),active.execution_world)),
+                                  prediction_time=source['time_s'])
+                return super().add_frame(*args,**kwargs)
+        runner.trajectory_to_world=retaining.anchored_world_path
+        runner.OverheadRecorder=RetainingRecorder
     runner.TrajectoryFollower, runner.connect_world, native.Probe = LoggingFollower, connect, probe_class
     if options.get('model_placement') == 'single_gpu':
         runner.load_sharded_model = load_single
@@ -149,7 +173,10 @@ def capture(args, output):
         native.write_json(path, summary)
         native.write_json(output / 'batch-summary.json', [summary])
     finally:
-        runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model = originals
+        (runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model,
+         runner.trajectory_to_world, runner.OverheadRecorder) = originals
+        if cache_enabled:
+            retaining.ACTIVE=None
 
 
 ORIGINAL_CAPTURE = native.capture

@@ -28,6 +28,12 @@ def speed_score(record, low=3., high=5., speed_cap_mps=None):
 
 
 class SpeedSelectedProbe(SingleSampleProbe):
+    def consider_retained(self, record, result, context, options):
+        return None
+
+    def selected(self, record):
+        pass
+
     def sample_plan(self, adapter, data, context, instruction, options, label,
                     capture=False, capture_failures=False):
         attempts = options['speed_selection_attempts']
@@ -53,6 +59,10 @@ class SpeedSelectedProbe(SingleSampleProbe):
             visual_stop = record['visual_signal'] in ('red', 'yellow')
             if visual_stop or best is None or score < best[0]:
                 best = score, result, record
+            retained = self.consider_retained(record, result, context, options)
+            if not visual_stop and score[0] != 0 and retained is not None:
+                best = retained
+                break
             if visual_stop or score[0] == 0:
                 break
         score, result, record = best
@@ -65,6 +75,7 @@ class SpeedSelectedProbe(SingleSampleProbe):
                 preference_mps=[low, high], preference_met=score[0] == 0,
                 visual_stop_preserved=visual_stop))
         native.write_json(self.output / (label + '.json'), record)
+        self.selected(record)
         print(json.dumps({'selection':label,'selected':selected,'attempts':len(proposals),
                           'target_mps':record['controller_preview_speed_mps'],
                           'preference_met':score[0] == 0,'visual_stop_preserved':visual_stop}), flush=True)

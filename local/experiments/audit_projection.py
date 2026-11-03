@@ -39,13 +39,15 @@ def audit(capture):
             if not ok:
                 mismatches.append({'index': i, 'check': label})
         context = record['context']
+        retention=record.get('retention')
+        source_context=retention['source_context'] if retention else context
         selection = record.get('selection', {})
         if selection.get('kind') == 'bounded_native_speed_preference':
             proposals = selection['proposals']
             check(len(proposals) == selection['attempts'] <= selection['budget'], 'selection_budget')
             chosen = json.loads((capture / (selection['selected_proposal'] + '.json')).read_text())
             check(chosen['trajectory_ego'] == record['trajectory_ego'], 'selected_native_proposal_unchanged')
-            check(chosen['context'] == context, 'selected_current_input')
+            check(chosen['context'] == source_context, 'selected_original_input')
             low, high = selection['preference_mps']
             ranks = []
             total = 0.
@@ -60,13 +62,21 @@ def audit(capture):
                 total += raw_proposal['inference_seconds']
                 check(abs(v-proposal['target_mps']) < 1e-6, 'selection_native_speed_score')
             expected = 0 if selection['visual_stop_preserved'] else min(range(len(ranks)),key=lambda j:ranks[j])
-            check(proposals[expected]['label'] == selection['selected_proposal'], 'selection_ranking')
+            if not retention:
+                check(proposals[expected]['label'] == selection['selected_proposal'], 'selection_ranking')
+            else:
+                age=context['time_s']-source_context['time_s']
+                check(0<age<=options['projection_cache_age_s']+1e-6,'cache_age_bound')
+                check(abs(age-retention['age_s'])<1e-6,'cache_actual_age')
+                check(not selection['visual_stop_preserved'] and record['visual_signal'] not in ('red','yellow'),'no_cache_over_visual_stop')
+                check(chosen['reverse_velocity_steps']==0 and chosen['trajectory_marker_present'],'cached_native_forward_valid')
             check(abs(total-record['inference_seconds']) < 1e-5, 'all_sampling_time_counted')
             if selection['visual_stop_preserved']:
                 check(len(proposals) == 1 and record['visual_signal'] in ('red','yellow'), 'visual_stop_not_resampled')
         tf = pose_transform(context['world_pose'])
         raw = np.array(record['trajectory_ego'])
-        world, speeds = trajectory_to_world(tf, raw), planned_speeds(raw)
+        world, speeds = trajectory_to_world(pose_transform(source_context['world_pose']), raw), planned_speeds(raw)
+        check(abs(saved['elapsed_sec']-(context['time_s']-source_context['time_s']))<1e-6,'original_prediction_time')
         check(np.allclose(world, saved['world_trajectory'], atol=1e-6, rtol=0), 'native_world_unchanged')
         check(np.array_equal(speeds, saved['native_speeds']), 'native_speeds_unchanged')
         previous = shadow._prev_steer
@@ -94,7 +104,10 @@ def audit(capture):
                     q=av+u*v
                     candidates.append((float(np.linalg.norm(target[:2]-q[:2])),q,[a['road_id'],a['lane_id']]))
                 _,point,lane_ids=min(candidates,key=lambda c:c[0])
-                projected=point.tolist()
+                # CARLA locations store float32 coordinates. Keep the independent
+                # segment projection, then reproduce that API boundary exactly.
+                point=carla.Location(x=float(point[0]),y=float(point[1]),z=float(point[2]))
+                projected=[point.x,point.y,point.z]
             check(np.allclose(projected, saved['debug']['projected_target_xyz'], atol=1e-4, rtol=0), 'map_lookup_matches')
             check(lane_ids == [saved['debug']['projected_lane']['road_id'],saved['debug']['projected_lane']['lane_id']], 'map_lane_matches')
             axle = tf.transform(carla.Location(x=cfg.EGO_REAR_AXLE_X))
@@ -113,6 +126,21 @@ def audit(capture):
         check(abs(debug['target_speed_kmh'] - saved['debug']['target_speed_kmh']) < 1e-6, 'declared_speed_policy')
         if speed_cap is not None:
             check(saved['debug']['target_speed_kmh']/3.6 <= speed_cap+1e-6,'speed_ceiling_applied')
+        if retention:
+            low,high=selection['preference_mps']
+            check(low-1e-6<=debug['target_speed_kmh']/3.6<=high+1e-6,'retained_current_speed_preference')
+            offset=np.asarray(projected[:2])-[axle.x,axle.y]
+            yaw=math.radians(tf.rotation.yaw)
+            check(float(np.dot(offset,[math.cos(yaw),math.sin(yaw)]))>1.,'retained_target_ahead')
+            route=routes['routes'][selection['route']]
+            _,arc,_,_,_=audit_turn.project(np.array([[axle.x,axle.y],projected[:2]]),route)
+            check(arc[1]-arc[0]>.25,'retained_route_progress')
+            bounds=context['vehicle_bounds']
+            box=carla.BoundingBox(carla.Location(**bounds['location']),carla.Vector3D(**bounds['extent']))
+            box.rotation=carla.Rotation(**bounds['rotation'])
+            vertices=box.get_world_vertices(tf)
+            d,_,_,width,_=audit_turn.project(np.array([[v.x,v.y] for v in vertices]),route)
+            check(np.all(d<=width),'retained_current_body_inside')
         check(np.allclose([context['world_pose'][k] for k in ('x','y','yaw')],
                           [rows[i][k] for k in ('x','y','yaw')], atol=1e-5, rtol=0), 'snapshot_matches_recording')
     route_report = audit_turn.audit(capture, routes)
@@ -138,6 +166,8 @@ def audit(capture):
         inference_calls=len(all_proposals) if all_proposals else len(records),
         failed_decision_inference_calls=max(0,len(all_proposals)-executed_calls),
         speed_preference_misses=sum(r.get('selection',{}).get('preference_met') is False for r in records),
+        cache_uses=sum('retention' in r for r in records),
+        max_cache_age_s=max((r.get('retention',{}).get('age_s',0.) for r in records),default=0.),
         wall_seconds=summary['wall_seconds'], mismatches=mismatches,
         integrity_pass=not mismatches,
         passed=bool(not mismatches and endpoint is not None and not footprint['corner_outside_times_s']

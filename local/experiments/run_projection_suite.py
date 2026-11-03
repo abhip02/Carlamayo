@@ -23,6 +23,7 @@ def main():
     parser.add_argument('--cases',type=int,nargs='+',default=[1,4],choices=range(1,6))
     parser.add_argument('--speed-cap-mps',type=float)
     parser.add_argument('--steering-gain',type=float,default=1.)
+    parser.add_argument('--cache-age-s',type=float,default=0.)
     args=parser.parse_args()
     root=Path(__file__).resolve().parents[2]
     out=args.output.resolve()
@@ -38,7 +39,8 @@ def main():
         steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
         cases=args.cases,
         controller_speed_cap_mps=args.speed_cap_mps,steering_gain=args.steering_gain,
-        scope='One candidate per inference; explicit bounded native-speed selection if requested. No cached plans. Route mode constrains projection to the commanded map corridor.')
+        projection_cache_age_s=args.cache_age_s,
+        scope='One candidate per inference; explicit bounded native-speed selection and bounded cache only if requested. Route mode constrains projection to the commanded map corridor.')
     sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
              for folder in ('module','local') for p in (root/folder).rglob('*.py')}
     status['source_sha256']=sources
@@ -65,6 +67,8 @@ def main():
                 options['controller_speed_cap_mps']=args.speed_cap_mps
             if args.steering_gain != 1.:
                 options['steering_gain']=args.steering_gain
+            if args.cache_age_s:
+                options['projection_cache_age_s']=args.cache_age_s
             if args.speed_selection_attempts > 1:
                 options.update(speed_selection_attempts=args.speed_selection_attempts,
                                speed_preference_mps=[3.,5.])
