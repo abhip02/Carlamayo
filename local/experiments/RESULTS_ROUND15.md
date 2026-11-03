@@ -235,3 +235,38 @@ straight run and centered-left launcher check. The proposed complete settings ar
 These preserve the 0.1 s schedule and add only the scoped straight unknown-cache
 rule to the previous balanced profile. The simple launcher still uses its earlier
 profile pending full validation.
+
+The same flag was also screened against the unchanged round-12 archived terminal
+states, without running inference or simulation. At the centered-straight 8.4 s
+unknown-label failure, 11 of 12 recent native sources pass all remaining checks
+with the flag enabled; zero pass with it disabled. The older offset-straight
+4.5 s green-label failure has no recent sources to reuse, so this rule cannot
+resolve that archived state. Source files, native arrays, anchors and times are
+unchanged. This is a retrospective diagnostic, not a new endpoint result or
+five-case rerun: `prior-straight-cache-screening.json` and its script/log.
+
+## Straight unknown-cache continuation result
+
+At `8a7e6a5`, the failed balanced run's first **6.2 s** are physically replayed
+with all recorded states and commands verified. Fresh inference then reaches the
+original exit at **9.0 s**: **2.8 s / 28 commands** are new. Minimum fresh speed
+is **3.579 m/s**, with minimum recorded fresh corner clearance **0.769 m**.
+There is no recorded collision or departure. Every native identity, original
+controller, tracking, signal-reuse and sampling audit passes. The fresh suffix
+uses 68 pools, 26 admitted fresh decisions and 17 cached commands (two after
+fresh sampling exhaustion, 15 ranked better). The new rule permits one
+green-to-unknown and 16 matching-unknown reuses. Startup-inclusive wall time is
+972.7 s. The owned CARLA server stops successfully after auditing.
+
+The unknown upper-speed retry is exercised 17 times in this fresh suffix.
+Within six saved inputs, it alone causes additional sampling and selects a
+lower native target each time. One of those fresh choices is actually executed
+(5.366 to 4.329 m/s at 7.0 s); the other five lose to revalidated cached plans.
+This distinguishes an improved fresh proposal from an executed speed change.
+See `resume-straight-unknown-enabled/upper-retry-effect.json` and the capture's
+combined audit. It is not a counterfactual full-rollout comparison.
+
+This is a successful continuation, not a new complete fresh run. Next is the
+predeclared `02-straight-offset-faster-junction` full fresh check. The same final
+profile will be promoted to the simple launcher only after that passes, then
+tested from time zero on `04-left-centered-junction` through that launcher.

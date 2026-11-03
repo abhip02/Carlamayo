@@ -13,8 +13,9 @@ generates its own lane-reference data. Its optional 0.3 s interval also complete
 a full fresh straight crossing at 8.6 s with all execution audits passing.
 The speed-band fresh repeat fails at 6.2 s when the straight-route unknown-label
 gate vetoes recent physically valid native plans. A scoped inside-junction cache
-fix passes 228 tests and two exact-prefix physical diagnostics; continuation,
-full fresh validation and centered-left remain pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
+fix passes 228 tests and reaches the exit at 9.0 s after a verified 6.2 s prefix,
+with minimum fresh speed 3.579 m/s and all audits passing. Final-profile full
+fresh validation and centered-left remain pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
 comparison, exact configuration, video, limitations and rollback. These targeted
 checks do not replace the five-case benchmark below.
 

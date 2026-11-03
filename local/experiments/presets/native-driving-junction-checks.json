@@ -1,7 +1,7 @@
 {
   "base_config": "local/configs/demo.yaml",
   "base_options": "local/experiments/presets/native-driving-junction.json",
-  "note": "Two targeted full fresh runs using combined round-13/14 options. No replay; same CARLA/model/controller. Full five-case rerun remains separate. Both caps 15 seconds; original benchmark untouched.",
+  "note": "Two targeted full fresh checks using phase/speed retries and scoped straight-junction native-plan reuse. No replay; same CARLA/model/controller. Full five-case rerun remains separate. Both caps 15 seconds; original benchmark untouched.",
   "scenarios": [
     {
       "name": "02-straight-offset-faster-junction",
