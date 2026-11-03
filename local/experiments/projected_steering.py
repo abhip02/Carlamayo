@@ -1,8 +1,8 @@
 """Opt-in upstream-style nearest-driving-lane steering target projection.
 
-Uses the map lookup from CarlaMayo 578170c. The current target selection,
-pure-pursuit steering and native longitudinal controller stay in place.
-This deliberately does not reproduce the historical 10 km/h speed floor.
+Uses the map lookup from CarlaMayo 578170c. Optional explicit experiments add a
+target-speed ceiling and steering calibration to the current follower. Neither
+rewrites the raw trajectory nor adds the historical 10 km/h minimum speed.
 """
 import math
 from types import SimpleNamespace
@@ -47,10 +47,16 @@ class CommandedRouteMap:
 
 
 class ProjectedSteeringFollower(TrajectoryFollower):
-    def __init__(self, vehicle, mode='map', route=None):
+    def __init__(self, vehicle, mode='map', route=None, speed_cap_mps=None, steering_gain=1.):
         if mode not in ('native', 'map', 'route'):
             raise ValueError('Steering mode must be native, map or route')
         super().__init__(vehicle)
+        if speed_cap_mps is not None and (not math.isfinite(speed_cap_mps) or speed_cap_mps <= 0):
+            raise ValueError('Speed ceiling must be positive and finite')
+        if not math.isfinite(steering_gain) or not 0.5 <= steering_gain <= 2.:
+            raise ValueError('Steering gain must be between 0.5 and 2')
+        self.speed_cap_mps = speed_cap_mps
+        self.steering_gain = steering_gain
         self.steering_mode = mode
         self.world_map = vehicle.get_world().get_map() if mode == 'map' else None
         if mode == 'route':
@@ -58,12 +64,17 @@ class ProjectedSteeringFollower(TrajectoryFollower):
                 raise ValueError('Route projection requires an explicit commanded route')
             self.world_map = CommandedRouteMap(route)
 
+    def _target_speed(self, speeds_mps, speed_mps, elapsed_sec):
+        target, launch = super()._target_speed(speeds_mps, speed_mps, elapsed_sec)
+        return (min(target, self.speed_cap_mps) if self.speed_cap_mps is not None else target), launch
+
     def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
         previous = self._prev_steer
         steer, throttle, brake, debug = super().compute_control(
             tf, world, speed, speeds, elapsed_sec)
         raw = np.asarray(world)[debug['target_idx']].copy()
         debug.update(steering_mode=self.steering_mode, native_target_xyz=raw.tolist(),
+                     controller_speed_cap_mps=self.speed_cap_mps, steering_gain=self.steering_gain,
                      native_steer=steer, projection_distance_m=0., projected_target_xyz=None)
         if self.steering_mode in ('map', 'route'):
             target = self.world_map.get_waypoint(
@@ -78,6 +89,7 @@ class ProjectedSteeringFollower(TrajectoryFollower):
             axle = tf.transform(carla.Location(x=cfg.EGO_REAR_AXLE_X))
             steer = pure_pursuit_steer([axle.x, axle.y], math.radians(tf.rotation.yaw),
                                       projected[:2], cfg.EGO_WHEELBASE_M, self.max_steer_rad)
+            steer = float(np.clip(steer * self.steering_gain, -1., 1.))
             delta = cfg.FOLLOW_STEER_RATE_PER_SEC * cfg.CONTROL_DT
             steer = float(np.clip(steer, previous - delta, previous + delta))
             self._prev_steer = steer

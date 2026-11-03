@@ -3,7 +3,9 @@
 No speed floor, altered trajectory, cached path or forced go-intent. A red or
 yellow visual signal keeps the first model result, including its stop intent.
 After the finite budget, use the closest valid native candidate and record the
-missed preference explicitly. This is not an obstacle-aware safety policy.
+missed preference explicitly. When a speed ceiling is explicitly configured,
+score the capped target so fast predictions need no unnecessary retries. This
+is not an obstacle-aware safety policy.
 """
 import json
 import math
@@ -14,14 +16,15 @@ from local.experiments import inference_probe as native
 from local.experiments.projected_probe import SingleSampleProbe
 
 
-def speed_score(record, low=3., high=5.):
+def speed_score(record, low=3., high=5., speed_cap_mps=None):
     path = np.asarray(record['trajectory_ego'])
     speed = record['controller_preview_speed_mps']
     if (path.shape != (64, 3) or not np.isfinite(path).all() or
             not math.isfinite(speed) or not record['trajectory_marker_present'] or
             record['reverse_velocity_steps']):
         return math.inf, math.inf
-    return max(low - speed, speed - high, 0.), abs(speed - (low + high) / 2)
+    effective = min(speed, speed_cap_mps) if speed_cap_mps is not None else speed
+    return max(low - effective, effective - high, 0.), abs(effective - (low + high) / 2)
 
 
 class SpeedSelectedProbe(SingleSampleProbe):
@@ -42,7 +45,7 @@ class SpeedSelectedProbe(SingleSampleProbe):
             result = super().sample_plan(adapter, data, context, instruction,
                 candidate_options, candidate_label, capture and index == 0, capture_failures)
             record = json.loads((self.output / (candidate_label + '.json')).read_text())
-            score = speed_score(record, low, high)
+            score = speed_score(record, low, high, options.get('controller_speed_cap_mps'))
             proposals.append(dict(label=candidate_label, seed=candidate_options['seed'],
                 flow_seed=candidate_options['flow_seed'], target_mps=record['controller_preview_speed_mps'],
                 valid=math.isfinite(score[0]), preference_distance_mps=score[0] if math.isfinite(score[0]) else None,

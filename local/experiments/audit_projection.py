@@ -21,12 +21,18 @@ def audit(capture):
     controls = [json.loads(p.read_text()) for p in sorted(capture.glob('control_*.json'))]
     rows = [{k: float(v) for k, v in r.items()} for r in csv.DictReader((capture / '000_verifai/ego.csv').open())]
     assert records and len(records) == len(controls) == len(rows) - 1
-    mode = json.loads((capture / 'experiment.json').read_text())['options']['steering_mode']
+    options = json.loads((capture / 'experiment.json').read_text())['options']
+    mode = options['steering_mode']
+    speed_cap, steering_gain = options.get('controller_speed_cap_mps'), options.get('steering_gain',1.)
     routes = json.loads((capture / 'route-reference.json').read_text())
     world_map = carla.Map('archived', (capture / 'map.xodr').read_text()) if mode == 'map' else None
     vehicle = SimpleNamespace(get_physics_control=lambda: SimpleNamespace(wheels=[
         SimpleNamespace(max_steer_angle=math.degrees(controls[0]['max_steer_rad']))]))
-    shadow = TrajectoryFollower(vehicle)
+    class SpeedCeilingReference(TrajectoryFollower):
+        def _target_speed(self, speeds_mps, speed_mps, elapsed_sec):
+            value, launch = super()._target_speed(speeds_mps, speed_mps, elapsed_sec)
+            return (min(value, speed_cap) if speed_cap is not None else value), launch
+    shadow = SpeedCeilingReference(vehicle)
     mismatches, distances, lanes = [], [], []
     for i, (record, saved) in enumerate(zip(records, controls)):
         def check(ok, label):
@@ -49,7 +55,8 @@ def audit(capture):
                 v = float(planned_speeds(pts)[10:15].mean())
                 valid = (pts.shape == (64,3) and np.isfinite(pts).all() and np.isfinite(v)
                          and raw_proposal['trajectory_marker_present'] and not raw_proposal['reverse_velocity_steps'])
-                ranks.append((max(low-v,v-high,0.),abs(v-(low+high)/2)) if valid else (math.inf,math.inf))
+                effective = min(v,speed_cap) if speed_cap is not None else v
+                ranks.append((max(low-effective,effective-high,0.),abs(effective-(low+high)/2)) if valid else (math.inf,math.inf))
                 total += raw_proposal['inference_seconds']
                 check(abs(v-proposal['target_mps']) < 1e-6, 'selection_native_speed_score')
             expected = 0 if selection['visual_stop_preserved'] else min(range(len(ranks)),key=lambda j:ranks[j])
@@ -93,6 +100,7 @@ def audit(capture):
             axle = tf.transform(carla.Location(x=cfg.EGO_REAR_AXLE_X))
             steer = pure_pursuit_steer([axle.x, axle.y], math.radians(tf.rotation.yaw),
                 projected[:2], cfg.EGO_WHEELBASE_M, shadow.max_steer_rad)
+            steer = float(np.clip(steer * steering_gain,-1.,1.))
             delta = cfg.FOLLOW_STEER_RATE_PER_SEC * cfg.CONTROL_DT
             steer = float(np.clip(steer, previous - delta, previous + delta))
             distance = float(np.linalg.norm(target[:2] - projected[:2]))
@@ -102,7 +110,9 @@ def audit(capture):
         shadow._prev_steer = steer
         check(np.allclose([steer, throttle, brake], saved['control'], atol=1e-6, rtol=0), 'controller_command_matches')
         check(np.allclose(saved['control'], [rows[i+1][k] for k in ('steer','throttle','brake')], atol=1e-6, rtol=0), 'applied_control_matches')
-        check(abs(debug['target_speed_kmh'] - saved['debug']['target_speed_kmh']) < 1e-6, 'original_speed_policy')
+        check(abs(debug['target_speed_kmh'] - saved['debug']['target_speed_kmh']) < 1e-6, 'declared_speed_policy')
+        if speed_cap is not None:
+            check(saved['debug']['target_speed_kmh']/3.6 <= speed_cap+1e-6,'speed_ceiling_applied')
         check(np.allclose([context['world_pose'][k] for k in ('x','y','yaw')],
                           [rows[i][k] for k in ('x','y','yaw')], atol=1e-5, rtol=0), 'snapshot_matches_recording')
     route_report = audit_turn.audit(capture, routes)
@@ -111,7 +121,10 @@ def audit(capture):
     route_name = records[0]['selection']['route']
     endpoint = route_report['routes'][route_name]['reached_exit_time_s']
     speeds = [r['speed'] for r in rows]
-    result = dict(steering_mode=mode, route=route_name, steps=len(controls),
+    all_proposals = [json.loads(p.read_text()) for p in sorted(capture.glob('proposal_*.json'))]
+    executed_calls = sum(r.get('selection',{}).get('attempts',1) for r in records)
+    result = dict(steering_mode=mode, controller_speed_cap_mps=speed_cap, steering_gain=steering_gain,
+        route=route_name, steps=len(controls),
         duration_s=rows[-1]['time_s'], termination=summary['termination'],
         reached_exit_time_s=endpoint, min_speed_mps=min(speeds), max_speed_mps=max(speeds),
         final_speed_mps=speeds[-1], near_stop_times_s=[r['time_s'] for r in rows if r['speed'] < 1.],
@@ -121,13 +134,15 @@ def audit(capture):
         projected_lane_switches=sum(a != b for a,b in zip(lanes,lanes[1:])),
         projection_trace=[{'time_s':c['time_s'],'distance_m':c['debug']['projection_distance_m'],
                            'lane':c['debug'].get('projected_lane')} for c in controls],
-        inference_seconds=sum(r['inference_seconds'] for r in records),
-        inference_calls=sum(r.get('selection',{}).get('attempts',1) for r in records),
+        inference_seconds=sum(r['inference_seconds'] for r in (all_proposals or records)),
+        inference_calls=len(all_proposals) if all_proposals else len(records),
+        failed_decision_inference_calls=max(0,len(all_proposals)-executed_calls),
         speed_preference_misses=sum(r.get('selection',{}).get('preference_met') is False for r in records),
         wall_seconds=summary['wall_seconds'], mismatches=mismatches,
         integrity_pass=not mismatches,
         passed=bool(not mismatches and endpoint is not None and not footprint['corner_outside_times_s']
-                    and min(speeds) >= 1. and summary['termination'] != 'collision'),
+                    and min(speeds) >= 1. and (speed_cap is None or max(speeds) <= speed_cap+1.)
+                    and summary['termination'] != 'collision'),
         note='Map-assisted steering is explicitly allowed here. Geometry measures recorded corners, not swept volume or obstacle safety.')
     for name, report in [('projection-audit',result),('route-audit',route_report),('footprint-audit',footprint)]:
         (capture / (name+'.json')).write_text(json.dumps(report,indent=2)+'\n')

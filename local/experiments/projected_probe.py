@@ -98,7 +98,8 @@ def capture(args, output):
             route = None
             if mode == 'route':
                 route = json.loads((output / 'generated-routes.json').read_text())['routes'][options['validation_route']]
-            super().__init__(vehicle, mode, route)
+            super().__init__(vehicle, mode, route, options.get('controller_speed_cap_mps'),
+                             options.get('steering_gain', 1.))
             self.index = 0
 
         def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
