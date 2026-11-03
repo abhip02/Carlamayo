@@ -11,7 +11,10 @@ previously failing offset straight crossing at **8.9 s**, with minimum speed
 audits passing. No prefix is replayed. The new `local/run_driving.sh` launcher
 generates its own lane-reference data. Its optional 0.3 s interval also completes
 a full fresh straight crossing at 8.6 s with all execution audits passing.
-The speed-band follow-up and centered-left check are pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
+The speed-band fresh repeat fails at 6.2 s when the straight-route unknown-label
+gate vetoes recent physically valid native plans. A scoped inside-junction cache
+fix passes 228 tests and two exact-prefix physical diagnostics; continuation,
+full fresh validation and centered-left remain pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo
 comparison, exact configuration, video, limitations and rollback. These targeted
 checks do not replace the five-case benchmark below.
 

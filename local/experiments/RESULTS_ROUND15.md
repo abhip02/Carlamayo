@@ -187,3 +187,51 @@ support checking the specific effect of extra retries on the same input.
 Evidence: `balanced-initial-comparison.json` and
 `balanced-first-input-comparison.json`. Quality reports now separate unknown
 upper-speed retry counts from the legacy green-only count.
+
+## Fresh repeat failure: straight-junction cache veto
+
+The balanced full fresh repeat **fails at 6.2 s**: none of 48 new native
+candidates passes all checks. It has not triggered an unknown upper-speed retry.
+Measured speed remains 3.268–4.787 m/s, minimum recorded corner clearance is
+0.496 m, and all 62 executed native/controller audits pass. The failure is
+sampling exhaustion, with no recorded stop or departure. The new profile is
+not promoted. Its complete capture and failure remain intact.
+
+Every recent selected/reserved plan is rejected early with `reuse_requires_green`,
+including plans generated under the same unknown label only 0.1–0.2 s earlier.
+The existing unknown-cache exceptions cover the left exit only. In a CPU-only
+diagnostic removing just that label veto, **32 of 33** archived native plans pass
+all remaining geometry, age, distance, heading, speed and controller checks.
+`accepted_frame_059` still fails tracking clearance (0.09756 m versus 0.1 m).
+The unchanged ranking selects `accepted_frame_057` at age 0.5 s. No source array,
+speed, clock or record is modified. Evidence is in
+`straight-unknown-cache-screening.json` and `straight-unknown-cache-ranking.json`.
+
+Two physical checks reproduce all 62 prefix states and commands exactly, then
+execute original source 057 for one tick (age 0.5 s), and original source 060
+for three ticks (ages 0.2, 0.3, 0.4 s). Both succeed with minimum continuation
+clearance about 0.771 m; minimum speeds are 3.648 and 3.429 m/s. These are short
+native-plan diagnostics, not full fresh runs. See `straight-unknown-physical-results.json`.
+
+The default-off `validation_allow_straight_unknown_cache` removes that label veto
+only for an aligned straight connection, unchanged approach phase, green/unknown
+source, current unknown, forward progress, and **both complete vehicle boxes past
+the junction entry while their centers remain before the exit**. Source visual
+labels must agree with their recorded classifications. Signal labels remain
+unchanged. All original physical and half-second age checks still apply; fresh
+unknown-signal sampling is still attempted every tick. The existing left rules
+are unchanged. This remains a controlled empty-scene policy, not authorization
+to approach an unknown traffic signal.
+
+All **228 tests pass in 4.27 s**, including 30 new eligibility, classification,
+body/age rejection and audit-tampering cases. The strict archived-source check
+must admit exactly the 32 physically eligible plans and still reject source 059.
+An initial hand-count assertion incorrectly expected 32 total sources; it was
+corrected to the 33 actual archived records and a set comparison of their labels.
+
+Next: a fresh continuation after the verified 6.2 s prefix, then a complete fresh
+straight run and centered-left launcher check. The proposed complete settings are
+`presets/native-driving-junction.json` and `native-driving-junction-checks.json`.
+These preserve the 0.1 s schedule and add only the scoped straight unknown-cache
+rule to the previous balanced profile. The simple launcher still uses its earlier
+profile pending full validation.
