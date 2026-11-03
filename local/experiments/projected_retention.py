@@ -71,8 +71,8 @@ class RetainedSpeedProbe(SpeedSelectedProbe):
 
     def consider_retained(self,record,result,context,options):
         maximum=options['projection_cache_age_s']
-        if not 0<maximum<=1.:
-            raise ValueError('Projected cache age must be in (0, 1] seconds')
+        if not 0<maximum<=cfg.TRAJECTORY_MAX_AGE_SEC:
+            raise ValueError('Projected cache age must be positive and within the native maximum plan age')
         self.history=[p for p in self.history if context['time_s']-p['record']['context']['time_s']<=maximum+1e-6]
         if math.isfinite(speed_score(record)[0]):
             raw=np.asarray(record['trajectory_ego'])

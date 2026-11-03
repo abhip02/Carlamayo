@@ -86,3 +86,14 @@ def test_capture_restores_anchor_and_video_hooks_on_failure(tmp_path,monkeypatch
     assert (runner.TrajectoryFollower,runner.connect_world,probe.native.Probe,
             runner.load_sharded_model,runner.trajectory_to_world,runner.OverheadRecorder)==original
     assert cache.ACTIVE is None
+
+
+def test_three_second_plan_uses_real_age_and_expires_at_declared_limit():
+    route,context,plan,options=scene()
+    options['projection_cache_age_s']=3.
+    context['time_s']=3.;context['world_pose']['x']=12.
+    assert cache.assess(plan,context,route,options)['valid']
+    assert not cache.assess(plan,{**context,'time_s':3.1},route,options)['valid']
+    probe=object.__new__(cache.RetainedSpeedProbe)
+    with pytest.raises(ValueError,match='native maximum'):
+        probe.consider_retained(plan['record'],plan['result'],context,{**options,'projection_cache_age_s':3.1})

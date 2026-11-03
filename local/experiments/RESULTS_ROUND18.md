@@ -144,4 +144,42 @@ Run fresh centered straight and left with the same conditions and criteria:
   --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 1
 ```
 
-Reuse-follow-up results pending at this checkpoint.
+## One-second reuse results
+
+All 255 software tests pass before launch `dd3b782`. Independent execution audits
+pass for both captures.
+
+| Maneuver | End | Speed range | Minimum corner clearance | Calls / control steps | Reuses |
+| --- | --- | --- | --- | --- | --- |
+| Straight | Sampling exhausted at 6.1 s | 0.002–4.613 m/s | +0.832 m | 152 / 61 | 21 |
+| Left | **Correct exit at 10.7 s; pass** | **2.661–4.611 m/s** | **+0.134 m** | **119 / 107** | 41 |
+
+The left run has no recorded near-stop, collision or corner departure. All
+107 executed commands pass the source/anchor/time/controller audits. Its maximum
+reuse age is 1.0 s, wall time including startup is 6.20 minutes, and measured
+inference time is 298.85 s. This is a successful controlled example, not a claim
+of general reliability. Evidence: `outputs/driving-investigation-18-retained/`.
+
+Straight bridges its first bad patch, then encounters another sustained slowdown.
+An offline assessment on those actual recorded states finds otherwise-valid
+native plans aged 1.2–1.9 s that the one-second limit excludes. This is diagnostic
+evidence, not a replayed or completed physical counterfactual; the JSON is saved
+as `second-slowdown-cache-diagnostic.json`.
+
+## Predeclared three-second reuse follow-up
+
+Extend only the maximum reuse age to **3.0 s**, matching the original module's
+`TRAJECTORY_MAX_AGE_SEC`. All current footprint, target, speed, visual-stop and
+original-source checks remain active. The speed preview must still lie inside
+the original 6.4 s prediction. Source age is never reset by reuse. Retest fresh
+centered straight and left with unchanged caps and all other settings.
+
+```bash
+.venv/bin/python -m local.experiments.run_projection_suite \
+  --output outputs/driving-investigation-18-retained3 \
+  --single-gpu-model --server-script local/experiments/projected_server.sh \
+  --steering-modes route --speed-selection-attempts 6 \
+  --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 3
+```
+
+Three-second reuse results pending at this checkpoint.
