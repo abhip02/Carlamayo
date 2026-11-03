@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--single-gpu-model',action='store_true')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
+    parser.add_argument('--steering-modes',nargs='+',choices=('native','map','route'),default=['native','map'])
     args=parser.parse_args()
     root=Path(__file__).resolve().parents[2]
     out=args.output.resolve()
@@ -30,7 +31,8 @@ def main():
         model_gpus=os.environ.get('CUDA_VISIBLE_DEVICES'),
         model_placement='single_gpu' if args.single_gpu_model else 'sharded',
         server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
-        scope='Matched native versus nearest-driving-lane target; one sample per step, no retries or cached path selection. Centered straight and left only.')
+        steering_modes=args.steering_modes,
+        scope='Declared steering modes; one sample per step, no retries or cached path selection. Centered straight and left only. Route mode constrains projection to the commanded map corridor.')
     sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
              for folder in ('module','local') for p in (root/folder).rglob('*.py')}
     status['source_sha256']=sources
@@ -41,7 +43,7 @@ def main():
     jobs=[]
     for index in (0,3):
         case=manifest['scenarios'][index]
-        for mode in ('native','map'):
+        for mode in args.steering_modes:
             name=f"{case['route']}-{mode}"
             config=copy.deepcopy(base)
             config['duration_s']=case['duration_s']

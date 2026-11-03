@@ -48,7 +48,9 @@ class SingleSampleProbe(native.Probe):
             self.route = routes['routes'][options['validation_route']]
             self.phase = 'approach'
             native.write_json(self.output / 'route-reference.json', {**routes,
-                'note': 'Route used only for instruction phase and measurement. Projection uses nearest CARLA driving waypoint, without route constraint.'})
+                'note': ('Commanded-route map centerline also used for steering projection.'
+                         if options.get('steering_mode') == 'route' else
+                         'Route used only for instruction phase and measurement. Map projection uses nearest CARLA driving waypoint, without route constraint.')})
         reached, self.phase, instruction = route_state(
             context, self.route, options['validation_route'], self.phase)
         if reached:
@@ -68,8 +70,8 @@ class SingleSampleProbe(native.Probe):
 def capture(args, output):
     options = json.loads(args.options.read_text())
     mode = options.get('steering_mode')
-    if mode not in ('native', 'map') or options.get('num_samples') != 1:
-        raise ValueError('Explicit native/map steering mode and one sample required')
+    if mode not in ('native', 'map', 'route') or options.get('num_samples') != 1:
+        raise ValueError('Explicit native/map/route steering mode and one sample required')
     runner = native.runner
     originals = runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model
     # Native capture has already saved the shared sources; add experiment-specific code.
@@ -86,7 +88,10 @@ def capture(args, output):
 
     class LoggingFollower(ProjectedSteeringFollower):
         def __init__(self, vehicle):
-            super().__init__(vehicle, mode)
+            route = None
+            if mode == 'route':
+                route = json.loads((output / 'generated-routes.json').read_text())['routes'][options['validation_route']]
+            super().__init__(vehicle, mode, route)
             self.index = 0
 
         def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):

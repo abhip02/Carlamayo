@@ -22,6 +22,7 @@ def audit(capture):
     rows = [{k: float(v) for k, v in r.items()} for r in csv.DictReader((capture / '000_verifai/ego.csv').open())]
     assert records and len(records) == len(controls) == len(rows) - 1
     mode = json.loads((capture / 'experiment.json').read_text())['options']['steering_mode']
+    routes = json.loads((capture / 'route-reference.json').read_text())
     world_map = carla.Map('archived', (capture / 'map.xodr').read_text()) if mode == 'map' else None
     vehicle = SimpleNamespace(get_physics_control=lambda: SimpleNamespace(wheels=[
         SimpleNamespace(max_steer_angle=math.degrees(controls[0]['max_steer_rad']))]))
@@ -42,15 +43,29 @@ def audit(capture):
             tf, world, context['measured_speed_mps'], speeds, saved['elapsed_sec'])
         target = world[debug['target_idx']]
         check(np.allclose(target, saved['debug']['native_target_xyz'], atol=1e-6, rtol=0), 'native_lookahead_target')
-        if mode == 'map':
-            wp = world_map.get_waypoint(carla.Location(x=float(target[0]), y=float(target[1]), z=float(target[2])),
-                project_to_road=True, lane_type=carla.LaneType.Driving)
-            assert wp is not None
-            point = wp.transform.location
-            projected = [point.x, point.y, point.z]
+        if mode in ('map','route'):
+            if mode == 'map':
+                wp = world_map.get_waypoint(carla.Location(x=float(target[0]), y=float(target[1]), z=float(target[2])),
+                    project_to_road=True, lane_type=carla.LaneType.Driving)
+                assert wp is not None
+                point = wp.transform.location
+                projected = [point.x, point.y, point.z]
+                lane_ids = [wp.road_id, wp.lane_id]
+            else:
+                # Independent scalar projection onto each commanded-route segment.
+                points = routes['routes'][record['selection']['route']]['points']
+                candidates = []
+                for a,b in zip(points,points[1:]):
+                    av=np.array([a['x'],a['y'],a['z']]);bv=np.array([b['x'],b['y'],b['z']]);v=bv-av
+                    norm=float(v[0]**2+v[1]**2)
+                    if norm<1e-12:continue
+                    u=max(0.,min(1.,float(np.dot(target[:2]-av[:2],v[:2]))/norm))
+                    q=av+u*v
+                    candidates.append((float(np.linalg.norm(target[:2]-q[:2])),q,[a['road_id'],a['lane_id']]))
+                _,point,lane_ids=min(candidates,key=lambda c:c[0])
+                projected=point.tolist()
             check(np.allclose(projected, saved['debug']['projected_target_xyz'], atol=1e-4, rtol=0), 'map_lookup_matches')
-            check(wp.road_id == saved['debug']['projected_lane']['road_id'] and
-                  wp.lane_id == saved['debug']['projected_lane']['lane_id'], 'map_lane_matches')
+            check(lane_ids == [saved['debug']['projected_lane']['road_id'],saved['debug']['projected_lane']['lane_id']], 'map_lane_matches')
             axle = tf.transform(carla.Location(x=cfg.EGO_REAR_AXLE_X))
             steer = pure_pursuit_steer([axle.x, axle.y], math.radians(tf.rotation.yaw),
                 projected[:2], cfg.EGO_WHEELBASE_M, shadow.max_steer_rad)
@@ -59,14 +74,13 @@ def audit(capture):
             distance = float(np.linalg.norm(target[:2] - projected[:2]))
             check(abs(distance - saved['debug']['projection_distance_m']) < 1e-4, 'projection_distance_matches')
             distances.append(distance)
-            lanes.append([wp.road_id, wp.lane_id])
+            lanes.append(lane_ids)
         shadow._prev_steer = steer
         check(np.allclose([steer, throttle, brake], saved['control'], atol=1e-6, rtol=0), 'controller_command_matches')
         check(np.allclose(saved['control'], [rows[i+1][k] for k in ('steer','throttle','brake')], atol=1e-6, rtol=0), 'applied_control_matches')
         check(abs(debug['target_speed_kmh'] - saved['debug']['target_speed_kmh']) < 1e-6, 'original_speed_policy')
         check(np.allclose([context['world_pose'][k] for k in ('x','y','yaw')],
                           [rows[i][k] for k in ('x','y','yaw')], atol=1e-5, rtol=0), 'snapshot_matches_recording')
-    routes = json.loads((capture / 'route-reference.json').read_text())
     route_report = audit_turn.audit(capture, routes)
     footprint = audit_body.audit(capture)
     summary = json.loads((capture / '000_verifai/summary.json').read_text())

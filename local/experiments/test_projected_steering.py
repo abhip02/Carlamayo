@@ -98,3 +98,31 @@ def test_capture_restores_original_runner_on_failure(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError,match='test failure'):
         probe.capture(SimpleNamespace(options=options),tmp_path)
     assert (probe.native.runner.TrajectoryFollower,probe.native.runner.connect_world,probe.native.Probe)==originals
+
+
+def test_commanded_route_projection_ignores_nearer_unrelated_lane_and_zero_segments():
+    from local.experiments.projected_steering import CommandedRouteMap
+    point=dict(x=0.,y=0.,z=0.,road_id=7,lane_id=-1,s=0.,is_junction=True)
+    route={'points':[point,point,{**point,'y':20.,'s':20.}]}
+    wp=CommandedRouteMap(route).get_waypoint(carla.Location(x=8.,y=5.))
+    assert wp.transform.location.x == 0.
+    assert wp.transform.location.y == 5.
+    assert wp.road_id == 7 and wp.lane_id == -1
+    assert wp.transform.rotation.yaw == pytest.approx(90.)
+
+
+def test_route_mode_requires_reference_and_preserves_original_speed():
+    v=vehicle(Road())
+    with pytest.raises(ValueError,match='explicit commanded route'):
+        ProjectedSteeringFollower(v,'route')
+    point=dict(x=0.,y=0.,z=0.,road_id=7,lane_id=-1,s=0.,is_junction=True)
+    route={'points':[point,{**point,'x':30.,'s':30.}]}
+    follower=ProjectedSteeringFollower(v,'route',route)
+    native=TrajectoryFollower(v)
+    path=np.column_stack((np.arange(1,65)*.3,np.full(64,3.),np.zeros(64)))
+    speed=np.full(64,3.)
+    a=native.compute_control(carla.Transform(),path,3.,speed)
+    b=follower.compute_control(carla.Transform(),path,3.,speed)
+    assert b[0] == 0 and a[0] > 0
+    assert a[1:3] == b[1:3]
+    assert b[3]['steering_mode']=='route'
