@@ -107,6 +107,7 @@ def audit(capture):
                         reserve_matches &= candidate["preferred_reserve_valid"] == expected
         records.append({
             "label": frame["label"], "time_s": frame["context"]["time_s"],
+            "signal": selection["signal"],
             "first_admitted_proposal": first["proposal"], "selected_proposal": selection["proposal"],
             "selection_changed": first["proposal"] != selection["proposal"],
             "extra_pools_after_first_admission": len(attempts) - first_index - 1,
@@ -131,14 +132,17 @@ def audit(capture):
             "extra_pools_after_admission": sum(r["extra_pools_after_first_admission"] for r in records),
             "selections_changed_by_post_admission_retries": sum(r["selection_changed"] for r in records),
             "speed_retry_requests": sum(r["speed_retry_requests"] for r in records),
+            "unknown_upper_speed_retry_requests": sum(r["speed_retry_requests"] for r in records if r["signal"] == "unknown"),
             "reserve_retry_requests": sum(r["reserve_retry_requests"] for r in records),
             "low_speed_retry_requests": sum(r["low_speed_retry_requests"] for r in records),
             "steps_with_unmet_low_speed_preference": sum(bool(r["low_speed_preference"] and
                 r["low_speed_preference"]["applied"] and not r["low_speed_preference"]["met"]) for r in records),
             "steps_with_unmet_reserve_preference": sum(bool(r["reserve_preference"] and
                                                              not r["reserve_preference"]["met"]) for r in records),
-            "steps_with_unmet_green_preference": sum(bool(r["preference"] and r["preference"]["applied"] and
+            "steps_with_unmet_upper_speed_preference": sum(bool(r["preference"] and r["preference"]["applied"] and
                                                            not r["preference"]["met"]) for r in records),
+            "steps_with_unmet_green_preference": sum(bool(r["signal"] == "green" and r["preference"] and
+                r["preference"]["applied"] and not r["preference"]["met"]) for r in records),
             "source_array_or_token_mismatches": mismatches, "records": records,
             "selection_mismatches": [r["label"] for r in records if not (
                 r["best_admitted_sample_selected"] and r["reserve_annotations_match"] and

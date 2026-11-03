@@ -176,3 +176,14 @@ The execution policy is unchanged by this correction.
 
 The interval remains optional. The next full straight check uses the declared
 0.1 s balanced-speed profile, followed by the centered-left launcher check.
+
+The fresh balanced capture starts at `e1e8cfe`. Its physical initial state
+(excluding the episode name), ego-position history, ego-rotation history and
+camera-index tensor match the baseline exactly. Camera pixels differ: mean
+absolute difference is 1.189 / 255 at the first input, and native predictions
+differ from the first decision. These are independent fresh checks, not an
+identical-image paired experiment. The saved within-decision candidate pools
+support checking the specific effect of extra retries on the same input.
+Evidence: `balanced-initial-comparison.json` and
+`balanced-first-input-comparison.json`. Quality reports now separate unknown
+upper-speed retry counts from the legacy green-only count.
