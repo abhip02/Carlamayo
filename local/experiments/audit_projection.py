@@ -33,6 +33,30 @@ def audit(capture):
             if not ok:
                 mismatches.append({'index': i, 'check': label})
         context = record['context']
+        selection = record.get('selection', {})
+        if selection.get('kind') == 'bounded_native_speed_preference':
+            proposals = selection['proposals']
+            check(len(proposals) == selection['attempts'] <= selection['budget'], 'selection_budget')
+            chosen = json.loads((capture / (selection['selected_proposal'] + '.json')).read_text())
+            check(chosen['trajectory_ego'] == record['trajectory_ego'], 'selected_native_proposal_unchanged')
+            check(chosen['context'] == context, 'selected_current_input')
+            low, high = selection['preference_mps']
+            ranks = []
+            total = 0.
+            for proposal in proposals:
+                raw_proposal = json.loads((capture / (proposal['label'] + '.json')).read_text())
+                pts = np.asarray(raw_proposal['trajectory_ego'])
+                v = float(planned_speeds(pts)[10:15].mean())
+                valid = (pts.shape == (64,3) and np.isfinite(pts).all() and np.isfinite(v)
+                         and raw_proposal['trajectory_marker_present'] and not raw_proposal['reverse_velocity_steps'])
+                ranks.append((max(low-v,v-high,0.),abs(v-(low+high)/2)) if valid else (math.inf,math.inf))
+                total += raw_proposal['inference_seconds']
+                check(abs(v-proposal['target_mps']) < 1e-6, 'selection_native_speed_score')
+            expected = 0 if selection['visual_stop_preserved'] else min(range(len(ranks)),key=lambda j:ranks[j])
+            check(proposals[expected]['label'] == selection['selected_proposal'], 'selection_ranking')
+            check(abs(total-record['inference_seconds']) < 1e-5, 'all_sampling_time_counted')
+            if selection['visual_stop_preserved']:
+                check(len(proposals) == 1 and record['visual_signal'] in ('red','yellow'), 'visual_stop_not_resampled')
         tf = pose_transform(context['world_pose'])
         raw = np.array(record['trajectory_ego'])
         world, speeds = trajectory_to_world(tf, raw), planned_speeds(raw)
@@ -98,6 +122,8 @@ def audit(capture):
         projection_trace=[{'time_s':c['time_s'],'distance_m':c['debug']['projection_distance_m'],
                            'lane':c['debug'].get('projected_lane')} for c in controls],
         inference_seconds=sum(r['inference_seconds'] for r in records),
+        inference_calls=sum(r.get('selection',{}).get('attempts',1) for r in records),
+        speed_preference_misses=sum(r.get('selection',{}).get('preference_met') is False for r in records),
         wall_seconds=summary['wall_seconds'], mismatches=mismatches,
         integrity_pass=not mismatches,
         passed=bool(not mismatches and endpoint is not None and not footprint['corner_outside_times_s']

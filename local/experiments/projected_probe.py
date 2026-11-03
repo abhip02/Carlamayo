@@ -39,6 +39,11 @@ def route_state(context, route, name, phase):
 
 
 class SingleSampleProbe(native.Probe):
+    def sample_plan(self, adapter, data, context, instruction, options, label,
+                    capture=False, capture_failures=False):
+        return super().evaluate(adapter, data, context, instruction, options, label,
+                                capture, capture_failures)
+
     def evaluate(self, adapter, data, context, instruction, options, label,
                  capture=False, capture_failures=False):
         if options.get('num_samples') != 1 or options.get('select_route_continuity'):
@@ -56,12 +61,13 @@ class SingleSampleProbe(native.Probe):
         if reached:
             native.write_json(self.output / 'route-exit-reached.json', {'context': context})
             raise RouteExitReached(self.output, context)
-        result = super().evaluate(adapter, data, context, instruction,
+        result = self.sample_plan(adapter, data, context, instruction,
             {**options, 'instruction': instruction}, label, capture, capture_failures)
         path = self.output / (label + '.json')
         record = json.loads(path.read_text())
         # Route annotation for the existing recorded-footprint audit; no admission gate.
-        record.update(selection={'route': options['validation_route'], 'kind': 'single_sample_no_validation'},
+        record.update(selection={**record.get('selection', {}), 'route': options['validation_route'],
+                                 'kind': record.get('selection', {}).get('kind', 'single_sample_no_validation')},
                       navigation_phase=self.phase)
         native.write_json(path, record)
         return result
@@ -77,7 +83,8 @@ def capture(args, output):
     # Native capture has already saved the shared sources; add experiment-specific code.
     experiment_path = output / 'experiment.json'
     experiment = json.loads(experiment_path.read_text())
-    for name in ('projected_steering.py', 'projected_probe.py', 'audit_projection.py'):
+    for name in ('projected_steering.py', 'projected_probe.py', 'audit_projection.py',
+                 'projected_speed_selection.py'):
         relative = 'local/experiments/' + name
         content = (runner.ROOT / relative).read_bytes()
         path = output / 'source_snapshot' / relative
@@ -121,7 +128,13 @@ def capture(args, output):
         print(f'Model allocated: {torch.cuda.memory_allocated(0)/2**30:.2f} GiB', flush=True)
         return model, processor
 
-    runner.TrajectoryFollower, runner.connect_world, native.Probe = LoggingFollower, connect, SingleSampleProbe
+    probe_class = SingleSampleProbe
+    if options.get('speed_selection_attempts', 1) > 1:
+        from local.experiments.projected_speed_selection import SpeedSelectedProbe
+        if mode != 'route' or not options.get('verify_signal'):
+            raise ValueError('Speed selection requires commanded-route projection and signal checks')
+        probe_class = SpeedSelectedProbe
+    runner.TrajectoryFollower, runner.connect_world, native.Probe = LoggingFollower, connect, probe_class
     if options.get('model_placement') == 'single_gpu':
         runner.load_sharded_model = load_single
     try:

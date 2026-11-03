@@ -1,4 +1,4 @@
-"""Run four fresh matched single-sample comparisons and preserve every outcome."""
+"""Run declared steering/selection comparisons and preserve every outcome."""
 import argparse
 import copy
 import hashlib
@@ -19,6 +19,8 @@ def main():
     parser.add_argument('--single-gpu-model',action='store_true')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
     parser.add_argument('--steering-modes',nargs='+',choices=('native','map','route'),default=['native','map'])
+    parser.add_argument('--speed-selection-attempts',type=int,default=1,choices=range(1,9))
+    parser.add_argument('--cases',type=int,nargs='+',default=[1,4],choices=range(1,6))
     args=parser.parse_args()
     root=Path(__file__).resolve().parents[2]
     out=args.output.resolve()
@@ -31,8 +33,9 @@ def main():
         model_gpus=os.environ.get('CUDA_VISIBLE_DEVICES'),
         model_placement='single_gpu' if args.single_gpu_model else 'sharded',
         server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
-        steering_modes=args.steering_modes,
-        scope='Declared steering modes; one sample per step, no retries or cached path selection. Centered straight and left only. Route mode constrains projection to the commanded map corridor.')
+        steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
+        cases=args.cases,
+        scope='One candidate per inference; explicit bounded native-speed selection if requested. No cached plans. Route mode constrains projection to the commanded map corridor.')
     sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
              for folder in ('module','local') for p in (root/folder).rglob('*.py')}
     status['source_sha256']=sources
@@ -41,10 +44,11 @@ def main():
         temporary.write_text(json.dumps(status,indent=2)+'\n')
         temporary.replace(out/'status.json')
     jobs=[]
-    for index in (0,3):
+    for number in args.cases:
+        index=number-1
         case=manifest['scenarios'][index]
         for mode in args.steering_modes:
-            name=f"{case['route']}-{mode}"
+            name=f"{case['route']}-{mode}" if args.cases == [1,4] else f"{case['name']}-{mode}"
             config=copy.deepcopy(base)
             config['duration_s']=case['duration_s']
             config['rollouts']=[{k:case[k] for k in ('name','distance_before_intersection_m','lateral_offset_m','speed_mps','heading_offset_deg')}]
@@ -54,6 +58,9 @@ def main():
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
                 instruction='Turn left at the intersection.' if case['route']=='left' else 'Continue straight through the intersection.')
             config['instruction']=options['instruction']
+            if args.speed_selection_attempts > 1:
+                options.update(speed_selection_attempts=args.speed_selection_attempts,
+                               speed_preference_mps=[3.,5.])
             if args.single_gpu_model:
                 options['model_placement']='single_gpu'
             config_path,options_path=out/(name+'.yaml'),out/(name+'-options.json')
