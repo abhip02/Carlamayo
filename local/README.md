@@ -41,12 +41,26 @@ reference geometry, sampled candidates, selected paths and controller inputs.
 The cyan trail is the actual drive; yellow shows the full native future
 prediction, including portions that may never be executed.
 
-The final profile completes a full fresh straight crossing in **9.0 s**, with
-measured speed **3.27–4.49 m/s**, no recorded stop, collision or lane departure,
-and all native/controller checks passing. The centered-left check is in progress.
-Earlier straight runs, the failed repeat, diagnostic continuations and rollback details
-are preserved in [round 15](experiments/RESULTS_ROUND15.md). These examples do not
-establish reliability in traffic or replace the deferred five-case benchmark.
+Both predeclared examples complete from time zero with the final profile:
+
+| Example | Exit reached | Measured speed | Minimum recorded corner clearance | Video |
+| --- | --- | --- | --- | --- |
+| Offset straight | 9.0 s | 3.27–4.49 m/s | 0.496 m | [Watch](../outputs/driving-investigation-15/02-straight-offset-faster-junction-review.mp4) |
+| Centered left | 10.7 s | 2.77–5.01 m/s | 0.103 m | [Watch](../outputs/driving-investigation-15/04-left-centered-junction-review.mp4) |
+
+Clearance measures vehicle corners against the configured route corridor.
+All 197 native-path/controller commands pass the independent audits, with no
+replayed prefix, recorded near-stop, collision or corner departure. The left
+example runs through this launcher, and both resolved defaults exactly match the
+completed captures. All 228 experiment tests pass. Capture wall times, including
+startup, are 45.2 minutes for straight and 68.7 minutes for left on this machine.
+
+The left turn has a narrow minimum clearance and slows near the exit. The 3–5 m/s
+native-target band is a sampling preference, not a guarantee or speed clamp.
+Some unused full-horizon predictions remain unsuitable. These two controlled
+examples do not establish general driving reliability or replace the deferred
+five-case benchmark. Earlier failures, continuations, the measured plots and
+rollback details are preserved in [round 15](experiments/RESULTS_ROUND15.md).
 
 ## Run
 

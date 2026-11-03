@@ -5,15 +5,18 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Latest full fresh result: the final junction profile completes the offset
-straight crossing at **9.0 s**, with measured speed **3.274–4.491 m/s**, minimum
-recorded corner clearance **0.496 m**, and all 90 native/controller checks passing.
-No prefix is replayed, and no near-stop, recorded collision or corner departure
-occurs. The simple `local/run_driving.sh` launcher now selects this profile and
-generates its own map reference. A full fresh centered-left check through that
-launcher is next. See [round 15](RESULTS_ROUND15.md) for configuration, videos,
-earlier failures, limits and rollback. These targeted checks do not replace the
-five-case benchmark below.
+Latest full fresh results: the final junction profile completes the offset
+straight crossing at **9.0 s** and the centered left turn at **10.7 s**. Their
+measured speed ranges are **3.274–4.491** and **2.766–5.005 m/s**; minimum recorded
+corner clearances are **0.496** and **0.103 m**. All **197** native/controller
+checks pass. No prefix is replayed, and no near-stop, recorded collision or
+corner departure occurs. The simple `local/run_driving.sh` launcher selects this
+profile and generates its own map reference. The left run exercises that
+launcher; both current defaults exactly match the completed captures. All 228
+experiment tests pass. See [round 15](RESULTS_ROUND15.md) for videos, measured
+plots, earlier failures, runtime, narrow left-turn clearance and rollback.
+These two controlled examples do not establish general reliability or replace
+the five-case benchmark below.
 
 Earlier in this round, the combined phase/low-speed profile completes the
 previously failing offset straight crossing at **8.9 s**, with minimum speed
@@ -25,14 +28,14 @@ The speed-band fresh repeat fails at 6.2 s when the straight-route unknown-label
 gate vetoes recent physically valid native plans. A scoped inside-junction cache
 fix passes 228 tests and reaches the exit at 9.0 s after a verified 6.2 s prefix,
 with minimum fresh speed 3.579 m/s and all audits passing. Final-profile full
-fresh straight validation subsequently passes as reported above; centered-left
-remains pending. See [round 15](RESULTS_ROUND15.md) for the upstream-demo comparison.
+fresh straight and centered-left validation subsequently pass as reported above.
+See [round 15](RESULTS_ROUND15.md) for the upstream-demo comparison.
 
 Latest complete five-case benchmark (round 12): **one of five predeclared short scenario variants
-reaches the endpoint** with the unchanged experimental policy. The offset left
+reaches the endpoint** under the round-12 profile. The offset left
 turn completes at 11.9 s; two straight runs and the centered left turn exhaust
 validation, while the third straight run reaches its 10 s cap short of the exit
-and slows below 1 m/s. This is not a reliable driving fix. All 405 executed
+and slows below 1 m/s. That profile was not reliable. All 405 executed
 commands preserve native model paths/speeds and match the original controller;
 no recorded corner leaves the corridor. The successful case has minimum speed
 2.552 m/s and clearance 0.189 m. See [round 12](RESULTS_ROUND12.md) for every
@@ -43,8 +46,9 @@ the batch takes about 3 h 35 min of wall time.
 An isolated follow-up on `experiment/driving-phase-transition` fixes one
 unnecessary phase-label veto: the matched baseline fails at 5.7 s, while the
 opt-in continuation reaches the endpoint at 10.2 s with one phase-cache use.
-This is a verified 5.7 s replay plus 4.5 s of fresh continuation; a full fresh run
-and the five-case regression remain pending. See [round 13](RESULTS_ROUND13.md)
+This is a verified 5.7 s replay plus 4.5 s of fresh continuation. At that checkpoint,
+full fresh validation was pending; the later combined-profile results appear above.
+The five-case regression remains deferred. See [round 13](RESULTS_ROUND13.md)
 for physical replays, audits, videos, rollback and a separate frozen-input
 sampling lead for low target speeds. The five-case benchmark remains unchanged.
 
@@ -53,7 +57,7 @@ additional native pools within the existing budget and ranking. In the matched
 straight slowdown diagnostic, the baseline stops and fails at 10.1 s; the
 retry-enabled continuation reaches the endpoint at 10.7 s with minimum fresh
 speed 3.015 m/s. Both replay the same verified 9.0 s prefix. All audits and 155
-experiment tests pass; full fresh-run validation is still pending. See
+experiment tests pass. Later full fresh combined-profile results appear above. See
 [round 14](RESULTS_ROUND14.md) for videos, measured results, sampling cost and
 rollback. The option is disabled by default and never raises a native speed.
 
@@ -66,7 +70,10 @@ replay. The preceding fresh run failed at 11.0 s; see [round 10](RESULTS_ROUND10
 
 Local videos (generated evidence, not committed to Git):
 
-- [Newest straight slowdown comparison](../../outputs/driving-investigation-14/slowdown-comparison.mp4).
+- [Final-profile full fresh straight, 9.0 s](../../outputs/driving-investigation-15/02-straight-offset-faster-junction-review.mp4).
+- [Final-profile full fresh left, 10.7 s](../../outputs/driving-investigation-15/04-left-centered-junction-review.mp4).
+- [Final-profile measured speed and corridor clearance](../../outputs/driving-investigation-15/final-profile-speed-clearance.png).
+- [Matched straight slowdown comparison](../../outputs/driving-investigation-14/slowdown-comparison.mp4).
 - [Left phase-transition comparison](../../outputs/driving-investigation-13/phase-transition-comparison.mp4).
 
 - [All five new scenario variants, with outcomes](../../outputs/driving-investigation-12/five-scenarios-comparison.mp4).

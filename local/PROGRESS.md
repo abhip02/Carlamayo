@@ -1,8 +1,12 @@
 # CarlaMayo progress — 2026-10-28
 
 Latest driving work is recorded in [the experiment index](experiments/README.md)
-and [round 15](experiments/RESULTS_ROUND15.md). The sections below preserve the
-original integration and rollout history.
+and [round 15](experiments/RESULTS_ROUND15.md). The opt-in `local/run_driving.sh`
+profile completes full fresh straight (9.0 s) and left (10.7 s) crossings with
+all 197 native/controller checks passing; 228 experiment tests pass. The model
+and original controller remain unchanged. The five-case rerun is still deferred,
+and the left example's minimum recorded clearance is only 0.103 m. The sections
+below preserve the original integration and rollout history.
 
 ## What is working
 

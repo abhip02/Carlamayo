@@ -4,6 +4,23 @@ Branch: `fix/driving-native-validation`; rollback: `ced1ba7`.
 User asks to make driving work while keeping the simulator/backend. Preserve
 model-generated paths and keep all changes reviewable/revertible.
 
+**Final outcome:** both predeclared fresh examples complete with the final profile
+and all 197 native/controller checks pass. No prefix is replayed; there is no
+recorded near-stop, collision or corner departure. These are two controlled
+examples at one empty, all-green junction, not a new five-case benchmark.
+
+| Case | Exit reached | Measured speed range | Minimum recorded corner clearance | Capture wall time |
+| --- | --- | --- | --- | --- |
+| Offset straight | 9.0 s | 3.274–4.491 m/s | 0.496 m | 45.2 min |
+| Centered left | 10.7 s | 2.766–5.005 m/s | 0.103 m | 68.7 min |
+
+Clearance measures vehicle corners against the configured route corridor.
+Use `bash local/run_driving.sh --route straight` or `--route left` with the
+existing CARLA server running. The current defaults exactly match the completed
+captures. All 228 experiment tests pass. The narrow left-turn clearance, late
+speed reduction, expensive sampling and unsuitable unused prediction tails remain
+limits. Earlier checkpoint notes below are preserved in chronological order.
+
 ## Upstream evidence
 
 Fetched `upstream/main` on 2026-11-02; its latest commit is still `4914558`.
@@ -311,3 +328,83 @@ launcher and exactly the predeclared configuration; no prefix is replayed.
 All **228 experiment tests pass in 4.26 s** after promotion. The complete
 `module/` directory and `local/run_intersection.py` still match rollback commit
 `ced1ba7`; the driving changes remain in the opt-in local wrapper.
+
+[Final-profile straight video](../../outputs/driving-investigation-15/02-straight-offset-faster-junction-review.mp4)
+contains 91 frames at 10 fps and explicitly identifies the complete fresh run.
+Visual inspection of the recording confirms the straight cyan actual path.
+`backend-source-identity.json` records the unchanged controller/config hashes,
+complete module/runner comparison, and clean Alpamayo source checkout at
+`36aeb4c`. The left launcher check starts at `d7a3a42` with its resolved options
+asserted equal to the predeclared profile before starting CARLA.
+
+## Final-profile full fresh left result
+
+`04-left-centered-junction`, launched through `local.run_driving` at `d7a3a42`,
+reaches the original left endpoint at **10.7 s**. All inference starts at time
+zero; all **107** original-controller commands and native path/speed/anchor/age
+checks pass. Tracking, quality and sampling audits pass. Generated route geometry
+matches the predeclared reference exactly. Minimum/maximum measured speed is
+**2.766 / 5.005 m/s**, with final speed **3.168 m/s**. Minimum recorded corner
+clearance is **0.103 m**. There is no recorded near-stop, collision or departure.
+
+The instruction phase changes at 5.8 s and a fresh native plan passes. No
+approach-to-finish cache exception is used in this full run; its direct evidence
+remains the earlier matched continuation. The left-exit matching-unknown rule is
+used 26 times. There are 328 pools / 2,624 native candidates, 100 admitted fresh
+decisions and 80 cached commands: 73 rank better, six follow fresh sampling
+exhaustion, and one uses an originally admitted reserve after fresh sampling and
+selected-plan retention both fail. All use original source times and arrays.
+Capture wall time including startup is **4,121.4 s (68.7 min)**.
+
+There are 36 low-speed retry requests and 35 unknown upper-speed retry requests.
+For seven saved inputs the unknown upper retry alone causes additional sampling,
+and selects a lower native target in each. Cached plans win at those decisions;
+two of the newly selected sources are later used from the cache. The effect
+report lists their actual execution times, rather than counting unexecuted
+fresh selections as applied controls. This remains a same-input diagnostic,
+not a counterfactual full rollout.
+
+The speed preference is sometimes unmet after six pools. In the late exit,
+unchanged aged native plans produce targets below 3 m/s. Actual speed falls from
+about 5 m/s to about 3 m/s and finishes at 3.168 m/s without a stop. This is a
+working crossing, not evidence of constant-speed or comfort-optimal driving.
+The narrow 0.103 m minimum clearance is another practical limit of this result.
+
+[Full fresh left video](../../outputs/driving-investigation-15/04-left-centered-junction-review.mp4)
+contains 108 frames at 10 fps, ending with the 10.7 s state. Visual inspection
+confirms the cyan actual path makes the left turn and continues along the outgoing
+lane. The full native yellow predictions remain visible, including unused tails
+that loop or leave the intended route.
+
+## Final artifacts, use and rollback
+
+- [Final straight/left speed and clearance plot](../../outputs/driving-investigation-15/final-profile-speed-clearance.png)
+  and [standalone PDF](../../outputs/driving-investigation-15/final-profile-speed-clearance.pdf).
+- `full-fresh-results.json` and `full-fresh-speed-clearance.png/.pdf` preserve all
+  five full-run outcomes in this round, including the failed repeat. Four are
+  repetitions of the same straight start with different profiles; this is not
+  the deferred five-scenario benchmark.
+- `final-launcher-profile-verification.json` confirms that current straight/left
+  launcher configurations and options exactly equal the completed captures.
+- `backend-source-identity.json` records that the complete `module/` tree and
+  original runner match `ced1ba7`; controller/configuration also match upstream
+  `4914558`, and the Alpamayo source checkout remains clean at `36aeb4c`.
+
+The launcher resolves `presets/native-driving-junction-checks.json`, exports its
+own map reference, and keeps the default 0.1 s schedule. The separately tested
+0.3 s interval remains optional. The ordinary CarlaMayo/VerifAI commands keep
+their original policy; `run_driving.sh` opts into these changes. See
+[the local README](../README.md#driving-examples-with-validation) for exact commands
+and output locations.
+
+All 228 tests passed after the last runtime-code change (`d7a3a42`); subsequent
+edits are documentation and generated analysis artifacts. Both owned CARLA runs
+finish cleanup successfully, and Docker inspection confirms the owned server is
+stopped. Changes are committed locally on `fix/driving-native-validation`; no
+push is performed. `ced1ba7` is the pre-round rollback checkpoint, preserved on
+`experiment/driving-low-speed-resampling`. Switching back to the ordinary launcher
+also avoids the opt-in driving wrapper without undoing the earlier integrations.
+
+The user-deferred five-case benchmark has not been rerun. These results cover two
+previously failing starts at one empty, green-light intersection; they do not
+establish arbitrary-scene reliability, obstacle handling or real-time inference.
