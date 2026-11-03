@@ -2,7 +2,7 @@
 # Separate owned CARLA container so rendering can use an idle non-BF16 GPU.
 set -euo pipefail
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
-name=apomalap-carlamayo-projection
+name="${CARLAMAYO_PROJECTION_CONTAINER:-apomalap-carlamayo-projection}"
 render_gpu="${CARLAMAYO_RENDER_GPU:?Set CARLAMAYO_RENDER_GPU explicitly}"
 image=carlasim/carla@sha256:aaf1df22702780ece072069e23d03c4879b002ae028c79744b09c4c7ddbae953
 if docker container inspect "$name" >/dev/null 2>&1; then
