@@ -3,6 +3,20 @@
 Branch: `experiment/projected-steering-comparison`. Native rollback branch:
 `fix/driving-native-validation`, commit `0d380ad`.
 
+**Completed: six fresh runs, three steering modes, two maneuvers.** Restricting
+projection to the commanded route substantially improves tracking in these
+trials: straight reaches the exit with 0.795 m minimum corner clearance; left
+reaches its exit but has up to 0.290 m corner overhang. Both nearly stop and later
+reach about 10.17 m/s. None of the six runs passes all driving criteria. This is
+evidence for route-constrained steering, not a complete driving fix.
+
+Watch the annotated [straight](../../outputs/driving-investigation-17-route/straight-route-targets.mp4)
+and [left](../../outputs/driving-investigation-17-route/left-route-targets.mp4)
+captures, or inspect the [six-run comparison plot](../../outputs/driving-investigation-17-route/all-methods-comparison.png).
+Green marks the executed steering target, magenta the original model target,
+yellow the full native prediction, and cyan the actual driven trail. These
+annotations are added after capture and never enter the model input.
+
 The user explicitly requests testing map projection after completing the five
 native-policy cases. Round 16 reused successful cases 2 and 4 and ran only
 cases 1, 3 and 5: three passes, centered straight exhausted sampling at 4.7 s,
@@ -37,7 +51,7 @@ https://github.com/aveeslab/Carlamayo/blob/578170cfbcb75222ff1fb6cd9e2d4c7d6167a
 
 - `projected_steering.py`: opt-in target projection; original module unchanged.
 - `projected_probe.py`: isolated capture wrapper; original runtime restored on exit.
-- `run_projection_suite.py`: four sequential runs, frozen source checks, retained
+- `run_projection_suite.py`: declared modes run sequentially, frozen source checks, retained
   failures, per-case H.264 videos and automatic shutdown of the owned server.
 - `audit_projection.py`: reconstruct original longitudinal control, projected
   steering and map lookup from saved OpenDRIVE; compare executed controls,
@@ -47,22 +61,12 @@ All 234 experiment tests passed in 4.46 seconds before launch. Tests cover nativ
 equivalence, unchanged longitudinal state and arrays, preserved stops, projected
 steering rate limits, missing-waypoint failure and wrapper cleanup.
 
-Run from the repository with `local/env.sh` sourced:
+The initial launch used the default sharded model and existing owned server;
+that hardware trial was cancelled as described below. The completed captures
+use the explicit single-GPU model and separate server options shown at the end
+of this report. A completed process is not necessarily a successful drive.
 
-```bash
-.venv/bin/python -m local.experiments.run_projection_suite \
-  --output outputs/driving-investigation-17
-```
-
-The suite starts/stops only the existing owned CARLA container. If its usual
-model GPUs are occupied, `CARLAMAYO_MODEL_GPUS` can explicitly select two idle
-GPUs before sourcing the environment. The device-map layout remains unchanged.
-
-Results are pending at this prelaunch checkpoint. Read `status.json` and the
-per-case logs in the output directory for actual progress; a completed test
-process is not necessarily a successful drive.
-
-## Hardware trial and active comparison
+## Hardware trial and comparison allocation
 
 The usual model GPUs were occupied by other users. The initial attempt used
 idle TITAN RTX cards, but their older architecture made the unchanged BF16
@@ -77,7 +81,7 @@ candidate fits on the A5000 and takes about 2–5 seconds per decision initially
 Both comparison arms use exactly this allocation; older two-GPU benchmark
 runtimes are not treated as a hardware-matched speed comparison.
 
-Active evidence: `outputs/driving-investigation-17-bf16/`, launch `ab7b6f5`.
+Completed evidence: `outputs/driving-investigation-17-bf16/`, launch `ab7b6f5`.
 Six projection tests pass again after the model-placement option. The original
 native branch and original CARLA container configuration remain unchanged.
 
@@ -114,10 +118,89 @@ third mode. It projects the native lookahead target onto only the map polyline
 for the commanded maneuver. This prevents the unrestricted lookup from silently
 selecting a different connector or oncoming lane. It is an extension beyond the
 historical nearest-lane method. It does not introduce a forward-progress floor,
-minimum speed, altered native trajectory, cached-plan reuse or resampling.
+minimum speed, cached-plan reuse or resampling. Raw predicted positions and
+speeds are preserved; the executed steering target is explicitly map-derived.
 
 Predeclare two additional fresh runs: centered straight (10 s cap) and centered
 left (12 s cap), same seeds, initial conditions, BF16 A5000 model/TITAN renderer,
 signal checks and original longitudinal controller. Keep every outcome.
 All 236 experiment tests pass in 4.51 seconds before these additional runs.
-Results: `outputs/driving-investigation-17-route/` (pending at this checkpoint).
+Results: `outputs/driving-investigation-17-route/`, launch `6abd2c6`.
+
+## Completed commanded-route results
+
+| Requested maneuver | Exit reached | Measured speed range | Minimum recorded corner clearance | Full driving pass |
+| --- | --- | --- | --- | --- |
+| Straight | 7.4 s | 0.009–10.173 m/s | +0.795 m | No: near-stop |
+| Left | 8.6 s | 0.015–10.174 m/s | -0.290 m | No: near-stop and corner departure |
+
+The straight run remains inside the recorded corridor throughout. The left
+vehicle's recorded corners cross its corridor boundary from 4.8 through 6.8 s,
+then recover before reaching the correct exit. Neither records a collision.
+Geometry checks cover recorded bounding-box corners against the route polyline,
+not swept volume, general obstacle safety or arbitrary traffic scenes.
+
+Steering projection does not repair low-speed native predictions. At 2.3 s in
+straight, the raw target is 0.884 km/h and the original follower marks a planned
+stop; at 1.9 s in left, the raw target is 1.069 km/h. Both apply 0.3 brake and
+subsequently nearly stop. All reconstructed longitudinal commands match the
+original follower. Minimum measured speed is below 1 m/s at 2.4–2.8 s (straight)
+and 2.0–2.3 s (left). Later acceleration to about 10.17 m/s remains undesirable.
+
+All six independent integrity audits pass with zero mismatches, including
+unchanged native arrays and speed control, map projection, applied steering and
+recorded vehicle state. The commanded-route auditor projects onto saved map
+segments independently of the implementation. The two route runs take 4.61 and
+4.62 minutes including model startup; their inference totals are 197.6 and
+217.5 seconds. There is one candidate per 0.1 s step and no resampling.
+
+These are single trials per mode and maneuver at one empty, all-green Town03
+junction, not a reliability estimate. In particular, the historical method's
+cumulative-distance target selector, CARLA PID and 10 km/h speed floor were not
+reproduced. A saved target-selection diagnostic finds that its index would
+differ from the current follower in 28/74, 70/100, 43/60 and 93/120 steps of the
+four native/unrestricted captures, respectively. The experiment tests the
+historical map-lookup operation with our current follower, and a separate
+commanded-route extension; it does not test the complete old demo.
+
+## Evidence and reproduction
+
+- [All six results](../../outputs/driving-investigation-17-route/all-methods-results.json),
+  [PNG plot](../../outputs/driving-investigation-17-route/all-methods-comparison.png),
+  [PDF plot](../../outputs/driving-investigation-17-route/all-methods-comparison.pdf).
+- [Native straight](../../outputs/driving-investigation-17-bf16/straight-native-targets.mp4),
+  [unrestricted-map straight](../../outputs/driving-investigation-17-bf16/straight-map-targets.mp4),
+  [commanded-route straight](../../outputs/driving-investigation-17-route/straight-route-targets.mp4).
+- [Native left](../../outputs/driving-investigation-17-bf16/left-native-targets.mp4),
+  [unrestricted-map left](../../outputs/driving-investigation-17-bf16/left-map-targets.mp4),
+  [commanded-route left](../../outputs/driving-investigation-17-route/left-route-targets.mp4).
+- Each capture retains source hashes, original predictions, controls, map data,
+  raw recordings, independent audits and its exact configuration. Generated
+  artifacts are local and ignored by Git; code and this report are committed.
+
+From the repo, select available GPUs before sourcing the environment. These were
+the GPU UUIDs used for the recorded comparisons (A5000 model, TITAN RTX renderer):
+
+```bash
+export CARLAMAYO_MODEL_GPUS=GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b
+export CARLAMAYO_RENDER_GPU=GPU-3f4e4372-21d9-bac9-f577-755a624eb99d
+source local/env.sh
+.venv/bin/python -m local.experiments.run_projection_suite \
+  --output outputs/projected-steering-new-comparison \
+  --single-gpu-model \
+  --server-script local/experiments/projected_server.sh \
+  --steering-modes native map route
+```
+
+Use a new output directory. `--steering-modes route` runs only the two
+commanded-route cases. The single-GPU option requires a native-BF16-capable GPU
+with enough memory for this checkpoint. The dedicated owned container still
+uses port 2000; the original server must be stopped before starting it. Both
+owned servers are stopped after the recorded comparisons, and no model or suite
+process remains active.
+
+All 236 experiment tests pass. `module/`, the standard driving launchers and
+VerifAI launchers have no changes from the native rollback branch. Projection
+is enabled only through the explicit experimental entrypoint above. To return
+to the native checkpoint, switch to `fix/driving-native-validation`; evidence
+under `outputs/` remains available. No branch has been pushed.

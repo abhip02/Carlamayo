@@ -5,7 +5,20 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Latest full fresh results: the final junction profile completes the offset
+Latest experiment: [map-projected steering, round 17](RESULTS_ROUND17.md) has
+completed all six single-sample captures. Restricting projection to the commanded
+route reaches both exits: straight stays inside its recorded corridor; left has
+up to 0.29 m corner overhang. Both nearly stop and none of the six captures passes
+all driving checks. All 236 experiment tests pass. This opt-in experiment allows
+map-derived steering targets and has no resampling; standard launchers retain
+their existing behavior. See the report for annotated videos and reproduction.
+
+The completed [round-16 five-case benchmark](../../outputs/driving-investigation-16/suite-results.json)
+passes three of five under the native validation profile: it reuses two existing
+successes and runs the remaining three. Centered straight exhausts validation at
+4.7 s; opposite-offset straight ends at its 10 s cap 1.36 m short of the endpoint.
+
+The following records describe earlier checkpoints. The round-15 junction profile completes the offset
 straight crossing at **9.0 s** and the centered left turn at **10.7 s**. Their
 measured speed ranges are **3.274–4.491** and **2.766–5.005 m/s**; minimum recorded
 corner clearances are **0.496** and **0.103 m**. All **197** native/controller
@@ -31,7 +44,7 @@ with minimum fresh speed 3.579 m/s and all audits passing. Final-profile full
 fresh straight and centered-left validation subsequently pass as reported above.
 See [round 15](RESULTS_ROUND15.md) for the upstream-demo comparison.
 
-Latest complete five-case benchmark (round 12): **one of five predeclared short scenario variants
+Earlier complete five-case benchmark (round 12): **one of five predeclared short scenario variants
 reaches the endpoint** under the round-12 profile. The offset left
 turn completes at 11.9 s; two straight runs and the centered left turn exhaust
 validation, while the third straight run reaches its 10 s cap short of the exit

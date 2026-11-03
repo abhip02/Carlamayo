@@ -57,10 +57,28 @@ startup, are 45.2 minutes for straight and 68.7 minutes for left on this machine
 
 The left turn has a narrow minimum clearance and slows near the exit. The 3–5 m/s
 native-target band is a sampling preference, not a guarantee or speed clamp.
-Some unused full-horizon predictions remain unsuitable. These two controlled
-examples do not establish general driving reliability or replace the deferred
-five-case benchmark. Earlier failures, continuations, the measured plots and
+Some unused full-horizon predictions remain unsuitable. The completed
+[five-case benchmark](../outputs/driving-investigation-16/suite-results.json)
+has three passes, reusing these two results and running the three remaining
+cases. This does not establish general driving reliability. Earlier failures,
+continuations, the measured plots and
 rollback details are preserved in [round 15](experiments/RESULTS_ROUND15.md).
+
+## Map-projected steering experiment
+
+Branch `experiment/projected-steering-comparison` compares native targets,
+historical CarlaMayo nearest-driving-lane projection, and projection constrained
+to the commanded route. Six fresh runs use one model sample per step without
+resampling. The route-constrained straight reaches the exit inside its corridor;
+left reaches its exit with up to 0.29 m corner overhang. Both nearly stop, so
+driving is not fully fixed. The historical map lookup is tested with the current
+follower, not the full old PID controller or its minimum-speed rule.
+
+Watch [straight](../outputs/driving-investigation-17-route/straight-route-targets.mp4)
+and [left](../outputs/driving-investigation-17-route/left-route-targets.mp4).
+[Round 17](experiments/RESULTS_ROUND17.md) records all outcomes, comparison
+videos, exact scope and launch commands. Projection has its own opt-in entrypoint;
+the existing driving and VerifAI launchers retain their original behavior.
 
 ## Run
 
