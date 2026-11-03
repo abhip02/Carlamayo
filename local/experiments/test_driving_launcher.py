@@ -11,6 +11,8 @@ def test_examples_resolve_same_predeclared_initial_states(route,seed,flow):
     assert options['seed']==seed and options['flow_seed']==flow
     assert options['validation_routes']=='auto' and options['validation_route']==route
     assert options['validation_allow_left_phase_cache'] and options['validation_resample_below_target_mps']==3.
+    assert options['validation_resample_fast_unknown'] and options['validation_allow_straight_unknown_cache']
+    assert config['rollouts'][0]['name'].endswith('-junction')
     assert options['validation_replan_interval_s']==.1
     assert config['instruction']==options['instruction'] and config['duration_s']==15
 

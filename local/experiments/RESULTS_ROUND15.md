@@ -270,3 +270,44 @@ This is a successful continuation, not a new complete fresh run. Next is the
 predeclared `02-straight-offset-faster-junction` full fresh check. The same final
 profile will be promoted to the simple launcher only after that passes, then
 tested from time zero on `04-left-centered-junction` through that launcher.
+
+The [continuation review video](../../outputs/driving-investigation-15/straight-unknown-continuation-review.mp4)
+labels the verified replay and fresh portion separately. It contains 91 frames
+at 10 fps; the final state is at 9.0 s. Visual inspection confirms the cyan
+actual path crosses straight. Yellow overlays include the entire native 6.4 s
+prediction; some unused future tails still bend outside the route. Success here
+means the executed, repeatedly validated portions complete the crossing, not
+that every full-horizon model prediction is usable.
+
+The final-profile fresh straight run starts at `aae7941`. Its initial pose-history
+and camera-index tensors exactly match the failed balanced run, while the rendered
+pixels differ by mean absolute 0.356 / 255; the first generated tokens and native
+candidate arrays also differ. This is another independent fresh check, not an
+identical-input paired experiment. See `junction-first-input-comparison.json`.
+
+## Final-profile full fresh straight result
+
+`02-straight-offset-faster-junction`, launched at `aae7941`, reaches the original
+straight endpoint at **9.0 s**, with all inference starting at time zero.
+Minimum/maximum measured speed is **3.274 / 4.491 m/s**; minimum recorded corner
+clearance is **0.496 m**. There is no near-stop, recorded collision or corner
+departure. All **90** original-controller commands and native path/speed/anchor/
+age checks pass, along with tracking, quality and sampling audits. Generated
+route geometry exactly matches the predeclared reference.
+
+There are 210 pools / 1,680 native candidates, 86 admitted fresh decisions and
+58 cached commands: 54 rank better and four follow fresh sampling exhaustion.
+The new straight-junction rule is used 18 times (four green-to-unknown and 14
+matching-unknown). Low-speed retries occur 16 times. The unknown upper-speed
+option does not trigger in this run; its actual use is established by the
+continuation above, not by this full run. Capture wall time including startup is
+2,713.0 s (45.2 min). This is a successful independent fresh run, not a paired
+causal comparison against the earlier differently rendered inputs.
+
+The simple launcher's manifest is now `native-driving-junction-checks.json`.
+The default remains 0.1 s replanning. Its resolution tests require the final
+flags and case names. Next is `04-left-centered-junction`, using the actual
+launcher and exactly the predeclared configuration; no prefix is replayed.
+All **228 experiment tests pass in 4.26 s** after promotion. The complete
+`module/` directory and `local/run_intersection.py` still match rollback commit
+`ced1ba7`; the driving changes remain in the opt-in local wrapper.

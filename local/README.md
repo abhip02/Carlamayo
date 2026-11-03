@@ -1,12 +1,52 @@
 # Sharded Alpamayo intersection rollouts
 
-This directory is the local experiment on branch `local/sharded-intersection`.
+This directory contains the local rollout tools and isolated driving experiments.
 Upstream CarlaMayo is pinned at `4914558f868d8e51d482dbcdaf833ad7e2ce7afe`.
 The only upstream code change is optional checkpoint-path and attention-backend
 arguments in `module/adapters/alpamayo_1_5.py`. The batch runner lives here.
 
 For a concise record of completed work, runs, limitations and slides, see
 [PROGRESS.md](PROGRESS.md).
+
+## Driving examples with validation
+
+The driving work is on `fix/driving-native-validation`. Its simple launcher runs
+one straight or left example at the empty, all-green Town03 junction. It samples
+native Alpamayo trajectories, validates the vehicle footprint and controller
+response, and can reuse a recent native plan after checking it again. Selected
+waypoints and speeds remain model-generated, with original world anchors and
+prediction times preserved. CARLA, the model checkpoint and the original
+controller stay the same.
+Use `run_driving.sh` to opt into these changes; the existing VerifAI launchers
+still use their original driving policy.
+
+```bash
+bash local/server.sh start
+bash local/run_driving.sh --route straight --output outputs/driving-straight
+bash local/run_driving.sh --route left --output outputs/driving-left
+bash local/server.sh stop
+```
+
+Use a new output directory for each run. The default cap is 15 simulation seconds;
+the rollout finishes earlier when it reaches the route exit. Inference runs
+synchronously, so a short crossing can take tens of minutes of wall time.
+`--print-config` previews the settings without starting a rollout. `--duration`,
+`--seed`, `--flow-seed`, and a `--config` containing one explicit rollout allow
+overrides. The default planning interval is 0.1 s; `--replan-interval 0.3` selects
+the separate bounded-interval experiment.
+
+Recordings are under `OUTPUT/000_verifai/`: `overhead.mp4`, front-camera
+`video.mp4`, `ego.csv` and `summary.json`. The capture also saves exact settings, generated map
+reference geometry, sampled candidates, selected paths and controller inputs.
+The cyan trail is the actual drive; yellow shows the full native future
+prediction, including portions that may never be executed.
+
+The final profile completes a full fresh straight crossing in **9.0 s**, with
+measured speed **3.27–4.49 m/s**, no recorded stop, collision or lane departure,
+and all native/controller checks passing. The centered-left check is in progress.
+Earlier straight runs, the failed repeat, diagnostic continuations and rollback details
+are preserved in [round 15](experiments/RESULTS_ROUND15.md). These examples do not
+establish reliability in traffic or replace the deferred five-case benchmark.
 
 ## Run
 

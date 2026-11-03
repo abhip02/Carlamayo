@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def prepare(route, *, duration=None, seed=None, flow_seed=None, interval=.1, config=None):
-    manifest = json.loads((ROOT / 'local/experiments/presets/native-driving-full-checks.json').read_text())
+    manifest = json.loads((ROOT / 'local/experiments/presets/native-driving-junction-checks.json').read_text())
     case = next(c for c in manifest['scenarios'] if c['route'] == route)
     if config is None:
         resolved = yaml.safe_load((ROOT / manifest['base_config']).read_text())
