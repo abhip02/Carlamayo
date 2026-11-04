@@ -7,7 +7,49 @@ arguments in `module/adapters/alpamayo_1_5.py`. The batch runner lives here.
 
 For a concise record of completed work, runs, limitations and slides, see
 [PROGRESS.md](PROGRESS.md). The latest opt-in driving work and fresh validation
-are recorded in [round 18](experiments/RESULTS_ROUND18.md).
+are recorded in [round 19](experiments/RESULTS_ROUND19.md).
+
+## Ten distinct scene tests
+
+The opt-in suite is on `experiment/ten-driving-scenes`. It covers the same
+intersection going straight, left and right; two curved-road directions; two
+roundabout exits; a tight bend; an elevated T-junction; and a red-light stop.
+Each scenario has one declared starting condition. The right turn uses the
+adjacent legal approach lane at the same intersection.
+
+All ten scenarios now have accepted videos. The collection includes documented
+retries, with one fixed start per scenario. Clips and their exact source captures
+are listed in [the video collection](../outputs/driving-investigation-19-showcase/VIDEOS.md).
+Failures, adjustments, criteria and reproduction details are retained in
+[round 19](experiments/RESULTS_ROUND19.md). The scene launcher returns nonzero if
+a requested capture, driving audit, video conversion or shutdown fails. Detailed
+results are in `projection-audit.json` and the collection index.
+
+The moving profile projects the model's target onto the commanded map route,
+uses a 4.5 m/s speed ceiling, bounded six-candidate sampling and up to 3 s of
+validated plan reuse. The validated profile uses steering gain 1.40. The red case
+uses one native sample per step with no motion-promoting resampling/reuse; an
+opt-in visual stop-hold guard prevents restarting after a native planned stop.
+Only a fresh model-perceived green releases the guard. Raw predictions and
+all applied controller commands are recorded. These are empty-scene tests,
+not traffic or obstacle-avoidance validation. The narrowest accepted margin is
+9 cm at the T-junction. The tight-bend clip takes 34.4 minutes to generate.
+
+```bash
+# Set these to available GPUs; model GPU must support native BF16.
+export CARLAMAYO_MODEL_GPUS=YOUR_MODEL_GPU_UUID
+export CARLAMAYO_RENDER_GPU=YOUR_RENDER_GPU_UUID
+bash local/run_scene_suite.sh --output outputs/my-ten-scenes \
+  --steering-gain 1.40 --stop-on-failure
+# Optionally run a subset using --cases 1 2 3 (manifest indices).
+source local/env.sh
+.venv/bin/python -m local.experiments.render_scene_suite outputs/my-ten-scenes
+```
+
+Use a fresh output directory. The launcher manages its own pinned CARLA
+container and stops it on exit. To undo the experiment, use the previous branch
+`experiment/projected-speed-selection` at `0b044ac`; existing VerifAI and driving
+launchers retain their previous policies.
 
 ## Driving examples with validation
 
@@ -67,7 +109,7 @@ rollback details are preserved in [round 15](experiments/RESULTS_ROUND15.md).
 
 ## Map-projected steering experiment
 
-The current experiment is on `experiment/projected-speed-selection`. It projects
+The preceding five-start experiment is on `experiment/projected-speed-selection`. It projects
 the model's selected steering target onto the commanded route, adds an explicit
 4.5 m/s target-speed ceiling and 1.18 steering calibration, and uses bounded
 native-plan selection/reuse to bridge bad replans. Raw model trajectories stay

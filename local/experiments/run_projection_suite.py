@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--single-gpu-model',action='store_true')
     parser.add_argument('--stop-on-failure',action='store_true',help='Stop after the first failed or unaudited capture')
+    parser.add_argument('--require-pass',action='store_true',help='Return a nonzero exit code unless every requested capture passes')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
     parser.add_argument('--steering-modes',nargs='+',choices=('native','map','route'),default=['native','map'])
     parser.add_argument('--speed-selection-attempts',type=int,default=1,choices=range(1,9))
@@ -146,12 +147,18 @@ def main():
             if args.stop_on_failure and not result.get('audit',{}).get('passed',False):
                 break
         status.update(state='stopped_after_failure' if status['queue'] else 'completed',current=None,finished_unix=time.time())
+        status['passed'] = len(status['results']) == len(jobs) and all(
+            result.get('audit', {}).get('passed', False)
+            and all(result.get(key) == 0 for key in ('returncode', 'audit_returncode', 'video_returncode'))
+            for result in status['results'])
     except BaseException as exc:
         status.update(state='interrupted',error=repr(exc),finished_unix=time.time())
         raise
     finally:
         status['server_stop_returncode']=subprocess.run(['bash',str(server_script),'stop'],cwd=root).returncode
         save()
+    if args.require_pass and (not status['passed'] or status['server_stop_returncode']):
+        raise SystemExit(1)
 
 
 if __name__=='__main__':

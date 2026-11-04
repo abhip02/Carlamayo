@@ -10,5 +10,5 @@ exec .venv/bin/python -u -m local.experiments.run_projection_suite \
   --manifest local/experiments/presets/ten-driving-scenes.json \
   --single-gpu-model --server-script local/experiments/projected_server.sh \
   --steering-modes route --speed-selection-attempts 6 \
-  --speed-cap-mps 4.5 --steering-gain 1.18 --cache-age-s 3 \
+  --speed-cap-mps 4.5 --steering-gain 1.40 --cache-age-s 3 --require-pass \
   --cases 1 2 3 4 5 6 7 8 9 10 "$@"

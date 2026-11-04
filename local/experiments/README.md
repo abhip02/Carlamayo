@@ -5,7 +5,18 @@ VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is
 `9ec8b53` on `feature/verifai-server-client`.
 
-Latest experiment: [route projection with native-plan selection, round 18](RESULTS_ROUND18.md)
+Latest experiment: [ten distinct scenes, round 19](RESULTS_ROUND19.md) has
+**ten accepted videos**, one fixed start per scenario. The suite includes the
+original intersection straight/left/right, two curved-road directions, two
+roundabout exits, a tight bend, an elevated T-junction and a red-light stop.
+It uses gain 1.40 with the same 4.5 m/s ceiling and bounded native selection/reuse.
+The red case uses a separate visual stop-hold latch after a native stop. The
+T-junction has a narrow 9 cm recorded margin; the tight bend takes 34.4 minutes
+to generate. This is a collection with documented retries, not an untouched
+10/10 benchmark. [Videos and metrics](../../outputs/driving-investigation-19-showcase/VIDEOS.md).
+Use `local/run_scene_suite.sh`; original launchers retain their policies.
+
+Previous experiment: [route projection with native-plan selection, round 18](RESULTS_ROUND18.md)
 combines the commanded-route steering projection, a 4.5 m/s target-speed ceiling,
 1.18 steering calibration, and age-checked reuse of original model plans for up
 to 3 s. **Four of five fresh cases pass** their original caps, with no recorded

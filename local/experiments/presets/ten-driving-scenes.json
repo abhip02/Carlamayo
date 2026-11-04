@@ -3,7 +3,7 @@
   "profile": {
     "speed_selection_attempts": 6,
     "controller_speed_cap_mps": 4.5,
-    "steering_gain": 1.18,
+    "steering_gain": 1.4,
     "projection_cache_age_s": 3
   },
   "note": "Ten distinct routes/maneuvers, one start each. Empty scenes; all lights green except the explicitly red stopping test. Red test has one native sample per step and no motion-promoting cache/resampling. Endpoint/footprint checks for nine moving cases; front-bumper stop-line and 2 s hold checks for red. Red enables a logged model-visual stop-hold latch after a native planned stop; explicit fresh perceived green releases it.",

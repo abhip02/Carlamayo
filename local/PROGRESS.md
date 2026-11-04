@@ -1,12 +1,20 @@
-# CarlaMayo progress — 2026-10-28
+# CarlaMayo progress — 2026-11-03
 
-Latest driving work is recorded in [the experiment index](experiments/README.md)
-and [round 15](experiments/RESULTS_ROUND15.md). The opt-in `local/run_driving.sh`
-profile completes full fresh straight (9.0 s) and left (10.7 s) crossings with
-all 197 native/controller checks passing; 228 experiment tests pass. The model
-and original controller remain unchanged. The five-case rerun is still deferred,
-and the left example's minimum recorded clearance is only 0.103 m. The sections
-below preserve the original integration and rollout history.
+Latest driving work: [round 19](experiments/RESULTS_ROUND19.md) and the
+[ten-video collection](../outputs/driving-investigation-19-showcase/VIDEOS.md).
+All ten declared scenarios have accepted clips, using one fixed start each:
+straight/left/right at the original intersection, two curved-road directions,
+two roundabout exits, a tight bend, an elevated T-junction and a red-light stop.
+All 1409 executed-command audits pass. This is a documented collection after
+retries, not an untouched benchmark. Moving cases use map-target projection,
+gain 1.40, a 4.5 m/s ceiling and bounded native sampling/reuse. The red case adds
+an opt-in visual stop-hold guard. The T-junction's 9 cm margin and tight bend's
+34.4 minute generation time remain limitations. See the report for exact sources,
+commands, criteria and rollback. Earlier five-case work is complete and retained
+in [round 18](experiments/RESULTS_ROUND18.md).
+
+The sections below preserve the original integration and rollout history; their
+GPU allocations and policy descriptions refer to those earlier checkpoints.
 
 ## What is working
 
