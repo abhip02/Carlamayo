@@ -29,12 +29,18 @@ def route_state(context, route, name, phase):
     aligned = abs((pose['yaw'] - heading[0] + 180) % 360 - 180) <= 20
     reached = bool(beyond and arc[0] >= exit_arc and distance[0] <= width[0] and aligned)
     instruction = 'Continue straight through the intersection.'
-    if name == 'left':
-        turn = (route['entry']['yaw'] - pose['yaw'] + 180) % 360 - 180
+    if name in ('left', 'right'):
+        sign = 1 if name == 'left' else -1
+        turn = sign * ((route['entry']['yaw'] - pose['yaw'] + 180) % 360 - 180)
         if phase == 'approach' and turn >= 60:
             phase = 'finish_turn'
-        instruction = ('Finish the left turn, then continue straight along the exit lane.'
-                       if phase == 'finish_turn' else 'Turn left at the intersection.')
+        instruction = (f'Finish the {name} turn, then continue straight along the exit lane.'
+                       if phase == 'finish_turn' else f'Turn {name} at the intersection.')
+    if 'instruction' in route:
+        instruction = route['instruction']
+        if arc[0] >= route.get('finish_after_arc_m', math.inf):
+            phase = 'exit'
+            instruction = route['exit_instruction']
     return reached, phase, instruction
 
 
@@ -86,7 +92,7 @@ def capture(args, output):
     experiment_path = output / 'experiment.json'
     experiment = json.loads(experiment_path.read_text())
     for name in ('projected_steering.py', 'projected_probe.py', 'audit_projection.py',
-                 'projected_speed_selection.py', 'projected_retention.py'):
+                 'projected_speed_selection.py', 'projected_retention.py', 'scene_routes.py', 'stop_mission.py'):
         relative = 'local/experiments/' + name
         content = (runner.ROOT / relative).read_bytes()
         path = output / 'source_snapshot' / relative
@@ -118,8 +124,11 @@ def capture(args, output):
             self.index += 1
             return control
 
+    scene_world = {}
+
     def connect(*args):
         client, world = originals[1](*args)
+        scene_world['world'] = world
         (output / 'map.xodr').write_text(world.get_map().to_opendrive())
         return client, world
 
@@ -159,6 +168,13 @@ def capture(args, output):
                 return super().add_frame(*args,**kwargs)
         runner.trajectory_to_world=retaining.anchored_world_path
         runner.OverheadRecorder=RetainingRecorder
+    if options.get('scene_policy'):
+        from local.experiments.scene_routes import scene_scope
+        class ScopedProbe(probe_class):
+            def evaluate(self, adapter, data, context, instruction, options, label, *args, **kwargs):
+                context = {**context, 'controlled_scene': scene_scope(scene_world['world'], options['scene_policy'])}
+                return super().evaluate(adapter, data, context, instruction, options, label, *args, **kwargs)
+        probe_class = ScopedProbe
     runner.TrajectoryFollower, runner.connect_world, native.Probe = LoggingFollower, connect, probe_class
     if options.get('model_placement') == 'single_gpu':
         runner.load_sharded_model = load_single

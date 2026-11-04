@@ -17,10 +17,12 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--single-gpu-model',action='store_true')
+    parser.add_argument('--stop-on-failure',action='store_true',help='Stop after the first failed or unaudited capture')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
     parser.add_argument('--steering-modes',nargs='+',choices=('native','map','route'),default=['native','map'])
     parser.add_argument('--speed-selection-attempts',type=int,default=1,choices=range(1,9))
-    parser.add_argument('--cases',type=int,nargs='+',default=[1,4],choices=range(1,6))
+    parser.add_argument('--cases',type=int,nargs='+',default=[1,4])
+    parser.add_argument('--manifest',type=Path,default=Path('local/experiments/presets/five-short-scenarios.json'))
     parser.add_argument('--speed-cap-mps',type=float)
     parser.add_argument('--steering-gain',type=float,default=1.)
     parser.add_argument('--cache-age-s',type=float,default=0.)
@@ -29,7 +31,10 @@ def main():
     out=args.output.resolve()
     server_script=args.server_script.resolve()
     out.mkdir(parents=True,exist_ok=False)
-    manifest=json.loads((root/'local/experiments/presets/five-short-scenarios.json').read_text())
+    manifest_path=args.manifest.resolve()
+    manifest=json.loads(manifest_path.read_text())
+    if len(set(args.cases)) != len(args.cases) or any(n < 1 or n > len(manifest['scenarios']) for n in args.cases):
+        raise ValueError('Case numbers must be unique valid manifest indices')
     base=yaml.safe_load((root/manifest['base_config']).read_text())
     status=dict(state='preparing',started_unix=time.time(),results=[],
         git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
@@ -37,7 +42,10 @@ def main():
         model_placement='single_gpu' if args.single_gpu_model else 'sharded',
         server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
         steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
-        cases=args.cases,
+        cases=args.cases, manifest=str(manifest_path),
+        manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        renderer_gpu=os.environ.get('CARLAMAYO_RENDER_GPU'),
+        renderer_container=os.environ.get('CARLAMAYO_PROJECTION_CONTAINER'),
         controller_speed_cap_mps=args.speed_cap_mps,steering_gain=args.steering_gain,
         projection_cache_age_s=args.cache_age_s,
         scope='One candidate per inference; explicit bounded native-speed selection and bounded cache only if requested. Route mode constrains projection to the commanded map corridor.')
@@ -53,15 +61,19 @@ def main():
         index=number-1
         case=manifest['scenarios'][index]
         for mode in args.steering_modes:
-            name=f"{case['route']}-{mode}" if args.cases == [1,4] else f"{case['name']}-{mode}"
+            name=f"{case['route']}-{mode}" if args.cases == [1,4] and len(manifest['scenarios']) == 5 else f"{case['name']}-{mode}"
             config=copy.deepcopy(base)
             config['duration_s']=case['duration_s']
+            for key in ('junction_entry', 'overhead'):
+                if key in case:config[key]=copy.deepcopy(case[key])
             config['rollouts']=[{k:case[k] for k in ('name','distance_before_intersection_m','lateral_offset_m','speed_mps','heading_offset_deg')}]
             options=dict(steering_mode=mode,num_samples=1,seed=case['seed'],flow_seed=case['flow_seed'],
                 flow_temperature=1.,guard_trajectory_format=True,acknowledged_preroll=True,
                 acknowledged_controls=True,wait_for_snapshot=True,verify_signal=True,
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
-                instruction='Turn left at the intersection.' if case['route']=='left' else 'Continue straight through the intersection.')
+                instruction=case.get('instruction',f"Turn {case['route']} at the intersection." if case['route'] in ('left','right') else 'Continue straight through the intersection.'))
+            for key in ('route_spec','scene_policy','traffic_light_state','mission'):
+                if key in case:options[key]=copy.deepcopy(case[key])
             config['instruction']=options['instruction']
             if args.speed_cap_mps is not None:
                 options['controller_speed_cap_mps']=args.speed_cap_mps
@@ -96,6 +108,8 @@ def main():
         else:
             raise RuntimeError('CARLA did not become ready')
         for name,command in jobs:
+            if hashlib.sha256(manifest_path.read_bytes()).hexdigest()!=status['manifest_sha256']:
+                raise RuntimeError('Frozen manifest changed')
             for path,digest in sources.items():
                 if hashlib.sha256((root/path).read_bytes()).hexdigest()!=digest:
                     raise RuntimeError(f'Frozen source changed: {path}')
@@ -128,7 +142,9 @@ def main():
             status['results'].append(result)
             save()
             print('FINISHED',json.dumps(result),flush=True)
-        status.update(state='completed',current=None,finished_unix=time.time())
+            if args.stop_on_failure and not result.get('audit',{}).get('passed',False):
+                break
+        status.update(state='stopped_after_failure' if status['queue'] else 'completed',current=None,finished_unix=time.time())
     except BaseException as exc:
         status.update(state='interrupted',error=repr(exc),finished_unix=time.time())
         raise

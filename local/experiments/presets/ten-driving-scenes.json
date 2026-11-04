@@ -1,0 +1,412 @@
+{
+  "base_config": "local/configs/demo.yaml",
+  "profile": {
+    "speed_selection_attempts": 6,
+    "controller_speed_cap_mps": 4.5,
+    "steering_gain": 1.18,
+    "projection_cache_age_s": 3
+  },
+  "note": "Ten distinct routes/maneuvers, one start each. Empty scenes; all lights green except the explicitly red stopping test. Red test has one native sample per step and no motion-promoting cache/resampling. Endpoint/footprint checks for nine moving cases; front-bumper stop-line and 2 s hold checks for red.",
+  "scenarios": [
+    {
+      "name": "01-intersection-straight",
+      "title": "Intersection: straight",
+      "route": "straight",
+      "duration_s": 15,
+      "distance_before_intersection_m": 5,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 44,
+      "flow_seed": 43,
+      "junction_entry": {
+        "x": -6.094448,
+        "y": 118.324844,
+        "z": 0.0,
+        "yaw": 89.637459,
+        "junction_id": 103,
+        "road_id": 184,
+        "lane_id": -1
+      },
+      "route_spec": {
+        "kind": "junction"
+      },
+      "instruction": "Continue straight through the intersection.",
+      "scene_policy": "empty_green"
+    },
+    {
+      "name": "02-intersection-left",
+      "title": "Intersection: left",
+      "route": "left",
+      "duration_s": 15,
+      "distance_before_intersection_m": 5,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 44,
+      "flow_seed": 43,
+      "junction_entry": {
+        "x": -6.094448,
+        "y": 118.324844,
+        "z": 0.0,
+        "yaw": 89.637459,
+        "junction_id": 103,
+        "road_id": 184,
+        "lane_id": -1
+      },
+      "route_spec": {
+        "kind": "junction"
+      },
+      "instruction": "Turn left at the intersection.",
+      "scene_policy": "empty_green"
+    },
+    {
+      "name": "03-intersection-right",
+      "title": "Intersection: right",
+      "route": "right",
+      "duration_s": 15,
+      "distance_before_intersection_m": 5,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 44,
+      "flow_seed": 43,
+      "junction_entry": {
+        "x": -9.594378,
+        "y": 118.346992,
+        "z": 0.0,
+        "yaw": 89.637459,
+        "junction_id": 103,
+        "road_id": 104,
+        "lane_id": -1
+      },
+      "route_spec": {
+        "kind": "junction"
+      },
+      "instruction": "Turn right at the intersection.",
+      "scene_policy": "empty_green"
+    },
+    {
+      "name": "04-curve-left",
+      "title": "Curved road: left bend",
+      "route": "curve_left",
+      "duration_s": 22,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 47,
+      "flow_seed": 46,
+      "junction_entry": {
+        "x": -147.73699951171875,
+        "y": 116.5537109375,
+        "z": 0.0,
+        "yaw": 73.3245849609375,
+        "lane_width": 3.5,
+        "road_id": 23,
+        "lane_id": -1,
+        "s": 3.0,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 23,
+          "lane_id": -1,
+          "s": 3
+        },
+        "end": {
+          "road_id": 23,
+          "lane_id": -1,
+          "s": 51
+        },
+        "instruction": "Follow the road as it curves left. Stay in your lane."
+      },
+      "instruction": "Follow the road as it curves left. Stay in your lane.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 80,
+        "center_ahead_m": 20,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "05-curve-right",
+      "title": "Curved road: right bend",
+      "route": "curve_right",
+      "duration_s": 22,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 48,
+      "flow_seed": 47,
+      "junction_entry": {
+        "x": -103.01300811767578,
+        "y": 132.80026245117188,
+        "z": 0.0,
+        "yaw": 178.7032012939453,
+        "lane_width": 3.5,
+        "road_id": 23,
+        "lane_id": 1,
+        "s": 55.0,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 23,
+          "lane_id": 1,
+          "s": 55
+        },
+        "end": {
+          "road_id": 23,
+          "lane_id": 1,
+          "s": 7
+        },
+        "instruction": "Follow the road as it curves right. Stay in your lane."
+      },
+      "instruction": "Follow the road as it curves right. Stay in your lane.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 80,
+        "center_ahead_m": 20,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "06-round-first",
+      "title": "Roundabout: first exit",
+      "route": "round_first",
+      "duration_s": 30,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 49,
+      "flow_seed": 48,
+      "junction_entry": {
+        "x": 4.973667144775391,
+        "y": 50.033451080322266,
+        "z": 0.0,
+        "yaw": 269.637451171875,
+        "lane_width": 3.5,
+        "road_id": 30,
+        "lane_id": 5,
+        "s": 6.5,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 30,
+          "lane_id": 5,
+          "s": 6.5
+        },
+        "end": {
+          "road_id": 8,
+          "lane_id": 5,
+          "s": 17.5
+        },
+        "instruction": "Enter the roundabout and take the first exit to the right. Stay in the outer lane.",
+        "exit_instruction": "Continue along the outgoing lane after completing the turn.",
+        "finish_before_exit_m": 8
+      },
+      "instruction": "Enter the roundabout and take the first exit to the right. Stay in the outer lane.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 100,
+        "center_ahead_m": 45,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "07-round-second",
+      "title": "Roundabout: second exit",
+      "route": "round_second",
+      "duration_s": 40,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 50,
+      "flow_seed": 49,
+      "junction_entry": {
+        "x": 4.973667144775391,
+        "y": 50.033451080322266,
+        "z": 0.0,
+        "yaw": 269.637451171875,
+        "lane_width": 3.5,
+        "road_id": 30,
+        "lane_id": 5,
+        "s": 6.5,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 30,
+          "lane_id": 5,
+          "s": 6.5
+        },
+        "end": {
+          "road_id": 28,
+          "lane_id": -2,
+          "s": 5.2
+        },
+        "instruction": "Enter the roundabout and take the second exit, continuing straight ahead. Stay in the outer lane.",
+        "exit_instruction": "Continue along the outgoing lane after completing the turn.",
+        "finish_before_exit_m": 8
+      },
+      "instruction": "Enter the roundabout and take the second exit, continuing straight ahead. Stay in the outer lane.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 100,
+        "center_ahead_m": 45,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "08-tight-bend",
+      "title": "Tight curved road",
+      "route": "tight_bend",
+      "duration_s": 28,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 51,
+      "flow_seed": 50,
+      "junction_entry": {
+        "x": 88.60638427734375,
+        "y": 52.5733528137207,
+        "z": 0.0,
+        "yaw": -145.50582885742188,
+        "lane_width": 3.5,
+        "road_id": 60,
+        "lane_id": -2,
+        "s": 3.0,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 60,
+          "lane_id": -2,
+          "s": 3
+        },
+        "end": {
+          "road_id": 60,
+          "lane_id": -2,
+          "s": 73
+        },
+        "instruction": "Follow the road around the tight bend. Stay in your lane."
+      },
+      "instruction": "Follow the road around the tight bend. Stay in your lane.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 80,
+        "center_ahead_m": 20,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "09-t-junction",
+      "title": "T-junction: right turn",
+      "route": "t_junction",
+      "duration_s": 22,
+      "distance_before_intersection_m": 0,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 52,
+      "flow_seed": 51,
+      "junction_entry": {
+        "x": 109.98685455322266,
+        "y": -76.50132751464844,
+        "z": 8.0,
+        "yaw": -178.49090576171875,
+        "lane_width": 3.5,
+        "road_id": 59,
+        "lane_id": -5,
+        "s": 28.697988510131836,
+        "is_junction": false,
+        "junction_id": -1
+      },
+      "route_spec": {
+        "kind": "lane_path",
+        "start": {
+          "road_id": 59,
+          "lane_id": -5,
+          "s": 28.697988510131854
+        },
+        "end": {
+          "road_id": 42,
+          "lane_id": 1,
+          "s": 22.01926944732666
+        },
+        "instruction": "Turn right at the T-junction, then continue along the road.",
+        "exit_instruction": "Continue along the outgoing lane after completing the turn.",
+        "finish_before_exit_m": 8
+      },
+      "instruction": "Turn right at the T-junction, then continue along the road.",
+      "scene_policy": "empty_green",
+      "overhead": {
+        "enabled": true,
+        "height_m": 80,
+        "center_ahead_m": 20,
+        "front_inset": true
+      }
+    },
+    {
+      "name": "10-red-light-stop",
+      "title": "Red light: stop and hold",
+      "route": "straight",
+      "duration_s": 12,
+      "distance_before_intersection_m": 15,
+      "lateral_offset_m": 0,
+      "speed_mps": 3,
+      "heading_offset_deg": 0,
+      "seed": 53,
+      "flow_seed": 52,
+      "junction_entry": {
+        "x": -6.094448,
+        "y": 118.324844,
+        "z": 0.0,
+        "yaw": 89.637459,
+        "junction_id": 103,
+        "road_id": 184,
+        "lane_id": -1
+      },
+      "route_spec": {
+        "kind": "junction"
+      },
+      "instruction": "Continue straight at the intersection, obeying the traffic light.",
+      "scene_policy": "red_light_stop",
+      "traffic_light_state": "Red",
+      "mission": {
+        "kind": "red_light_stop",
+        "stop_line": {
+          "road_id": 30,
+          "lane_id": -1,
+          "x": -6.106259346008301,
+          "y": 116.45811462402344,
+          "z": 0.0,
+          "yaw": 89.63745880126953
+        },
+        "hold_s": 2,
+        "maximum_stop_gap_m": 8
+      }
+    }
+  ]
+}

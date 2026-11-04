@@ -20,7 +20,7 @@ def point(waypoint):
             "s": waypoint.s, "is_junction": waypoint.is_junction}
 
 
-def export(world_map, entry):
+def export(world_map, entry, required_routes=("left", "straight")):
     yaw = math.radians(entry["yaw"])
     location = carla.Location(x=entry["x"], y=entry["y"], z=entry["z"])
     inside = carla.Location(x=entry["x"] + 5 * math.cos(yaw),
@@ -67,8 +67,8 @@ def export(world_map, entry):
         routes[name] = {"entry": point(start), "exit": point(end),
                         "entry_index": len(prefix), "exit_index": len(prefix) + len(connector) - 1,
                         "heading_change_deg": turn, "points": [point(w) for w in points]}
-    if not {"left", "straight"} <= routes.keys():
-        raise ValueError("Both left and straight connections are required for this comparison")
+    if not set(required_routes) <= routes.keys():
+        raise ValueError(f"Required junction connections are missing: {required_routes}")
     return {"map": world_map.name, "junction_id": junction.id, "routes": routes,
             "note": "Map lane references; the caller determines whether these are used for audit or sample selection."}
 

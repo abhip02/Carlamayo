@@ -42,6 +42,17 @@ def audit(capture):
         retention=record.get('retention')
         source_context=retention['source_context'] if retention else context
         selection = record.get('selection', {})
+        if options.get('scene_policy'):
+            scope = context.get('controlled_scene', {})
+            check(scope.get('verified') is True and scope.get('policy') == options['scene_policy']
+                  and scope.get('other_vehicle_count') == 0 and scope.get('pedestrian_count') == 0
+                  and scope.get('unexpected_signal_count') == 0, 'controlled_scene_scope')
+        if selection.get('kind') == 'single_native_stop_scene':
+            chosen = json.loads((capture / (selection['selected_proposal'] + '.json')).read_text())
+            check(chosen['trajectory_ego'] == record['trajectory_ego'] and chosen['context'] == context,
+                  'stop_scene_native_source_unchanged')
+            check(selection['attempts'] == selection['budget'] == 1 and not retention,
+                  'stop_scene_no_motion_resampling_or_reuse')
         if selection.get('kind') == 'bounded_native_speed_preference':
             proposals = selection['proposals']
             check(len(proposals) == selection['attempts'] <= selection['budget'], 'selection_budget')
@@ -180,6 +191,12 @@ def audit(capture):
                     and min(speeds) >= 1. and (speed_cap is None or max(speeds) <= speed_cap+1.)
                     and summary['termination'] != 'collision'),
         note='Map-assisted steering is explicitly allowed here. Geometry measures recorded corners, not swept volume or obstacle safety.')
+    if options.get('mission', {}).get('kind') == 'red_light_stop':
+        from local.experiments.stop_mission import audit_stop
+        result['mission'] = audit_stop(rows, records[0]['context']['vehicle_bounds'], options['mission'])
+        result['passed'] = bool(not mismatches and result['mission']['passed']
+            and not footprint['corner_outside_times_s'] and summary['termination'] != 'collision'
+            and (speed_cap is None or max(speeds) <= speed_cap+1.))
     for name, report in [('projection-audit',result),('route-audit',route_report),('footprint-audit',footprint)]:
         (capture / (name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
     return result

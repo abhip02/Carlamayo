@@ -40,8 +40,26 @@ class SpeedSelectedProbe(SingleSampleProbe):
         low, high = options.get('speed_preference_mps', [3., 5.])
         if not isinstance(attempts, int) or not 2 <= attempts <= 8 or not 0 < low < high:
             raise ValueError('Expected 2–8 attempts and a positive increasing speed band')
-        # This selector is explicitly scoped to the configured controlled scene.
-        if not context.get('signal_states') or set(context['signal_states'].values()) != {'Green'}:
+        # A red-light test executes one native result, with no motion preference
+        # or cached substitute. Simulator state scopes the test, not its control.
+        scope = context.get('controlled_scene', {})
+        if options.get('scene_policy') == 'red_light_stop':
+            if not scope.get('verified') or scope.get('policy') != 'red_light_stop':
+                raise ValueError('Red-light test requires verified scene scope')
+            proposal = f'proposal_{context["index"]:03d}_00'
+            result = super().sample_plan(adapter, data, context, instruction, options,
+                                         proposal, capture, capture_failures)
+            record = json.loads((self.output / (proposal + '.json')).read_text())
+            record.update(label=label, selection=dict(kind='single_native_stop_scene',
+                selected_proposal=proposal, attempts=1, budget=1))
+            native.write_json(self.output / (label + '.json'), record)
+            self.selected(record)
+            return result
+        signals = context.get('signal_states', {})
+        checked_empty = (scope.get('verified') is True and scope.get('policy') == 'empty_green'
+                         and scope.get('other_vehicle_count') == 0 and scope.get('pedestrian_count') == 0
+                         and scope.get('unexpected_signal_count') == 0)
+        if (signals and set(signals.values()) != {'Green'}) or (not signals and not checked_empty):
             raise ValueError('Speed-selection experiment requires the configured all-green scene')
         proposals, best = [], None
         for index in range(attempts):

@@ -346,7 +346,13 @@ def capture(args, output):
         if options.get("validation_routes") == "auto":
             from local.experiments.junction_routes import export
             route_path = output / "generated-routes.json"
-            write_json(route_path, export(world.get_map(), config["junction_entry"]))
+            if options.get("route_spec"):
+                from local.experiments.scene_routes import export as export_scene
+                routes = export_scene(world.get_map(), config["junction_entry"],
+                                      options["route_spec"], options["validation_route"])
+            else:
+                routes = export(world.get_map(), config["junction_entry"])
+            write_json(route_path, routes)
             options["validation_routes"] = str(route_path.resolve())
             write_json(output / "resolved-options.json", options)
         return client, world
