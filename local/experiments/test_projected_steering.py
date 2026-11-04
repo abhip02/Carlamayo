@@ -126,3 +126,41 @@ def test_route_mode_requires_reference_and_preserves_original_speed():
     assert b[0] == 0 and a[0] > 0
     assert a[1:3] == b[1:3]
     assert b[3]['steering_mode']=='route'
+
+
+def test_visual_hold_preserves_native_stop_against_launch_floor_and_releases_on_fresh_green():
+    follower = ProjectedSteeringFollower(vehicle(Road()), hold_visual_stop=True)
+    path = np.column_stack((np.arange(1,65)*.3, np.zeros(64), np.zeros(64)))
+    speeds = np.full(64, 3.)
+    before = path.copy(), speeds.copy()
+    follower.observe_visual_signal('red', 20)
+    first = follower.compute_control(carla.Transform(), path, 1.5, np.full(64, .1))
+    assert first[3]['planned_stop'] and not first[3]['visual_stop_hold']['active']
+    stopped = follower.compute_control(carla.Transform(), path, .01, speeds)
+    assert stopped[1:3] == (0., 1.)
+    assert stopped[3]['target_speed_kmh'] == 0 and not stopped[3]['launch']
+    assert stopped[3]['visual_stop_hold']['activated']
+    for signal, index in [('red', 25), ('unknown', 30), ('green', 20)]:
+        follower.observe_visual_signal(signal, index)
+        held = follower.compute_control(carla.Transform(), path, 0., speeds)
+        assert held[1:3] == (0., 1.) and held[3]['visual_stop_hold']['active']
+    follower.observe_visual_signal('green', 35)
+    go = follower.compute_control(carla.Transform(), path, 0., speeds)
+    assert go[1] > 0 and go[2] == 0 and go[3]['visual_stop_hold']['released']
+    assert not go[3]['visual_stop_hold']['active']
+    np.testing.assert_array_equal(path, before[0])
+    np.testing.assert_array_equal(speeds, before[1])
+
+
+@pytest.mark.parametrize('enabled,signal,speed,prior_stop', [
+    (False,'red',0.,True), (True,'unknown',0.,True), (True,'green',0.,True),
+    (True,'red',.3,True), (True,'red',0.,False)])
+def test_visual_hold_does_not_invent_a_stop(enabled, signal, speed, prior_stop):
+    follower = ProjectedSteeringFollower(vehicle(Road()), hold_visual_stop=enabled)
+    follower.observe_visual_signal(signal, 0)
+    path = np.column_stack((np.arange(1,65)*.3, np.zeros(64), np.zeros(64)))
+    if prior_stop:
+        follower.compute_control(carla.Transform(), path, 1.5, np.full(64,.1))
+    actual = follower.compute_control(carla.Transform(), path, speed, np.full(64,3.))
+    assert not follower._visual_stop_held
+    assert actual[3]['target_speed_kmh'] > 0

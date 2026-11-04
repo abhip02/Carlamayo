@@ -51,6 +51,8 @@ def render_video(capture, target, title, report):
                 cv2.circle(canvas,a,8,(255,0,255),2,cv2.LINE_AA);cv2.circle(canvas,b,5,(0,255,0),-1,cv2.LINE_AA)
             text=f"Target shift {d['projection_distance_m']:.2f} m | speed target {d['target_speed_kmh']/3.6:.2f} m/s | age at control {record['elapsed_sec']:.1f}s"
             if mission:text+=' | Red line: stopping boundary'
+            if options.get('hold_visual_stop'):
+                text+=' | stop hold: '+('ON' if d['visual_stop_hold']['active'] else 'off')
             cv2.putText(canvas,text,(20,1050),cv2.FONT_HERSHEY_SIMPLEX,.54,(210,230,255),1,cv2.LINE_AA)
         writer.write(canvas)
         if index%30==0:samples.append(cv2.resize(canvas,(384,324)))
@@ -65,7 +67,8 @@ def render_video(capture, target, title, report):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('output',type=Path)
     args=parser.parse_args();out=args.output.resolve();status=json.loads((out/'status.json').read_text())
-    manifest=json.loads(Path(status['manifest']).read_text())
+    archived_manifest=out/'manifest.json'
+    manifest=json.loads((archived_manifest if archived_manifest.exists() else Path(status['manifest'])).read_text())
     cases={c['name']+'-route':c for c in manifest['scenarios']}
     results=[];fig,axes=plt.subplots(5,2,figsize=(13,15),constrained_layout=True)
     for item in status['results']:

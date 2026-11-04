@@ -33,6 +33,7 @@ def main():
     out.mkdir(parents=True,exist_ok=False)
     manifest_path=args.manifest.resolve()
     manifest=json.loads(manifest_path.read_text())
+    (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     if len(set(args.cases)) != len(args.cases) or any(n < 1 or n > len(manifest['scenarios']) for n in args.cases):
         raise ValueError('Case numbers must be unique valid manifest indices')
     base=yaml.safe_load((root/manifest['base_config']).read_text())
@@ -72,7 +73,7 @@ def main():
                 acknowledged_controls=True,wait_for_snapshot=True,verify_signal=True,
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
                 instruction=case.get('instruction',f"Turn {case['route']} at the intersection." if case['route'] in ('left','right') else 'Continue straight through the intersection.'))
-            for key in ('route_spec','scene_policy','traffic_light_state','mission'):
+            for key in ('route_spec','scene_policy','traffic_light_state','mission','hold_visual_stop'):
                 if key in case:options[key]=copy.deepcopy(case[key])
             config['instruction']=options['instruction']
             if args.speed_cap_mps is not None:

@@ -47,7 +47,8 @@ class CommandedRouteMap:
 
 
 class ProjectedSteeringFollower(TrajectoryFollower):
-    def __init__(self, vehicle, mode='map', route=None, speed_cap_mps=None, steering_gain=1.):
+    def __init__(self, vehicle, mode='map', route=None, speed_cap_mps=None, steering_gain=1.,
+                 hold_visual_stop=False):
         if mode not in ('native', 'map', 'route'):
             raise ValueError('Steering mode must be native, map or route')
         super().__init__(vehicle)
@@ -57,6 +58,11 @@ class ProjectedSteeringFollower(TrajectoryFollower):
             raise ValueError('Steering gain must be between 0.5 and 2')
         self.speed_cap_mps = speed_cap_mps
         self.steering_gain = steering_gain
+        self.hold_visual_stop = hold_visual_stop
+        self.visual_signal, self.visual_check_index = 'unknown', -1
+        self._visual_stop_held = False
+        self._hold_check_index = -1
+        self._last_planned_stop = False
         self.steering_mode = mode
         self.world_map = vehicle.get_world().get_map() if mode == 'map' else None
         if mode == 'route':
@@ -65,10 +71,29 @@ class ProjectedSteeringFollower(TrajectoryFollower):
             self.world_map = CommandedRouteMap(route)
 
     def _target_speed(self, speeds_mps, speed_mps, elapsed_sec):
+        if self._visual_stop_held:
+            self._launching = False
+            return 0., False
         target, launch = super()._target_speed(speeds_mps, speed_mps, elapsed_sec)
         return (min(target, self.speed_cap_mps) if self.speed_cap_mps is not None else target), launch
 
+    def observe_visual_signal(self, signal, check_index):
+        """Receive the model's image answer, never the simulator's signal state."""
+        self.visual_signal, self.visual_check_index = signal, check_index
+
     def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
+        activated = released = False
+        if self.hold_visual_stop:
+            if self._visual_stop_held:
+                released = (self.visual_signal == 'green'
+                            and self.visual_check_index > self._hold_check_index)
+                if released:
+                    self._visual_stop_held = False
+            elif self.visual_signal in ('red', 'yellow') and speed <= .2 and self._last_planned_stop:
+                # Preserve a native planned stop once achieved. Without this latch,
+                # the upstream launch floor can restart a stopped car on red.
+                self._visual_stop_held = activated = True
+                self._hold_check_index = self.visual_check_index
         previous = self._prev_steer
         steer, throttle, brake, debug = super().compute_control(
             tf, world, speed, speeds, elapsed_sec)
@@ -76,6 +101,11 @@ class ProjectedSteeringFollower(TrajectoryFollower):
         debug.update(steering_mode=self.steering_mode, native_target_xyz=raw.tolist(),
                      controller_speed_cap_mps=self.speed_cap_mps, steering_gain=self.steering_gain,
                      native_steer=steer, projection_distance_m=0., projected_target_xyz=None)
+        if self.hold_visual_stop:
+            debug['visual_stop_hold'] = dict(active=self._visual_stop_held, activated=activated,
+                released=released, signal=self.visual_signal, check_index=self.visual_check_index,
+                activation_check_index=self._hold_check_index)
+        self._last_planned_stop = debug['planned_stop']
         if self.steering_mode in ('map', 'route'):
             target = self.world_map.get_waypoint(
                 carla.Location(x=float(raw[0]), y=float(raw[1]), z=float(raw[2])),

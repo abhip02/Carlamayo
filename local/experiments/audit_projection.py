@@ -29,10 +29,16 @@ def audit(capture):
     vehicle = SimpleNamespace(get_physics_control=lambda: SimpleNamespace(wheels=[
         SimpleNamespace(max_steer_angle=math.degrees(controls[0]['max_steer_rad']))]))
     class SpeedCeilingReference(TrajectoryFollower):
+        held = False
         def _target_speed(self, speeds_mps, speed_mps, elapsed_sec):
+            if self.held:
+                self._launching = False
+                return 0., False
             value, launch = super()._target_speed(speeds_mps, speed_mps, elapsed_sec)
             return (min(value, speed_cap) if speed_cap is not None else value), launch
     shadow = SpeedCeilingReference(vehicle)
+    hold_enabled = options.get('hold_visual_stop', False)
+    hold_check_index, previous_stop = -1, False
     mismatches, distances, lanes = [], [], []
     for i, (record, saved) in enumerate(zip(records, controls)):
         def check(ok, label):
@@ -91,8 +97,22 @@ def audit(capture):
         check(np.allclose(world, saved['world_trajectory'], atol=1e-6, rtol=0), 'native_world_unchanged')
         check(np.array_equal(speeds, saved['native_speeds']), 'native_speeds_unchanged')
         previous = shadow._prev_steer
+        if hold_enabled:
+            signal, signal_index = record['visual_signal'], record['visual_signal_check_index']
+            check(isinstance(signal_index, int) and 0 <= signal_index <= i, 'visual_signal_index')
+            was_held = shadow.held
+            if was_held:
+                shadow.held = not (signal == 'green' and signal_index > hold_check_index)
+            elif signal in ('red', 'yellow') and context['measured_speed_mps'] <= .2 and previous_stop:
+                shadow.held = True
+                hold_check_index = signal_index
+            expected_hold = dict(active=shadow.held, activated=shadow.held and not was_held,
+                released=was_held and not shadow.held, signal=signal, check_index=signal_index,
+                activation_check_index=hold_check_index)
+            check(saved['debug'].get('visual_stop_hold') == expected_hold, 'visual_stop_hold_state')
         steer, throttle, brake, debug = shadow.compute_control(
             tf, world, context['measured_speed_mps'], speeds, saved['elapsed_sec'])
+        previous_stop = debug['planned_stop']
         target = world[debug['target_idx']]
         check(np.allclose(target, saved['debug']['native_target_xyz'], atol=1e-6, rtol=0), 'native_lookahead_target')
         if mode in ('map','route'):
@@ -169,6 +189,7 @@ def audit(capture):
     all_proposals = [json.loads(p.read_text()) for p in sorted(capture.glob('proposal_*.json'))]
     executed_calls = sum(r.get('selection',{}).get('attempts',1) for r in records)
     result = dict(steering_mode=mode, controller_speed_cap_mps=speed_cap, steering_gain=steering_gain,
+        hold_visual_stop=hold_enabled,
         route=route_name, steps=len(controls),
         duration_s=rows[-1]['time_s'], termination=summary['termination'],
         reached_exit_time_s=endpoint, min_speed_mps=min(speeds), max_speed_mps=max(speeds),

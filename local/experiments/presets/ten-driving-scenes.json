@@ -6,7 +6,7 @@
     "steering_gain": 1.18,
     "projection_cache_age_s": 3
   },
-  "note": "Ten distinct routes/maneuvers, one start each. Empty scenes; all lights green except the explicitly red stopping test. Red test has one native sample per step and no motion-promoting cache/resampling. Endpoint/footprint checks for nine moving cases; front-bumper stop-line and 2 s hold checks for red.",
+  "note": "Ten distinct routes/maneuvers, one start each. Empty scenes; all lights green except the explicitly red stopping test. Red test has one native sample per step and no motion-promoting cache/resampling. Endpoint/footprint checks for nine moving cases; front-bumper stop-line and 2 s hold checks for red. Red enables a logged model-visual stop-hold latch after a native planned stop; explicit fresh perceived green releases it.",
   "scenarios": [
     {
       "name": "01-intersection-straight",
@@ -391,7 +391,7 @@
       "route_spec": {
         "kind": "junction"
       },
-      "instruction": "Continue straight at the intersection, obeying the traffic light.",
+      "instruction": "Continue straight through the intersection.",
       "scene_policy": "red_light_stop",
       "traffic_light_state": "Red",
       "mission": {
@@ -406,7 +406,8 @@
         },
         "hold_s": 2,
         "maximum_stop_gap_m": 8
-      }
+      },
+      "hold_visual_stop": true
     }
   ]
 }

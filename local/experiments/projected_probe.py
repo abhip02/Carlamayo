@@ -84,6 +84,8 @@ def capture(args, output):
     mode = options.get('steering_mode')
     if mode not in ('native', 'map', 'route') or options.get('num_samples') != 1:
         raise ValueError('Explicit native/map/route steering mode and one sample required')
+    if options.get('hold_visual_stop') and not options.get('verify_signal'):
+        raise ValueError('Visual stop hold requires model image signal checks')
     runner = native.runner
     originals = (runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model,
                  runner.trajectory_to_world, runner.OverheadRecorder)
@@ -107,10 +109,13 @@ def capture(args, output):
             if mode == 'route':
                 route = json.loads((output / 'generated-routes.json').read_text())['routes'][options['validation_route']]
             super().__init__(vehicle, mode, route, options.get('controller_speed_cap_mps'),
-                             options.get('steering_gain', 1.))
+                             options.get('steering_gain', 1.), options.get('hold_visual_stop', False))
             self.index = 0
 
         def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
+            if self.hold_visual_stop:
+                record = json.loads((output / f'frame_{self.index:03d}.json').read_text())
+                self.observe_visual_signal(record['visual_signal'], record['visual_signal_check_index'])
             if cache_enabled:
                 from local.experiments.projected_retention import ACTIVE
                 elapsed_sec=ACTIVE.execution_age
