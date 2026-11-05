@@ -1,5 +1,10 @@
 # Ten distinct driving scenes — round 19
 
+Storage update (2026-11-04): [cleanup inventory and replay limits](STORAGE_CLEANUP_20261104.md).
+All successful and failed videos, predictions, commands and audits below remain.
+All accepted captures retain their saved input tensors; older/nonselected input
+tensors were removed to reclaim space. The historical results below are unchanged.
+
 Branch `experiment/ten-driving-scenes`; rollback `experiment/projected-speed-selection`
 at `0b044ac`. The user requests ten videos, one start per scenario, including
 straight/left/right at the existing intersection, different road layouts, and a

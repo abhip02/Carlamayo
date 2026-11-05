@@ -1,0 +1,2931 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "status": "completed",
+  "branch": "experiment/ten-driving-scenes",
+  "source_commit": "c2a07336e36d8f3c34299f5e931a25056ceea8fa",
+  "scope": "Only .pt and .pt.gz in outputs/driving-investigation*, excluding all ten accepted captures. No model checkpoints or environments.",
+  "accepted_captures": [
+    "outputs/driving-investigation-19-stop-hold/01-intersection-straight-route",
+    "outputs/driving-investigation-19-stop-hold/02-intersection-left-route",
+    "outputs/driving-investigation-19-ten-gain140/03-intersection-right-route",
+    "outputs/driving-investigation-19-stop-hold/04-curve-left-route",
+    "outputs/driving-investigation-19-stop-hold/05-curve-right-route",
+    "outputs/driving-investigation-19-stop-hold/06-round-first-route",
+    "outputs/driving-investigation-19-stop-hold/07-round-second-route",
+    "outputs/driving-investigation-19-stop-hold/08-tight-bend-route",
+    "outputs/driving-investigation-19-stop-hold/09-t-junction-route",
+    "outputs/driving-investigation-19-stop-hold/10-red-light-stop-route"
+  ],
+  "removed": [
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_000.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226201397680137
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_015.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226245334554485
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_022.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226265235497548
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_038.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226311445365286
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_057.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226364658212893
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_065.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226387518147399
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-baseline/inputs/frame_075.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226415409067471
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_000.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226736847145034
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_015.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226780436019807
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_022.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226800363962548
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_038.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226846490829991
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_057.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226906414657748
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_065.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226928330594742
+    },
+    {
+      "path": "outputs/driving-investigation/capture-short-noise-03/inputs/frame_075.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793226960138503292
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_000.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793225399838947713
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_015.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793225446415818072
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_038.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793225668211195909
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_039.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793225671172187558
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_057.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793225723136040840
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-baseline/inputs/frame_058.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793225726180032237
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-format/inputs/frame_018.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793227224199924803
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-format/inputs/frame_022.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793227237261895336
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-format/inputs/frame_023.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793227254306856647
+    },
+    {
+      "path": "outputs/driving-investigation/capture-verbose-format/inputs/frame_030.pt",
+      "bytes": 99538993,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793227273240813366
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/inputs/frame_061.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793353677171246354
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/inputs/frame_086.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793354800644769979
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/inputs/frame_090.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793355081231134860
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/inputs/frame_110.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793356323020318102
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793352210335783361
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793352587901850500
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793352819418290218
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793353160806472764
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793353552220542459
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793353802139950481
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793353953753591806
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_074_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793354077065336390
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_080_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793354381536696135
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_090_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793355010755295114
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_100_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793355695931725100
+    },
+    {
+      "path": "outputs/driving-investigation-10/capture-native-four-left-speed4-unknown-exit-43/proposals/inputs/frame_110_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793356227383528157
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-baseline/inputs/frame_122.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351272727039666
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-baseline/proposals/inputs/frame_122_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351187654239332
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/inputs/frame_122.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351462100596144
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/inputs/frame_124.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793351631636199907
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/inputs/frame_125.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351711781012796
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_122_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351379270789995
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_124_pool_5.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793351631469200297
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_125_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793351632292198375
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_130_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351776395862019
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_135_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351835200724851
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_140_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351891751592985
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_145_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793351969661399538
+    },
+    {
+      "path": "outputs/driving-investigation-10/resume-speed4-terminal122-unknown-exit/proposals/inputs/frame_150_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793352042287211143
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_083.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361246452071346
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_084.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361313071919640
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_085.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361382612761165
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_087.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361516269456291
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_088.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361584858299716
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_092.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793361874387638110
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/inputs/frame_109.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793362582951007578
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793358761961732782
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793359253446593962
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793359568397865906
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793360326987140142
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_080_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793360980570675358
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_100_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793362333159584134
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_110_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793362583615006048
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_120_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793362769032579001
+    },
+    {
+      "path": "outputs/driving-investigation-11/capture-native-four-left-exit-transition-43/proposals/inputs/frame_130_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793362899100279753
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-baseline/inputs/frame_110.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357418916842632
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-baseline/proposals/inputs/frame_110_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357340705021327
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/inputs/frame_110.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793357616916389723
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/inputs/frame_121.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357851601852183
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/inputs/frame_129.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793358060073374260
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/inputs/frame_131.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793358166619123639
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/inputs/frame_132.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793358263175896544
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_110_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357535244576623
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_111_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793357617542388290
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_115_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357661521287607
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_120_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793357753971075878
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_130_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793358060833372517
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_131_pool_1.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793358113085249922
+    },
+    {
+      "path": "outputs/driving-investigation-11/resume-terminal110-exit-transition/proposals/inputs/frame_140_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793358398427579659
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_017.pt.gz",
+      "bytes": 43720148,
+      "allocated_bytes": 43720704,
+      "mtime_ns": 1793399037525029357
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_026.pt.gz",
+      "bytes": 45255582,
+      "allocated_bytes": 45256704,
+      "mtime_ns": 1793399040130023007
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_035.pt.gz",
+      "bytes": 45082354,
+      "allocated_bytes": 45084672,
+      "mtime_ns": 1793399042727017810
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_037.pt.gz",
+      "bytes": 45038410,
+      "allocated_bytes": 45039616,
+      "mtime_ns": 1793399045324012604
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_038.pt.gz",
+      "bytes": 44990578,
+      "allocated_bytes": 44994560,
+      "mtime_ns": 1793399047975007280
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_039.pt.gz",
+      "bytes": 44932221,
+      "allocated_bytes": 44933120,
+      "mtime_ns": 1793399050569002060
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_048.pt.gz",
+      "bytes": 44788218,
+      "allocated_bytes": 44789760,
+      "mtime_ns": 1793399053187996781
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_049.pt.gz",
+      "bytes": 44824293,
+      "allocated_bytes": 44826624,
+      "mtime_ns": 1793399055776991553
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_050.pt.gz",
+      "bytes": 44897969,
+      "allocated_bytes": 44900352,
+      "mtime_ns": 1793399058369986308
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_054.pt.gz",
+      "bytes": 45205916,
+      "allocated_bytes": 45207552,
+      "mtime_ns": 1793399060998980981
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_056.pt.gz",
+      "bytes": 45253642,
+      "allocated_bytes": 45260800,
+      "mtime_ns": 1793400121781404628
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_060.pt.gz",
+      "bytes": 45192627,
+      "allocated_bytes": 45199360,
+      "mtime_ns": 1793400124342397883
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/inputs/frame_084.pt.gz",
+      "bytes": 44490918,
+      "allocated_bytes": 44494848,
+      "mtime_ns": 1793401812526092156
+    },
+    {
+      "path": "outputs/driving-investigation-12/01-straight-centered/proposals/inputs/frame_000_pool_0.pt.gz",
+      "bytes": 42408424,
+      "allocated_bytes": 42414080,
+      "mtime_ns": 1793399063568975764
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_034.pt.gz",
+      "bytes": 44937634,
+      "allocated_bytes": 44941312,
+      "mtime_ns": 1793401815235085304
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_035.pt.gz",
+      "bytes": 44927944,
+      "allocated_bytes": 44929024,
+      "mtime_ns": 1793401817952078429
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_040.pt.gz",
+      "bytes": 44949590,
+      "allocated_bytes": 44953600,
+      "mtime_ns": 1793401820654071591
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_041.pt.gz",
+      "bytes": 44940794,
+      "allocated_bytes": 44941312,
+      "mtime_ns": 1793401823357064749
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_042.pt.gz",
+      "bytes": 44968591,
+      "allocated_bytes": 44969984,
+      "mtime_ns": 1793401826124057742
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_043.pt.gz",
+      "bytes": 45031940,
+      "allocated_bytes": 45035520,
+      "mtime_ns": 1793401828790050990
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_044.pt.gz",
+      "bytes": 45088387,
+      "allocated_bytes": 45092864,
+      "mtime_ns": 1793401831513044092
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/inputs/frame_045.pt.gz",
+      "bytes": 45172715,
+      "allocated_bytes": 45178880,
+      "mtime_ns": 1793404354300604634
+    },
+    {
+      "path": "outputs/driving-investigation-12/02-straight-offset-faster/proposals/inputs/frame_000_pool_0.pt.gz",
+      "bytes": 45595740,
+      "allocated_bytes": 45596672,
+      "mtime_ns": 1793401834189037311
+    },
+    {
+      "path": "outputs/driving-investigation-12/03-straight-opposite-offset/inputs/frame_043.pt.gz",
+      "bytes": 45262304,
+      "allocated_bytes": 45268992,
+      "mtime_ns": 1793404357053597520
+    },
+    {
+      "path": "outputs/driving-investigation-12/03-straight-opposite-offset/inputs/frame_049.pt.gz",
+      "bytes": 45014429,
+      "allocated_bytes": 45019136,
+      "mtime_ns": 1793404359772590493
+    },
+    {
+      "path": "outputs/driving-investigation-12/03-straight-opposite-offset/proposals/inputs/frame_000_pool_0.pt.gz",
+      "bytes": 45860947,
+      "allocated_bytes": 45867008,
+      "mtime_ns": 1793404362503583434
+    },
+    {
+      "path": "outputs/driving-investigation-12/04-left-centered/inputs/frame_051.pt.gz",
+      "bytes": 46810702,
+      "allocated_bytes": 46817280,
+      "mtime_ns": 1793406502756993950
+    },
+    {
+      "path": "outputs/driving-investigation-12/04-left-centered/inputs/frame_053.pt.gz",
+      "bytes": 47163713,
+      "allocated_bytes": 47169536,
+      "mtime_ns": 1793406505502986765
+    },
+    {
+      "path": "outputs/driving-investigation-12/04-left-centered/inputs/frame_056.pt.gz",
+      "bytes": 47641214,
+      "allocated_bytes": 47648768,
+      "mtime_ns": 1793406508265979536
+    },
+    {
+      "path": "outputs/driving-investigation-12/04-left-centered/inputs/frame_057.pt.gz",
+      "bytes": 47869999,
+      "allocated_bytes": 47874048,
+      "mtime_ns": 1793409727723492413
+    },
+    {
+      "path": "outputs/driving-investigation-12/04-left-centered/proposals/inputs/frame_000_pool_0.pt.gz",
+      "bytes": 45834707,
+      "allocated_bytes": 45842432,
+      "mtime_ns": 1793406511008972360
+    },
+    {
+      "path": "outputs/driving-investigation-12/05-left-offset-faster/inputs/frame_045.pt.gz",
+      "bytes": 46828002,
+      "allocated_bytes": 46833664,
+      "mtime_ns": 1793409730452485191
+    },
+    {
+      "path": "outputs/driving-investigation-12/05-left-offset-faster/proposals/inputs/frame_000_pool_0.pt.gz",
+      "bytes": 45581585,
+      "allocated_bytes": 45588480,
+      "mtime_ns": 1793409733080478237
+    },
+    {
+      "path": "outputs/driving-investigation-13/resume-phase-baseline/inputs/frame_057.pt.gz",
+      "bytes": 47808585,
+      "allocated_bytes": 47812608,
+      "mtime_ns": 1793470378969091644
+    },
+    {
+      "path": "outputs/driving-investigation-13/resume-phase-baseline/proposals/inputs/frame_057_pool_0.pt.gz",
+      "bytes": 47808597,
+      "allocated_bytes": 47812608,
+      "mtime_ns": 1793470381610083999
+    },
+    {
+      "path": "outputs/driving-investigation-13/resume-phase-enabled/inputs/frame_057.pt.gz",
+      "bytes": 47811928,
+      "allocated_bytes": 47812608,
+      "mtime_ns": 1793470384247076365
+    },
+    {
+      "path": "outputs/driving-investigation-13/resume-phase-enabled/inputs/frame_092.pt.gz",
+      "bytes": 51386229,
+      "allocated_bytes": 51392512,
+      "mtime_ns": 1793470386977068462
+    },
+    {
+      "path": "outputs/driving-investigation-13/resume-phase-enabled/proposals/inputs/frame_057_pool_0.pt.gz",
+      "bytes": 47811931,
+      "allocated_bytes": 47816704,
+      "mtime_ns": 1793470389610060841
+    },
+    {
+      "path": "outputs/driving-investigation-13/straight-slowdown-prefix097/inputs/frame_090.pt.gz",
+      "bytes": 43618006,
+      "allocated_bytes": 43618304,
+      "mtime_ns": 1793470392160053460
+    },
+    {
+      "path": "outputs/driving-investigation-13/straight-slowdown-prefix097/inputs/frame_095.pt.gz",
+      "bytes": 43685211,
+      "allocated_bytes": 43692032,
+      "mtime_ns": 1793470394723046041
+    },
+    {
+      "path": "outputs/driving-investigation-13/straight-slowdown-prefix097/inputs/frame_097.pt.gz",
+      "bytes": 43838608,
+      "allocated_bytes": 43843584,
+      "mtime_ns": 1793470397316038535
+    },
+    {
+      "path": "outputs/driving-investigation-14/resume-slow-baseline/inputs/frame_101.pt.gz",
+      "bytes": 45155615,
+      "allocated_bytes": 45158400,
+      "mtime_ns": 1793471097595292251
+    },
+    {
+      "path": "outputs/driving-investigation-14/resume-slow-baseline/proposals/inputs/frame_090_pool_0.pt.gz",
+      "bytes": 43612895,
+      "allocated_bytes": 43614208,
+      "mtime_ns": 1793471100179286196
+    },
+    {
+      "path": "outputs/driving-investigation-14/resume-slow-enabled/proposals/inputs/frame_090_pool_0.pt.gz",
+      "bytes": 43709347,
+      "allocated_bytes": 43712512,
+      "mtime_ns": 1793471102872279879
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster/inputs/frame_020.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793660521572273704
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster/inputs/frame_028.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793660896835373540
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster/inputs/frame_031.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793661035491040185
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster/inputs/frame_038.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793661254828501105
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793659860380843050
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-balanced/inputs/frame_033.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793665154351625060
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-balanced/inputs/frame_034.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793665231264433245
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-balanced/inputs/frame_062.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793666131332157796
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-balanced/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793663949524652978
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-interval/inputs/frame_040.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793662900321348577
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-interval/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793661991592603882
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-junction/inputs/frame_019.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793669023680819862
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-junction/inputs/frame_028.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793669261041221409
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-junction/inputs/frame_030.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793669393557887495
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-junction/inputs/frame_043.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793670151830715455
+    },
+    {
+      "path": "outputs/driving-investigation-15/02-straight-offset-faster-junction/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793668400326395868
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_050.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793672471655577731
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_053.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793672679235033494
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_054.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793672748458852099
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_099.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793674804628595419
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_100.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793674895633360857
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_103.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793675188232605438
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/inputs/frame_104.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793675280902365895
+    },
+    {
+      "path": "outputs/driving-investigation-15/04-left-centered-junction/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793671257584777599
+    },
+    {
+      "path": "outputs/driving-investigation-15/resume-straight-unknown-enabled/inputs/frame_062.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793667432018891545
+    },
+    {
+      "path": "outputs/driving-investigation-15/resume-straight-unknown-enabled/inputs/frame_076.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793667927106602617
+    },
+    {
+      "path": "outputs/driving-investigation-15/resume-straight-unknown-enabled/proposals/inputs/frame_062_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793667352310102666
+    },
+    {
+      "path": "outputs/driving-investigation-15/resume-straight-unknown-enabled/proposals/inputs/frame_071_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793667653488309824
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_024.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793690984192146285
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_030.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793691381278135567
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_033.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793691629188504557
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_042.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692078376367974
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_044.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692186574096786
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_045.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692267289894030
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_046.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692348089690740
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/inputs/frame_047.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692425463495811
+    },
+    {
+      "path": "outputs/driving-investigation-16/01-straight-centered/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793689960916751005
+    },
+    {
+      "path": "outputs/driving-investigation-16/03-straight-opposite-offset/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793692457497415042
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/inputs/frame_055.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793696233582737278
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/inputs/frame_094.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793697547052252020
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/inputs/frame_102.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793698071053893232
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/inputs/frame_103.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793698172644618609
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/inputs/frame_104.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793698281740324324
+    },
+    {
+      "path": "outputs/driving-investigation-16/05-left-offset-faster/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793694352398596240
+    },
+    {
+      "path": "outputs/driving-investigation-17/straight-native/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793729972618442396
+    },
+    {
+      "path": "outputs/driving-investigation-17-bf16/left-map/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793731166123427870
+    },
+    {
+      "path": "outputs/driving-investigation-17-bf16/left-native/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793730950532981805
+    },
+    {
+      "path": "outputs/driving-investigation-17-bf16/straight-map/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793730598401872399
+    },
+    {
+      "path": "outputs/driving-investigation-17-bf16/straight-native/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793730332826538455
+    },
+    {
+      "path": "outputs/driving-investigation-17-route/left-route/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793731998467316031
+    },
+    {
+      "path": "outputs/driving-investigation-17-route/straight-route/inputs/frame_000.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793731740923966842
+    },
+    {
+      "path": "outputs/driving-investigation-18/left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793733957370375953
+    },
+    {
+      "path": "outputs/driving-investigation-18/straight-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793733528047458030
+    },
+    {
+      "path": "outputs/driving-investigation-18-case3-duration12/03-straight-opposite-offset-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793740211264228274
+    },
+    {
+      "path": "outputs/driving-investigation-18-five-clean/01-straight-centered-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793738299953970445
+    },
+    {
+      "path": "outputs/driving-investigation-18-five-clean/02-straight-offset-faster-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793738651559125471
+    },
+    {
+      "path": "outputs/driving-investigation-18-five-clean/03-straight-opposite-offset-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793739001666280631
+    },
+    {
+      "path": "outputs/driving-investigation-18-five-clean/04-left-centered-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793739363078349893
+    },
+    {
+      "path": "outputs/driving-investigation-18-five-clean/05-left-offset-faster-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793739774973310698
+    },
+    {
+      "path": "outputs/driving-investigation-18-limited/left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793735020638719166
+    },
+    {
+      "path": "outputs/driving-investigation-18-limited/straight-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793734639938656779
+    },
+    {
+      "path": "outputs/driving-investigation-18-retained/left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793736111673134904
+    },
+    {
+      "path": "outputs/driving-investigation-18-retained/straight-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793735673608196030
+    },
+    {
+      "path": "outputs/driving-investigation-18-retained3/left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793737076078795837
+    },
+    {
+      "path": "outputs/driving-investigation-18-retained3/straight-route/inputs/proposal_000_00.pt",
+      "bytes": 99537133,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793736619844890395
+    },
+    {
+      "path": "outputs/driving-investigation-19-right-gain130/03-intersection-right-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793751952714923896
+    },
+    {
+      "path": "outputs/driving-investigation-19-ten/03-intersection-right-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793751449996124261
+    },
+    {
+      "path": "outputs/driving-investigation-19-ten-gain140/10-red-light-stop-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793752601129368222
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-acknowledged-baseline/inputs/frame_000.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793261320523539076
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-acknowledged-baseline/inputs/frame_022.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793261383562388340
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-acknowledged-baseline/inputs/frame_057.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793261487200139477
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_000.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254579808284861
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_022.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254644393102038
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_038.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254689696973908
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_057.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254746283813984
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_065.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254769239749141
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green/inputs/frame_075.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254798031667840
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_000.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254961227207494
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_015.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255006334080378
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_022.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255026822022657
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_038.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255075188886424
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_057.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255135580716385
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-ego-green-near-speed/inputs/frame_065.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255159797648218
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_000.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793254217402315608
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_015.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254275188150554
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_022.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254297854085900
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_038.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254347801943582
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_057.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254408956769601
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_065.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254433717699236
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye/inputs/frame_075.pt",
+      "bytes": 99536369,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254465405609245
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_000.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255387470007769
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_015.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255444494847452
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_022.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255476283758095
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_038.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255540662577159
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_057.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255601161407156
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_065.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255627622332808
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_075.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255658271246699
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green/inputs/frame_100.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255745113080123
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green-seed43/inputs/frame_000.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256405853573621
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green-seed43/inputs/frame_022.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256477563393877
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green-seed43/inputs/frame_057.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256589124110782
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-ego-green-seed43/inputs/frame_100.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256735339734582
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-red/inputs/frame_000.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255939907675075
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-red/inputs/frame_015.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793255989403565526
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-red/inputs/frame_038.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256057965410175
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-fisheye-red/inputs/frame_065.pt",
+      "bytes": 99536433,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793256136668227304
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_000.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793253919107174132
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_015.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793253946852093712
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_022.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793253959468057190
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_038.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793253989108971487
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_057.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793254025835865491
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_065.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793254042075818687
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_075.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254061514762715
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-front-only/inputs/frame_100.pt",
+      "bytes": 99536305,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793254105852635243
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green/inputs/frame_000.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793258183312881043
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green-v2/inputs/frame_000.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793258535263933454
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green-v2/inputs/frame_022.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793258682285537346
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green-v2/inputs/frame_057.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793258917839902517
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green-v2/inputs/frame_084.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793259150548275193
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-green-v2/inputs/frame_100.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793259264933966798
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red/inputs/frame_000.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793259491270356519
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red/inputs/frame_038.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793259852637536591
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-stop-cost-v2/inputs/frame_000.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793261691997644676
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-stop-cost-v2/inputs/frame_038.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793261991704112552
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-stop-cost-v2/inputs/frame_065.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793262169326818094
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-v2/inputs/frame_000.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793260177751042254
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-v2/inputs/frame_026.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793260392262632464
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-v2/inputs/frame_037.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793260505256399392
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-v2/inputs/frame_038.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793260505830398184
+    },
+    {
+      "path": "outputs/driving-investigation-2/capture-selected-red-v2/inputs/frame_065.pt",
+      "bytes": 99536689,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793260778173803203
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-green-43/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793262896751346057
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-green-43/inputs/frame_022.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793263043231023431
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-green-43/inputs/frame_057.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793263280549492229
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-green-43/inputs/frame_100.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793263644855664012
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-red-43/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793264132026587828
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-red-43/inputs/frame_022.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793264355329095713
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-red-43/inputs/frame_065.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793264709805300878
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-red-43/inputs/frame_067.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793264745100221130
+    },
+    {
+      "path": "outputs/driving-investigation-3/capture-common-red-43/inputs/frame_076.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793264825515039137
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293102461588538
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_019.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293229239249137
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_028.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293287845092604
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_045.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293398581797347
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_057.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293477951586077
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_100.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793293781710779509
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-ack-green-43/inputs/frame_109.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793293874326534049
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793294746065306556
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_019.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793294860540045938
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_028.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793294912255925816
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_038.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793294969388791621
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_067.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793295135179394785
+    },
+    {
+      "path": "outputs/driving-investigation-4/capture-complete-red-43/inputs/frame_076.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793295186886269130
+    },
+    {
+      "path": "outputs/driving-investigation-4/reference_input.pt",
+      "bytes": 99540861,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793294362851241346
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793302145930570161
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_019.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793302301653173341
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_045.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793302512860634906
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_065.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793302675359220519
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_089.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793302879979735821
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-guidance15-43/inputs/frame_095.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793302931578619537
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_000.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301294013735045
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_019.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301355503579399
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_045.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301442953357800
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_065.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301514148177208
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_095.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301629265884913
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_097.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301646369841458
+    },
+    {
+      "path": "outputs/driving-investigation-5/capture-left-native-43-v3/inputs/frame_125.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793301752536571590
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-body-43/inputs/frame_021.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318749401770914
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-body-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318589024161209
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-body-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318717696848213
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-progress-43/inputs/frame_023.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319312049417510
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-progress-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319114992875966
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-progress-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319210624650780
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-progress-43/proposals/inputs/frame_017_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319231378603294
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-four-left-progress-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319244193573907
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-43/inputs/frame_042.pt",
+      "bytes": 99536753,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317623559423776
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99536823,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317487588715743
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99536823,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317547600588326
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-margin-43/inputs/frame_030.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324818009519937
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-margin-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324662314918821
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-left-margin-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324744268708679
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317174565330205
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317231487226128
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317314315067923
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-43/proposals/inputs/frame_065_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793317396786903504
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-42/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320812612809310
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-42/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320872022664293
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-42/proposals/inputs/frame_035_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320920110546880
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-42/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320956219458698
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-42/proposals/inputs/frame_065_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321030126278168
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537079,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793317997991573696
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537079,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318060961426178
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-43/proposals/inputs/frame_028_pool_0.pt",
+      "bytes": 99537079,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318087943362676
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537079,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318137510245606
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-43/proposals/inputs/frame_065_pool_0.pt",
+      "bytes": 99537079,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793318207480079513
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-red-42/inputs/frame_028.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324454016455227
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-red-42/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324307510835137
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-front-straight-body-red-42/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324391200617803
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793315612218289756
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793315744364960689
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793315789848846513
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-short-43/inputs/frame_023.pt",
+      "bytes": 99536817,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793316483379071076
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-short-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793316250500672383
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-short-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793316381402334806
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-left-short-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99536887,
+      "allocated_bytes": 99536896,
+      "mtime_ns": 1793316426801217468
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-43/inputs/frame_022.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320536060483611
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320232523221513
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320385664849597
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793320447807698450
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/inputs/frame_045.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321945377984965
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321275542669866
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321429235278719
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321485832135571
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_025_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321573570914435
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_035_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321701466593511
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-expanded-short-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793321913960063146
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-margin-43/inputs/frame_050.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793326252842007683
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-margin-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793325317387251471
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-margin-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793325530960754777
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-margin-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793326038769532468
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/inputs/frame_038.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319796571273385
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319508849957627
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_014_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319600095741885
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_017_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319619826695062
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319631931666308
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_025_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319680818549981
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-progress-43/proposals/inputs/frame_035_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793319754682373654
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-reserve-43/inputs/frame_079.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793324192580135227
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-reserve-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793322872108692641
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-reserve-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793323083351171929
+    },
+    {
+      "path": "outputs/driving-investigation-6/capture-validated-native-four-left-reserve-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793323391845334499
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_069.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793335046446043238
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_070.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793335115141870553
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_071.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793335180662705880
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_072.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793335246478540492
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_073.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793335312167375447
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/inputs/frame_074.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793335378646208438
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333919216889432
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793334324265862376
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793334635749076644
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_065_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793334910330385518
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793334964549249158
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-proactive-native-four-left-quality-margin20-43/proposals/inputs/frame_070_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793335047048041725
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/inputs/frame_043.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793328733911863521
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/inputs/frame_044.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793328803611690308
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/inputs/frame_046.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793328883355492112
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793327923697873993
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793328139986338107
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-margin-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793328804164688934
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_073.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793330967304300439
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_076.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331059911069891
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_078.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331184149760607
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_079.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331253808587203
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_080.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331326883405297
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_081.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331400622221741
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_082.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331474478036664
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/inputs/frame_083.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793331548160850331
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793329362367301182
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793329829089135926
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793330421640659166
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/inputs/frame_042.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333225851650287
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/inputs/frame_045.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333338994367992
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/inputs/frame_050.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333542811854879
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/inputs/frame_051.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333603465698199
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/inputs/frame_053.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333720118398212
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793332351147834580
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793332746539846635
+    },
+    {
+      "path": "outputs/driving-investigation-7/capture-retained-native-four-left-quality-margin20-43/proposals/inputs/frame_045_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793333277524521359
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/inputs/frame_066.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340252117713072
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/inputs/frame_068.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340389367363251
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/inputs/frame_069.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340457378189922
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/inputs/frame_072.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340547182961063
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793338906762149897
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793339241000293506
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793339481759678167
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793339701247117857
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793339955340469699
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340054910215810
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin10-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793340319872540373
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/inputs/frame_077.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793338396119468304
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793337051556982889
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793337362428200629
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793337608027577828
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793337837919945252
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793338073793313811
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793338155558097811
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793338204945967904
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-margin20-43/proposals/inputs/frame_074_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793338287521751526
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/inputs/frame_072.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793343589762690914
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793341687576055642
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793341996492789443
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793342250875419320
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793342663915662505
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793343197980548597
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793343304006318595
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793343366766181606
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/inputs/frame_061.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345705231827219
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/inputs/frame_062.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345766166688564
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/inputs/frame_122.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793347942932909660
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793344478099630203
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793344915215627944
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345224954920996
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345393661536549
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345632987991632
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793345797594620916
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793346049389105367
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_074_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793346201401784380
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_080_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793346322346525302
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_090_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793346562613003640
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_100_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793347036549958351
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_110_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793347612134675748
+    },
+    {
+      "path": "outputs/driving-investigation-8/capture-tracking-native-four-left-preferred20-min10-speed4-43/proposals/inputs/frame_120_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793347818465214474
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/inputs/frame_048.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350176630664272
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/inputs/frame_049.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793350237602512868
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/inputs/frame_072.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350681304436959
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/inputs/frame_073.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793350747374279441
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/inputs/frame_074.pt",
+      "bytes": 99537073,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350812821123869
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_000_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793349254070846904
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_019_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793349678026880497
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_040_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793349972734180331
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_050_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793350238239511292
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_060_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350428033046405
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_064_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350477770925887
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_068_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793350525195811391
+    },
+    {
+      "path": "outputs/driving-investigation-9/capture-reserve-native-four-left-margin20-43/proposals/inputs/frame_074_pool_0.pt",
+      "bytes": 99537143,
+      "allocated_bytes": 99545088,
+      "mtime_ns": 1793350747978278003
+    }
+  ],
+  "retained_input_tensors": [
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/01-intersection-straight-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793759210873167838,
+      "sha256": "c33ad61cf73519b3f214b1a07a90a52a8108f0ae9a652bc179ca821e86741cf3"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/02-intersection-left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793759576899258065,
+      "sha256": "97d8e314f1d1704c4b69cecd92fd74da8ce2ddabd4cd1af062b257d94e4b01fa"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/04-curve-left-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793753605410936493,
+      "sha256": "88472397e5f609cec81fe544fa154bee9a1dc2bb6bb1da0edaeb07c4dd182a8b"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/05-curve-right-route/inputs/proposal_000_00.pt",
+      "bytes": 99537453,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793758716062390687,
+      "sha256": "41c0770a417740bde2db01e6f10c34720f2a781761c24a5c195fe79ad518fa06"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/06-round-first-route/inputs/proposal_000_00.pt",
+      "bytes": 99537453,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793754157627583684,
+      "sha256": "9cc81e86d7bf0e34f16ffea44ac5c62afc874e7ac9d17928a23564ba5a852127"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/07-round-second-route/inputs/proposal_000_00.pt",
+      "bytes": 99537453,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793754855053891743,
+      "sha256": "2e84bd4feed8b87be13988a7ee021bfcf9b3391c83ade961c573bb3a8e7ac692"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/07-round-second-route/inputs/proposal_047_00.pt",
+      "bytes": 99537453,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793755275762874076,
+      "sha256": "ef2508ac581655a5ab7d108852a68e799c8eb33407bbd355dcb9d3b742d28239"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/07-round-second-route/inputs/proposal_094_00.pt",
+      "bytes": 99537453,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793755440107476781,
+      "sha256": "6b32c9cb51755c6e26d3f7f65d172e3c7e91706affabad5b5b6c6eb39bf8d28e"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/08-tight-bend-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793756073364946507,
+      "sha256": "b27e4688294b9ff2c847aa7210c2fb5a36362067c7b5177515613a08906a39ad"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/09-t-junction-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793758159114782325,
+      "sha256": "a1f3ac4f231c4605196f7e3eb3b7e9be6813c951cf4a7d9ef4b069d5eae918fc"
+    },
+    {
+      "path": "outputs/driving-investigation-19-stop-hold/10-red-light-stop-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793753242280827346,
+      "sha256": "e9f2715e680188773334847657676bc1e659087cdacc4292898ec233cb0f77a6"
+    },
+    {
+      "path": "outputs/driving-investigation-19-ten-gain140/03-intersection-right-route/inputs/proposal_000_00.pt",
+      "bytes": 99537389,
+      "allocated_bytes": 99540992,
+      "mtime_ns": 1793752329442020589,
+      "sha256": "4819a0e4fc84897155f3f213c5b4c071a45a197dc7fdf7e1d1995ced0b765268"
+    }
+  ],
+  "retained_video_folders": [
+    {
+      "path": "outputs/ten-accepted-videos/01-intersection-straight-route.mp4",
+      "bytes": 1528098,
+      "sha256": "efcf24031674674f6c1d4dc57b346fd821ac6b6014eb9e31b99efa28c59245aa"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/02-intersection-left-route.mp4",
+      "bytes": 1878282,
+      "sha256": "f5dcf3d70626a7acbfac5e426d30403e6760ef5aff2692adcdb20da9e31a6997"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/03-intersection-right-route.mp4",
+      "bytes": 1118965,
+      "sha256": "21ed665e06735c481edfb10673b472d025e772bcbb529a176a7f61f0fb094749"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/04-curve-left-route.mp4",
+      "bytes": 2062484,
+      "sha256": "7e774c81fd227bf134176c630341df5979ef50817694d3c078e69a52daccc9db"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/05-curve-right-route.mp4",
+      "bytes": 1926999,
+      "sha256": "a2d99e3976b6313c698fcda63fc18369e1dd0272ff97d159e80035cfb94f9d81"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/06-round-first-route.mp4",
+      "bytes": 3610679,
+      "sha256": "09d6f8e4dfaea7ef3de20780b24ea7e110726a756230e0539fab5111728dd6a1"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/07-round-second-route.mp4",
+      "bytes": 5910831,
+      "sha256": "3895a82d0de44068799addbf2cd2534a251b6b7f57df156b1c14c50ed0d89fcf"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/08-tight-bend-route.mp4",
+      "bytes": 4428844,
+      "sha256": "431bdba4ff988f47dda199315fee16444e872bcda7bce9785d84154aefcce257"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/09-t-junction-route.mp4",
+      "bytes": 2630388,
+      "sha256": "500a1bf43e6c541ba118edad9a213fd667c7611b75d3173a9169605f2d38531b"
+    },
+    {
+      "path": "outputs/ten-accepted-videos/10-red-light-stop-route.mp4",
+      "bytes": 1397592,
+      "sha256": "ada5d7890e525046533346fc06229b1209db296ad86eb303421c2c8002a16b99"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/01-intersection-straight-route.mp4",
+      "bytes": 2628883,
+      "sha256": "c0fefccb72eca0ff9c9ed4f4155988e0ef9d709d72cdb4903ff1e9b8b4087989"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/02-intersection-left-route.mp4",
+      "bytes": 4103904,
+      "sha256": "ac7ffc1bbcaa82935fe2df675fd3727512ad21f3a0ef63d4ade88cad37341467"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/03-intersection-right-route.mp4",
+      "bytes": 1654585,
+      "sha256": "94d2b36466aac107c9b1e3ba86e325b6cfe04729237e45040d9c6b71311b19e2"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/04-curve-left-route.mp4",
+      "bytes": 4047763,
+      "sha256": "1b0ded59669679f20a2d33b147515cc8b9abcafa162474a03ba579b60d1cbbb7"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/05-curve-right-route.mp4",
+      "bytes": 4180871,
+      "sha256": "3cec06c71852bcc4449289daa9af7f501a15ccbf08127ff02ecfea053fa3bbc2"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/06-round-first-route.mp4",
+      "bytes": 5020690,
+      "sha256": "76b14994683ea984f552bb3087f854a48fb71c6ef7237b3d654a2afc5c4f55ce"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/07-round-second-route.mp4",
+      "bytes": 7640091,
+      "sha256": "7cb3dc17bf4a44e8b072ff7b604fe99c6ae2ba494c0dfcc56971359e08d2693d"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/08-tight-bend-route.mp4",
+      "bytes": 6869566,
+      "sha256": "f3930660f46f7f747da64ad79f24b98f1c353ebfb6fbfc488a662a6e2ba4adeb"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/09-t-junction-route.mp4",
+      "bytes": 3537206,
+      "sha256": "4a80c5f989954936808f4a0c811bdd95fa9b687736ac637f6d5768f7b816dffd"
+    },
+    {
+      "path": "outputs/ten-accepted-videos-front/10-red-light-stop-route.mp4",
+      "bytes": 1332379,
+      "sha256": "218af6a5d01e8b2fa5500fcd6b69bfb8e13202b5fe1b9d5ba95c2dfe6bc7507c"
+    }
+  ],
+  "summary": {
+    "removed_files": 451,
+    "removed_bytes": 42513374542,
+    "removed_allocated_bytes": 42514841600,
+    "retained_input_files": 12,
+    "retained_input_bytes": 1194448988,
+    "filesystem_available_before": 10994630656,
+    "filesystem_available_after": 53508780032
+  },
+  "verification": {
+    "removed_paths_absent": 451,
+    "other_investigation_files_unchanged_size_mtime": 43616,
+    "retained_tensor_sha256_matches": 12,
+    "retained_video_sha256_matches": 20
+  }
+}

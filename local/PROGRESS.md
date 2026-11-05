@@ -1,4 +1,9 @@
-# CarlaMayo progress — 2026-11-03
+# CarlaMayo progress — 2026-11-04
+
+Storage cleanup: reclaimed **39.59 GiB** of obsolete driving-test input tensors.
+All research reports, success/failure evidence and videos remain, as do all
+12 saved inputs from the ten accepted captures. See the
+[cleanup record, outcomes index and replay limits](experiments/STORAGE_CLEANUP_20261104.md).
 
 Latest driving work: [round 19](experiments/RESULTS_ROUND19.md) and the
 [ten-video collection](../outputs/driving-investigation-19-showcase/VIDEOS.md).

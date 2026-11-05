@@ -16,6 +16,12 @@ to generate. This is a collection with documented retries, not an untouched
 10/10 benchmark. [Videos and metrics](../../outputs/driving-investigation-19-showcase/VIDEOS.md).
 Use `local/run_scene_suite.sh`; original launchers retain their policies.
 
+Storage update (2026-11-04): [cleanup record and outcomes index](STORAGE_CLEANUP_20261104.md).
+Reclaimed 39.59 GiB of older input tensors. All reports, predictions, command
+records, audits and videos remain; all 12 saved inputs from the ten accepted
+captures remain. Historical frozen-input replay paths listed in the removal
+inventory no longer exist.
+
 Previous experiment: [route projection with native-plan selection, round 18](RESULTS_ROUND18.md)
 combines the commanded-route steering projection, a 4.5 m/s target-speed ceiling,
 1.18 steering calibration, and age-checked reuse of original model plans for up
