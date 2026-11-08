@@ -170,6 +170,11 @@ raw handover deltas, event/log hashes, sampled memory and cleanup evidence are
 in `outputs/left-camera-study-20261107-v2/camera-comparison.json` and the tracked
 `artifacts/camera-startup-study-20261107.json`.
 
+The next [model-loaded startup-prefix study](RESULTS_LOADED_CAMERA_STARTUP.md)
+is prepared separately: at most four starts, no native or VQA inference, full
+failed-left startup sequence through handover, and the reviewed allocator repair.
+It has not run and waits for resource handoff and review.
+
 This result provides no evidence for adding the pause. It also cannot exonerate
 the startup path when a model is loaded: model allocation/loading time and
 some pre-camera setup were explicitly omitted. The full-capture crash cause
