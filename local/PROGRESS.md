@@ -1,4 +1,11 @@
-# CarlaMayo progress — 2026-11-04
+# CarlaMayo progress — 2026-11-07
+
+Latest isolated investigation: [driving latency](experiments/RESULTS_LATENCY.md)
+on `experiment/driving-latency-validation`. Optional retry/time limits and speed
+band controls and guarded pilot driver pass 300 tests. A saved-state screen identifies large potential
+savings on the tight bend but changes many decisions and lacks left-turn
+coverage. An eight-run fresh paired pilot is prepared, pending an available
+model GPU; no fresh driving success is claimed. Standard defaults are unchanged.
 
 Storage cleanup: reclaimed **39.59 GiB** of obsolete driving-test input tensors.
 All research reports, success/failure evidence and videos remain, as do all

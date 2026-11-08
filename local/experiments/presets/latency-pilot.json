@@ -1,0 +1,512 @@
+{
+  "status": "prepared_not_run",
+  "date": "2026-11-07",
+  "baseline_commit": "e1f38d6",
+  "scenario_manifest": "local/experiments/presets/ten-driving-scenes.json",
+  "scenario_manifest_sha256": "d753abdab4a971ecdbc54127702190d463ee13556dd5b551dc3494bab9cffdcf",
+  "cases": [
+    {
+      "number": 2,
+      "scenario": {
+        "name": "02-intersection-left",
+        "title": "Intersection: left",
+        "route": "left",
+        "duration_s": 15,
+        "distance_before_intersection_m": 5,
+        "lateral_offset_m": 0,
+        "speed_mps": 3,
+        "heading_offset_deg": 0,
+        "seed": 44,
+        "flow_seed": 43,
+        "junction_entry": {
+          "x": -6.094448,
+          "y": 118.324844,
+          "z": 0.0,
+          "yaw": 89.637459,
+          "junction_id": 103,
+          "road_id": 184,
+          "lane_id": -1
+        },
+        "route_spec": {
+          "kind": "junction"
+        },
+        "instruction": "Turn left at the intersection.",
+        "scene_policy": "empty_green"
+      }
+    },
+    {
+      "number": 8,
+      "scenario": {
+        "name": "08-tight-bend",
+        "title": "Tight curved road",
+        "route": "tight_bend",
+        "duration_s": 28,
+        "distance_before_intersection_m": 0,
+        "lateral_offset_m": 0,
+        "speed_mps": 3,
+        "heading_offset_deg": 0,
+        "seed": 51,
+        "flow_seed": 50,
+        "junction_entry": {
+          "x": 88.60638427734375,
+          "y": 52.5733528137207,
+          "z": 0.0,
+          "yaw": -145.50582885742188,
+          "lane_width": 3.5,
+          "road_id": 60,
+          "lane_id": -2,
+          "s": 3.0,
+          "is_junction": false,
+          "junction_id": -1
+        },
+        "route_spec": {
+          "kind": "lane_path",
+          "start": {
+            "road_id": 60,
+            "lane_id": -2,
+            "s": 3
+          },
+          "end": {
+            "road_id": 60,
+            "lane_id": -2,
+            "s": 73
+          },
+          "instruction": "Follow the road around the tight bend. Stay in your lane."
+        },
+        "instruction": "Follow the road around the tight bend. Stay in your lane.",
+        "scene_policy": "empty_green",
+        "overhead": {
+          "enabled": true,
+          "height_m": 80,
+          "center_ahead_m": 20,
+          "front_inset": true
+        }
+      }
+    },
+    {
+      "number": 9,
+      "scenario": {
+        "name": "09-t-junction",
+        "title": "T-junction: right turn",
+        "route": "t_junction",
+        "duration_s": 22,
+        "distance_before_intersection_m": 0,
+        "lateral_offset_m": 0,
+        "speed_mps": 3,
+        "heading_offset_deg": 0,
+        "seed": 52,
+        "flow_seed": 51,
+        "junction_entry": {
+          "x": 109.98685455322266,
+          "y": -76.50132751464844,
+          "z": 8.0,
+          "yaw": -178.49090576171875,
+          "lane_width": 3.5,
+          "road_id": 59,
+          "lane_id": -5,
+          "s": 28.697988510131836,
+          "is_junction": false,
+          "junction_id": -1
+        },
+        "route_spec": {
+          "kind": "lane_path",
+          "start": {
+            "road_id": 59,
+            "lane_id": -5,
+            "s": 28.697988510131854
+          },
+          "end": {
+            "road_id": 42,
+            "lane_id": 1,
+            "s": 22.01926944732666
+          },
+          "instruction": "Turn right at the T-junction, then continue along the road.",
+          "exit_instruction": "Continue along the outgoing lane after completing the turn.",
+          "finish_before_exit_m": 8
+        },
+        "instruction": "Turn right at the T-junction, then continue along the road.",
+        "scene_policy": "empty_green",
+        "overhead": {
+          "enabled": true,
+          "height_m": 80,
+          "center_ahead_m": 20,
+          "front_inset": true
+        }
+      }
+    },
+    {
+      "number": 10,
+      "scenario": {
+        "name": "10-red-light-stop",
+        "title": "Red light: stop and hold",
+        "route": "straight",
+        "duration_s": 12,
+        "distance_before_intersection_m": 15,
+        "lateral_offset_m": 0,
+        "speed_mps": 3,
+        "heading_offset_deg": 0,
+        "seed": 53,
+        "flow_seed": 52,
+        "junction_entry": {
+          "x": -6.094448,
+          "y": 118.324844,
+          "z": 0.0,
+          "yaw": 89.637459,
+          "junction_id": 103,
+          "road_id": 184,
+          "lane_id": -1
+        },
+        "route_spec": {
+          "kind": "junction"
+        },
+        "instruction": "Continue straight through the intersection.",
+        "scene_policy": "red_light_stop",
+        "traffic_light_state": "Red",
+        "mission": {
+          "kind": "red_light_stop",
+          "stop_line": {
+            "road_id": 30,
+            "lane_id": -1,
+            "x": -6.106259346008301,
+            "y": 116.45811462402344,
+            "z": 0.0,
+            "yaw": 89.63745880126953
+          },
+          "hold_s": 2,
+          "maximum_stop_gap_m": 8
+        },
+        "hold_visual_stop": true
+      }
+    }
+  ],
+  "profiles": {
+    "baseline": {
+      "speed_selection_attempts": 6,
+      "speed_preference_mps": [
+        3.0,
+        5.0
+      ]
+    },
+    "candidate": {
+      "speed_selection_attempts": 2,
+      "speed_preference_mps": [
+        2.5,
+        5.0
+      ]
+    }
+  },
+  "fixed": {
+    "steering_mode": "route",
+    "steering_gain": 1.4,
+    "controller_speed_cap_mps": 4.5,
+    "projection_cache_age_s": 3.0,
+    "precision": "bf16",
+    "placement": "single_gpu",
+    "signal_check_interval": 5,
+    "speed_selection_max_seconds": null,
+    "hold_visual_stop": "red case only; one fresh native sample, no motion selection or reuse"
+  },
+  "ordering": "For each case in [2,8,9,10], one fresh baseline then one fresh candidate; eight attempted outcomes, no substituted historical success or hidden retries.",
+  "reason_for_left": "Reduced-policy trace requires a proposal never captured at step3; additional live left-turn gate is mandatory.",
+  "criteria": {
+    "moving": "Exit reached, speed >=1 and <=5.5 m/s throughout, no recorded collision/corner departure, all integrity audits pass.",
+    "red": "No front-footprint stop-line crossing; final2s speed<=0.2 m/s and front gap in [0,8]m; no collision/corner departure; integrity audits pass.",
+    "latency": "At most2 trajectory samples/decision in candidate moving cases; exactly1 in red; candidate p95 full decision time <=6s on an idle A5000, and paired aggregate wall/sim ratio <=70% of baseline with tight bend <=50%. No claim of real-time control.",
+    "promotion": "All four candidate cases must satisfy driving criteria; report all baseline failures too. Then run held-out seeds/starts before changing defaults."
+  },
+  "resource_requirements": {
+    "model": "Idle/reserved A5000; no CPU offload or quantization in latency comparison.",
+    "renderer": "Idle/reserved separate GPU.",
+    "locks_directory": "/scratch/apomalap/thesis/.carlamayo-resource-locks",
+    "locks": [
+      "gpu-MODEL_UUID.lock",
+      "gpu-RENDER_UUID.lock",
+      "carla-port-2000.lock"
+    ],
+    "container": "apomalap-carlamayo-latency-20261107",
+    "coordination": "Acquire nonblocking flock leases and verify GPU occupancy/port before launch; do not stop other tasks or containers."
+  },
+  "limits": {
+    "per_case_process_wall_seconds": 2700,
+    "keep_failed_or_timed_out_runs": true,
+    "expected_total_minutes_if_runs_resemble_history": "70\u201390, primarily the fresh six-sample tight-bend baseline",
+    "saved_tensor_frames": [
+      0
+    ],
+    "estimated_new_capture_storage_gib": 1.5
+  },
+  "jobs": [
+    {
+      "name": "02-intersection-left-baseline",
+      "output": "outputs/latency-pilot-20261107/02-intersection-left/baseline",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "2",
+        "--speed-selection-attempts",
+        "6",
+        "--speed-preference-mps",
+        "3.0",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/02-intersection-left/baseline"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "02-intersection-left-candidate",
+      "output": "outputs/latency-pilot-20261107/02-intersection-left/candidate",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "2",
+        "--speed-selection-attempts",
+        "2",
+        "--speed-preference-mps",
+        "2.5",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/02-intersection-left/candidate"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "08-tight-bend-baseline",
+      "output": "outputs/latency-pilot-20261107/08-tight-bend/baseline",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "8",
+        "--speed-selection-attempts",
+        "6",
+        "--speed-preference-mps",
+        "3.0",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/08-tight-bend/baseline"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "08-tight-bend-candidate",
+      "output": "outputs/latency-pilot-20261107/08-tight-bend/candidate",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "8",
+        "--speed-selection-attempts",
+        "2",
+        "--speed-preference-mps",
+        "2.5",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/08-tight-bend/candidate"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "09-t-junction-baseline",
+      "output": "outputs/latency-pilot-20261107/09-t-junction/baseline",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "9",
+        "--speed-selection-attempts",
+        "6",
+        "--speed-preference-mps",
+        "3.0",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/09-t-junction/baseline"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "09-t-junction-candidate",
+      "output": "outputs/latency-pilot-20261107/09-t-junction/candidate",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "9",
+        "--speed-selection-attempts",
+        "2",
+        "--speed-preference-mps",
+        "2.5",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/09-t-junction/candidate"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "10-red-light-stop-baseline",
+      "output": "outputs/latency-pilot-20261107/10-red-light-stop/baseline",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "10",
+        "--speed-selection-attempts",
+        "6",
+        "--speed-preference-mps",
+        "3.0",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/10-red-light-stop/baseline"
+      ],
+      "timeout_seconds": 2700
+    },
+    {
+      "name": "10-red-light-stop-candidate",
+      "output": "outputs/latency-pilot-20261107/10-red-light-stop/candidate",
+      "argv": [
+        "bash",
+        "local/run_scene_suite.sh",
+        "--cases",
+        "10",
+        "--speed-selection-attempts",
+        "2",
+        "--speed-preference-mps",
+        "2.5",
+        "5.0",
+        "--output",
+        "outputs/latency-pilot-20261107/10-red-light-stop/candidate"
+      ],
+      "timeout_seconds": 2700
+    }
+  ],
+  "source_sha256": {
+    "local/__init__.py": "2cdfdf7587dfea658c368d38aba82a8a3a0866b3322e1b0de8ead0452c2aa2d7",
+    "local/configs/demo.yaml": "43fc15e0c77b40d7e8fec0fd8c1cb07427ac3041bcc2f70fe1f934375e033c27",
+    "local/documentation/add_first_rollout.py": "260215fa638d65269f2e3162dd626deb93ec30df62d486c0bde3ca764f49fd8f",
+    "local/documentation/add_verifai_update.py": "97caecba94a789f16ea9d924d3f92142f1a84749904fbed70ba6361d36e74ce4",
+    "local/documentation/append_update_slides.py": "a2592440ae331486f9dd2aed1c9699ef84763d88d02518b8d72690e21d3ed871",
+    "local/documentation/update_verifai_server_slides.py": "62376f99224b5d18896ce8d40a6a1386aacd8ccf797fc61bd5ee865c6437a84d",
+    "local/env.sh": "4e77420d49a3e399cb6038ffaf42051eeae877e0b38dc5b865ecc9612212cbd8",
+    "local/experiments/__init__.py": "33ea8285fe5e42e3b480e980db0a4b495f3f6eda6ae910cac5909da1c04c70d7",
+    "local/experiments/acknowledged_preroll.py": "1bd2430d450ec55ba90e7a8a9ca25203e2e89869afc36053d76b4443c97b32f5",
+    "local/experiments/audit_body.py": "80b22b54a5bdcaf8c88a3f84f2f9ea34a47a7b0a186f41e782c4fe59bdcaaba9",
+    "local/experiments/audit_capture.py": "3d9c69e9f7c8612090263a51ff7cc407bddd9f2500b76482fc5ca86ac9ed8482",
+    "local/experiments/audit_projection.py": "e21fbdd93c86d738dbb83c14b9c775f92af18c8b4c9e70757b8f7de675682869",
+    "local/experiments/audit_quality.py": "ff725aae78673af028551448ddbd7a06838100a7877441b332865cd14d26d681",
+    "local/experiments/audit_retention.py": "53ce8cd61d28d9474a2bb4cf1acdf2c2660098b4f451c3ea4f8001957db7747a",
+    "local/experiments/audit_stop_line.py": "b0f694f1b1e8f05ba9d773559a916e0a7e1ba9d698757c7091c33471fe9a33b3",
+    "local/experiments/audit_tracking.py": "565a25016031cd319917136b4e19b12d0e59b36ed7de6c7bbca4133cf173faeb",
+    "local/experiments/audit_turn.py": "9d42aa18362393e51e142d293799cdd9319436320d146f5fcdc17d2213140053",
+    "local/experiments/camera_projection.py": "54c176a4db8813d7b1a836587ac39c202ec4261ad8a91379a0d71510feb5ac06",
+    "local/experiments/candidate_reserve_probe.py": "40f980b00ab9979bbb98190c7f89b680969756db4eef362c6f68bf50172e5110",
+    "local/experiments/candidate_selection.py": "d0e45257d09bc9de0e3271f3adbfa763abe2e535232263da1980fd64a6cb106c",
+    "local/experiments/compare_replays.py": "9641282c0bb4cb1f84d316321b44deb34cd7811990f294c1f873feee9989236c",
+    "local/experiments/control_delivery_probe.py": "3aecd2d7370f6c60edcf8ae9fc5769e5512bf7321775c9f1c5508fc7b3167ac9",
+    "local/experiments/exit_cache.py": "064c90aba01c2eff480cbcd8c68a1287a45d896b523a5319e85f7ab68f8eaf5b",
+    "local/experiments/frame_sync.py": "711ec6c0442efd6d0d443d86ac91de4bfd77617d1afe084282dd135f05c46680",
+    "local/experiments/history_probe.py": "8055e73f04b7a59ba33d326d2b34b991c2c6246c0d1c857c98338e24d2453b00",
+    "local/experiments/inference_probe.py": "57fec2ee767d8d0fbe74d7c3dac82b390e0cd2248a5e7ee3a6f453fff4884a00",
+    "local/experiments/input_contract.py": "f2c0f356825a2477917b5d74dc184b59d0dae2d2db31b8696992c794457a46d1",
+    "local/experiments/instruction_summary.py": "4df37d698dd70d31a32bd172c9ab9e3ba28386ffd4cd210fd73d0e2fe62e480a",
+    "local/experiments/junction_routes.py": "f8d9a89ffa724a5b54e0aa60f8fa6a0eae526fa3a47ca3a379d07057fd773464",
+    "local/experiments/plan_interval_probe.py": "71ff6f0aa5d4b4b4f94d79f8667dbfbbe1e49c538a5fa543c9240fe2632052d1",
+    "local/experiments/plot_turn_predictions.py": "14de8e6f35544ad07ce580463a2a974ccc18ee6dec5f717b99cb8727de09d397",
+    "local/experiments/plot_turns.py": "23ba7d243c4fe74a48d8fa502d2f8a262bca6726a70f148d247a4bd929f3e076",
+    "local/experiments/prefix_resume_probe.py": "4781d3d8f0c73d402d83b316cd5e7e33ee04e7a7de437df209d5cfa4e6f5afe0",
+    "local/experiments/preroll_probe.py": "3ac56b573c10abf5f3e0e4ace0a9febbfd71756d6f910273169df7a5837e381a",
+    "local/experiments/presets/ten-driving-scenes.json": "d753abdab4a971ecdbc54127702190d463ee13556dd5b551dc3494bab9cffdcf",
+    "local/experiments/proactive_probe.py": "27497d419e9ce7a17e0b653174d386a656f676da31eb493f397ab8ede3e73b57",
+    "local/experiments/projected_probe.py": "9e9ec1f12cea94961fd437f9fb42f62aa62681df3eb6f42db3abad4dbeedca62",
+    "local/experiments/projected_retention.py": "2500fdba1fb06d08585eb800c1ca19c8b0875897af9ec61610359a01c3510c3b",
+    "local/experiments/projected_server.sh": "e0aae6be5306bc6b31e861053bf17e850b35c1f426e79974ac53e72d02fec382",
+    "local/experiments/projected_speed_selection.py": "6b54d9c43d63d4e7ca60bd6acd205cf5bda40e4b2bddfc3cadaa1bc2c324ada7",
+    "local/experiments/projected_steering.py": "ceb2da16edff94a96fd7548e189c93fc662616169ae9f83800cc106966fbe7aa",
+    "local/experiments/render_scene_suite.py": "b1ed8e22686c1b6504f1decb42fcdfc628a32330175811de74f806f293f72eb7",
+    "local/experiments/replay_native_tracking.py": "e7ca563267592cc4bfc6a843152c5f0159658e852077e6eee3ce3007238627bb",
+    "local/experiments/resource_lease.py": "4767a1fa56d649c5cdb8a3ab5c2b04f0122b65c6749dd26279bae54e8956f491",
+    "local/experiments/retained_probe.py": "4278a3cc1d33c4a504b4f4fbc01abcae90e025400d698e5075ba64cca752477b",
+    "local/experiments/run_latency_pilot.py": "2132ac023624abbd886f358098a0227a8a8001eeca13201a5b20e6ec40e98cc8",
+    "local/experiments/run_projection_suite.py": "43addd6c0d42a8b6aab6d3fcc18e9db95a056585dd93fb65ecd8fff24babb4bb",
+    "local/experiments/sampling_trace_screen.py": "7971076649dd0755907f1df82e658c0380bd2ee75ce2079bfeb24be982ee8e4f",
+    "local/experiments/scene_routes.py": "bc285e47e647b73518bac00622b47017c9217f9470db80c9aba8c4d9158076a8",
+    "local/experiments/stop_mission.py": "24c04f262c23c5c0b82f6db38243785fea2a5f087296f87b4876eda9890ad06f",
+    "local/experiments/summarize.py": "2220bd36fbcc69a6140f3616fbda98048bc628e2eba59bd9d4c81f209c2041c7",
+    "local/experiments/test_candidate_reserve_probe.py": "da02d077c6aed83940ca712f3e1252b64922a2e7027ef8f001b23cd149a505ee",
+    "local/experiments/test_driving_launcher.py": "d4a074d0c6a39dc83ffe5d8577e8ebed3b91d41c9345948b0b361e28de12190d",
+    "local/experiments/test_exit_cache.py": "e2760181e9e8e1867a6e2ab1dcf672f3fd0ea8cc9a774b8e9f685db783e5366d",
+    "local/experiments/test_exit_transition.py": "d6113dfc52ef7d5aca51e3563aa2311b83da56f8c7b8caf7373083b9f39e0e74",
+    "local/experiments/test_latency_pilot.py": "85683986bf948fdc6c5eb5039a05e4691c8cd03e053316b725302c8f08716398",
+    "local/experiments/test_low_speed_resampling.py": "e920905aee9cda4b57b68c42db92967ab3ac4ebb0d7ad4854d0eafe21d3a9f6c",
+    "local/experiments/test_native_replay.py": "3af789ed02f6fd084a7ee184c5353588353984fd686765cac86e4430de61185b",
+    "local/experiments/test_phase_transition.py": "be87ffdde4a8893abcb7406e60e716826bce9fd9b959b53929ba7c28d4d50951",
+    "local/experiments/test_plan_interval_probe.py": "1a952f87e66a2fd4e39b469e49e60260eed8864e7d5aeb7912a3bcb69508ba7c",
+    "local/experiments/test_prefix_resume_probe.py": "22b0db04ed83ca505b2391489d3eebe7401fcc7ccfe02ac9c42aa6b8bfa266d3",
+    "local/experiments/test_proactive_probe.py": "bdddfc419af528a66e9f1017a96d74218f6ea9384dff9d02af53723d0cb24cf8",
+    "local/experiments/test_projected_limits.py": "ac0fd66397398878525a829fcda4fec0a95064c13d0a5b75ad447f68b8bc1796",
+    "local/experiments/test_projected_retention.py": "84225bdc9991671712757942fa6e2ea4fa3121e6770acb65f2dbf652e2c91beb",
+    "local/experiments/test_projected_speed_selection.py": "69a3bcd2fae8605c74a4ee1d48167a6f8e8cd8aaac78f7f1ed32955adce7f96f",
+    "local/experiments/test_projected_steering.py": "e4bc4ffb1e8b2e533e6e3cb5434ffd7ca7201a670eaa96a87357f650adbbe639",
+    "local/experiments/test_resource_lease.py": "b315b881001c03ec2be733f50501448435e00e7491a856054f16988706513aff",
+    "local/experiments/test_retained_probe.py": "6611bcc2da6d3d56566b147ce89fbc52831d17541818500fd6ecba20e62a698a",
+    "local/experiments/test_sampling_budget.py": "894e2686186a6373c66867854d00e1039c7ef91d21735ea77a8406978bbe1ce6",
+    "local/experiments/test_scene_suite.py": "de3509157a309221772ca88c2a85fa65792409688bc9ae44853a3ae067dcf6d1",
+    "local/experiments/test_straight_unknown_cache.py": "0982e43b8f9b546e8ee8186f1b729c5ddb19d1e7a8baa2c03c207e8b4f35739c",
+    "local/experiments/test_tracking_probe.py": "5c67a4e54d908dd62238d944c78705d52a34c94fda48b5fa2efafe4be58d1de5",
+    "local/experiments/test_unknown_upper_speed.py": "85a145ef9b2ecd78ff90112be57576d46f8238b25f664bfe07791989a10c5415",
+    "local/experiments/test_validated_selection.py": "4dd6d3be1341b556d399871d7d32adcf212cb8aa386aad4e9cc86d6f1f5064e5",
+    "local/experiments/tracking_forecast.py": "341c5c468f8b0296bd827a2cf0ebf02094c7347400ab5cc3c8c4342e64e3eb43",
+    "local/experiments/tracking_probe.py": "e35850032241d321c6616e1b43b247e911b8b902ecbd06823c6237e6591d81b5",
+    "local/experiments/validated_probe.py": "8deba2d5cda32617abb24d43128b2698839572fd549a007b7eaec276e987784d",
+    "local/experiments/validated_selection.py": "b1b0ca0c716a5b95e4f37cb6296aa056cdcd98863989b96fbbf5bb358a8f2b9e",
+    "local/experiments/vqa_guard_check.py": "defd417084be4662cce3c230d93e606627f6ffbf9ebd7c5a1dde4d3ccfc3ae48",
+    "local/overhead.py": "8595458fc98901ebb8f61a41ccbcd035e23993d114a25337f1fe2f3b69910550",
+    "local/replay_overhead.py": "02e12ab7e94c02654457dc3d92a268b9b61ddd18aba4c2a7369208cf40f4c380",
+    "local/run.sh": "ca5a46a6b4cf85046a00974aeabb6c84a7f1190f0c5a7cc371c079796a028998",
+    "local/run_driving.py": "bce73a731f73538a0ef727322f18bd47e15afe12f5023f32e5bc9086212e2e98",
+    "local/run_driving.sh": "e565e0b1352977a7a831d5cea8289762ac98558d1d6973f18118fc2c849a341b",
+    "local/run_intersection.py": "e31f6d9d4cd21533dd51aad3e89a64e29ef526ccce2e953167cb53246d2d7eb6",
+    "local/run_scene_suite.sh": "854a24e63aa9b8260f079656d3b6479e5d9340e6b16b09a997428360d00df335",
+    "local/run_verifai.py": "0a806aa3a8a5d1c1b289ace47fe0b42db3eef847639ce399b5c9931bef96c5de",
+    "local/run_verifai.sh": "9fa68f83bf378a7c4a5f143a4e51e37cad23226ef9db60bb25abb92492aa69c3",
+    "local/run_verifai_server.sh": "c4e01361c1027c9c2fd6fa86c04168572bc83075f13d76db94fe128ed50708d9",
+    "local/server.sh": "037e4b518f32f2c0337b40a8ea12692c7805e8dea15a5dbea1ecf7e28bf6b082",
+    "local/setup.sh": "97779568a853c310b02bbb240dd47e9a42ef4e105565ecf8d0807395bc30aae7",
+    "local/setup_verifai.sh": "604075d3b60a1176602e4de51aca6c88e2c892eb7bc8d503c3253ed43a7a9540",
+    "local/verifai_client.py": "5ff6a341b9d49dad7d95757bd29aaa32b6407245c3c42ce90245ec8c2594c0e9",
+    "local/verifai_server.py": "9ec0fedc14ad42da15111415b8465e8ff15ba9edd228d860b9d058926e7cd075",
+    "module/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "module/adapters/__init__.py": "4bd8933de4ce187b2e89b4121293bf3020a286451c651f387219fa09f3168a6b",
+    "module/adapters/_rigs.py": "9001f29eecc9b5803f2d37580d3218f1aa890ab7a387adad2c3a308439e37adf",
+    "module/adapters/_text.py": "e5d40b29b1a4c809b1e116913f5b3fea274551de816551d133b3725412cdaa38",
+    "module/adapters/alpamayo_1_5.py": "356497d2eb89e4dce8d2977fff945b1fd6d7d8909b7e263ac454826161a54234",
+    "module/adapters/alpamayo_2.py": "cf9d089787528445453cdcf665ac967dde24a1b8d2011c202dcee108f2c0a7ab",
+    "module/adapters/alpamayo_r1.py": "aec3896d981f02f7b1047c2a0217d46ea959144c26aecc6d7624605c8591876e",
+    "module/adapters/base.py": "405f4262973124699399db7b51c0e7cf05703695843e47ab56375b21f7211519",
+    "module/alpamayo_compat.py": "6a6cab416fb3bfb504b48e52bc38eb8e3b1114176be83526058fc1a350ec5e67",
+    "module/carla_interface.py": "f3582c31edc796765f16eacad4f011a676662b78185376f4e5b65e27e2839c28",
+    "module/config.py": "fde3fa5ff5d3b8aff6c01fe43eb33f4961853a309bf20c8675542653a67142cf",
+    "module/data_collection.py": "3b727cec8260a39f7bdb736d53e6085db63f5bd9d4640d4084b8acf0c47902b5",
+    "module/inference.py": "110714402e038bd4de6923d8a737f7d5c213a376c4061f93909e7be64778d201",
+    "module/loops/__init__.py": "64cbe3e56658f926ba8d6f993e3dad0730f7f805022ec77042f7f9216d619133",
+    "module/loops/_common.py": "edaf07ee1973b9735e08e6dd852e16304dd06ba94ba88d072e7e60e95c350a37",
+    "module/loops/closed_loop.py": "7db909d21eaddab720b880e49ab133544f5e44da16dff744b6f36c18b35c33a0",
+    "module/loops/live_open_loop.py": "ed6fa3639c2b1b7efa7773aea8f79417f501652c327161f590056e8dfa488d54",
+    "module/loops/open_loop.py": "2094b39df88b2416b1f43c2d831859aa430f658b380869fb8e88c10b99555d28",
+    "module/navigation_control.py": "8d5768e77e4dcd81becbd62fbc08b949dacba565089fcc376b3eba61677b1b10",
+    "module/oom_offload.py": "16d6f646b6acea467dcd10c579a03e757c965685e3e0c16daa8ec0861b018d3b",
+    "module/open_loop_dataset.py": "dcc7710fec75a242a72f4f5fae0b7ce958fd9d17298139827969bd726550a4c6",
+    "module/pygame_ui.py": "6bad6a403e592f731a5c32154c8954eb3eba3cc423d18a9ee67919dcfaf50a0f",
+    "module/respawn_control.py": "d58d84a4256858ea6f68bcfb05742161ed98a81c73b6142be63b1471cb92bd27",
+    "module/trajectory_follower.py": "0a4017e5ef94f7600474668f394ea00f846f27b58a5e88360d16c6a9890f4752",
+    "module/visualization.py": "ed57c8473669e26be8ac7e54f3dc6cffa6d553143a0017c55cb400bc9ffc3b17",
+    "module/vlm_generate_optimization.py": "424ac337e98dbb35ee36563bf66133cacf848562346311736a2a8dbeb60efc2f"
+  },
+  "verification": {
+    "software_tests_passed": 300,
+    "seconds": 6.17,
+    "fresh_gpu_rollouts": 0
+  },
+  "driver": ".venv/bin/python -m local.experiments.run_latency_pilot --output outputs/latency-pilot-20261107"
+}

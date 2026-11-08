@@ -9,6 +9,7 @@ is not an obstacle-aware safety policy.
 """
 import json
 import math
+import time
 
 import numpy as np
 
@@ -38,8 +39,12 @@ class SpeedSelectedProbe(SingleSampleProbe):
                     capture=False, capture_failures=False):
         attempts = options['speed_selection_attempts']
         low, high = options.get('speed_preference_mps', [3., 5.])
-        if not isinstance(attempts, int) or not 2 <= attempts <= 8 or not 0 < low < high:
+        if (not isinstance(attempts, int) or not 2 <= attempts <= 8 or
+                not all(math.isfinite(v) for v in (low, high)) or not 0 < low < high):
             raise ValueError('Expected 2–8 attempts and a positive increasing speed band')
+        max_seconds = options.get('speed_selection_max_seconds')
+        if max_seconds is not None and (not math.isfinite(max_seconds) or max_seconds <= 0):
+            raise ValueError('Sampling time budget must be positive and finite')
         # A red-light test executes one native result, with no motion preference
         # or cached substitute. Simulator state scopes the test, not its control.
         scope = context.get('controlled_scene', {})
@@ -62,7 +67,15 @@ class SpeedSelectedProbe(SingleSampleProbe):
         if (signals and set(signals.values()) != {'Green'}) or (not signals and not checked_empty):
             raise ValueError('Speed-selection experiment requires the configured all-green scene')
         proposals, best = [], None
+        started = time.monotonic()
+        stop_reason = 'attempt_budget'
         for index in range(attempts):
+            start_elapsed = time.monotonic() - started
+            # Bound additional work. A native inference already in progress is
+            # not preempted, so this is not a real-time deadline guarantee.
+            if index and max_seconds is not None and start_elapsed >= max_seconds:
+                stop_reason = 'time_budget'
+                break
             candidate_label = f'proposal_{context["index"]:03d}_{index:02d}'
             candidate_options = {**options, 'seed': options['seed'] + index * 1009,
                                  'flow_seed': options['flow_seed'] + index * 1013}
@@ -73,6 +86,7 @@ class SpeedSelectedProbe(SingleSampleProbe):
             proposals.append(dict(label=candidate_label, seed=candidate_options['seed'],
                 flow_seed=candidate_options['flow_seed'], target_mps=record['controller_preview_speed_mps'],
                 valid=math.isfinite(score[0]), preference_distance_mps=score[0] if math.isfinite(score[0]) else None,
+                start_elapsed_seconds=start_elapsed,
                 inference_seconds=record['inference_seconds']))
             visual_stop = record['visual_signal'] in ('red', 'yellow')
             if visual_stop or best is None or score < best[0]:
@@ -81,6 +95,7 @@ class SpeedSelectedProbe(SingleSampleProbe):
             if not visual_stop and score[0] != 0 and retained is not None and retained[0] < best[0]:
                 best = retained
             if visual_stop or best[0][0] == 0:
+                stop_reason = 'visual_stop' if visual_stop else 'preference_met'
                 break
         score, result, record = best
         if not math.isfinite(score[0]):
@@ -91,6 +106,8 @@ class SpeedSelectedProbe(SingleSampleProbe):
                 proposals=proposals, attempts=len(proposals), budget=attempts,
                 preference_mps=[low, high], preference_met=score[0] == 0,
                 preference_distance_mps=score[0],
+                max_seconds=max_seconds, elapsed_seconds=time.monotonic() - started,
+                stop_reason=stop_reason,
                 visual_stop_preserved=visual_stop))
         native.write_json(self.output / (label + '.json'), record)
         self.selected(record)

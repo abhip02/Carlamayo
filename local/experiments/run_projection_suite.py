@@ -3,6 +3,7 @@ import argparse
 import copy
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -22,12 +23,24 @@ def main():
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
     parser.add_argument('--steering-modes',nargs='+',choices=('native','map','route'),default=['native','map'])
     parser.add_argument('--speed-selection-attempts',type=int,default=1,choices=range(1,9))
+    parser.add_argument('--speed-preference-mps', type=float, nargs=2, default=[3., 5.],
+                        metavar=('LOW', 'HIGH'), help='Native speed ranking preference, not a speed floor')
+    parser.add_argument('--speed-selection-max-seconds', type=float,
+                        help='Stop starting retries after this time; an in-progress call may exceed it')
     parser.add_argument('--cases',type=int,nargs='+',default=[1,4])
     parser.add_argument('--manifest',type=Path,default=Path('local/experiments/presets/five-short-scenarios.json'))
     parser.add_argument('--speed-cap-mps',type=float)
     parser.add_argument('--steering-gain',type=float,default=1.)
     parser.add_argument('--cache-age-s',type=float,default=0.)
     args=parser.parse_args()
+    low, high = args.speed_preference_mps
+    if not all(math.isfinite(v) for v in (low, high)) or not 0 < low < high:
+        parser.error('speed preference must be finite, positive and increasing')
+    if args.speed_selection_max_seconds is not None:
+        if not math.isfinite(args.speed_selection_max_seconds) or args.speed_selection_max_seconds <= 0:
+            parser.error('sampling time budget must be positive and finite')
+        if args.speed_selection_attempts < 2:
+            parser.error('sampling time budget requires bounded speed selection (at least two attempts)')
     root=Path(__file__).resolve().parents[2]
     out=args.output.resolve()
     server_script=args.server_script.resolve()
@@ -44,6 +57,8 @@ def main():
         model_placement='single_gpu' if args.single_gpu_model else 'sharded',
         server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
         steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
+        speed_preference_mps=args.speed_preference_mps,
+        speed_selection_max_seconds=args.speed_selection_max_seconds,
         cases=args.cases, manifest=str(manifest_path),
         manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
         renderer_gpu=os.environ.get('CARLAMAYO_RENDER_GPU'),
@@ -85,7 +100,9 @@ def main():
                 options['projection_cache_age_s']=args.cache_age_s
             if args.speed_selection_attempts > 1:
                 options.update(speed_selection_attempts=args.speed_selection_attempts,
-                               speed_preference_mps=[3.,5.])
+                               speed_preference_mps=args.speed_preference_mps)
+            if args.speed_selection_max_seconds is not None:
+                options['speed_selection_max_seconds'] = args.speed_selection_max_seconds
             if args.single_gpu_model:
                 options['model_placement']='single_gpu'
             config_path,options_path=out/(name+'.yaml'),out/(name+'-options.json')

@@ -1,5 +1,10 @@
 # Isolated driving-inference investigation
 
+Current investigation: [driving latency](RESULTS_LATENCY.md). The original
+accepted profile is still the default. Retry limits and a lower preference
+band are isolated, software-tested candidates; fresh driving validation is
+pending an available model GPU. Saved-state screens are not driving passes.
+
 These entrypoints run only when explicitly invoked. The normal CarlaMayo and
 VerifAI launchers do not import them. Production controller and parameter files
 remain identical to upstream `4914558`; the starting integration commit is

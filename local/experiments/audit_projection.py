@@ -15,6 +15,20 @@ from module import config as cfg
 from module.trajectory_follower import TrajectoryFollower, planned_speeds, trajectory_to_world, pure_pursuit_steer
 
 
+def sampling_budget_checks(selection, options):
+    budget = options.get('speed_selection_max_seconds')
+    if budget is None:
+        return {}
+    starts = [p.get('start_elapsed_seconds', math.inf) for p in selection['proposals']]
+    return dict(
+        sampling_time_budget_config=(math.isfinite(budget) and budget > 0
+                                     and selection.get('max_seconds') == budget),
+        sampling_retry_time_records=bool(starts) and all(math.isfinite(t) and t >= 0 for t in starts)
+                                    and starts == sorted(starts),
+        no_retry_after_sampling_budget=all(t < budget for t in starts[1:]),
+        sampling_elapsed_record=bool(starts) and selection.get('elapsed_seconds', -1) >= max(starts))
+
+
 def audit(capture):
     capture = Path(capture)
     records = [json.loads(p.read_text()) for p in sorted(capture.glob('frame_*.json'))]
@@ -62,6 +76,8 @@ def audit(capture):
         if selection.get('kind') == 'bounded_native_speed_preference':
             proposals = selection['proposals']
             check(len(proposals) == selection['attempts'] <= selection['budget'], 'selection_budget')
+            for label, ok in sampling_budget_checks(selection, options).items():
+                check(ok, label)
             chosen = json.loads((capture / (selection['selected_proposal'] + '.json')).read_text())
             check(chosen['trajectory_ego'] == record['trajectory_ego'], 'selected_native_proposal_unchanged')
             check(chosen['context'] == source_context, 'selected_original_input')
