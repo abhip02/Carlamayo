@@ -1,8 +1,8 @@
 {
-  "state": "prepared_not_executed",
+  "state": "prepared_waiting_for_benchmark_handoff",
   "protocol": {
     "study": "Candidate-only fixed left/tight specification checks; no fresh baseline",
-    "registered_utc": "2026-11-08T06:28:52.618045+00:00",
+    "registered_utc": "2026-11-08T06:33:40.638472+00:00",
     "jobs": [
       {
         "name": "02-intersection-left-nf4-cap2",
@@ -13,11 +13,11 @@
           "local.experiments.nf4_policy_pair",
           "capture",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/02-intersection-left-nf4-cap2.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/02-intersection-left-nf4-cap2-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -25,7 +25,7 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/02-intersection-left-nf4-cap2"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2"
         ],
         "config_sha256": "b57ef297ccdc59873193b05839d7349697e6b74c9b7fa1872a93407b2ca87a93",
         "options_sha256": "ed2f4b3837d796bf95761f36d8ae87a26d65d2905e76301d3d467a9c363f4aaf",
@@ -64,7 +64,7 @@
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.audit_projection",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/02-intersection-left-nf4-cap2"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2"
         ]
       },
       {
@@ -76,11 +76,11 @@
           "local.experiments.nf4_policy_pair",
           "capture",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/08-tight-bend-nf4-cap2.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/08-tight-bend-nf4-cap2.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/08-tight-bend-nf4-cap2-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/08-tight-bend-nf4-cap2-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -88,7 +88,7 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/08-tight-bend-nf4-cap2"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/08-tight-bend-nf4-cap2"
         ],
         "config_sha256": "3eb7cc4cbda9e0f6f310a88670d6e3508cfe1dd1ac222027a7380dcfa683504d",
         "options_sha256": "9968ccec7ed8fb4294d882f836d5ac6042eaa9ac5c20940698146df90c301eb9",
@@ -138,7 +138,7 @@
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.audit_projection",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/08-tight-bend-nf4-cap2"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/08-tight-bend-nf4-cap2"
         ]
       }
     ],
@@ -171,15 +171,15 @@
           "instruction": "Turn left at the intersection.",
           "scene_policy": "empty_green"
         },
-        "job_manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/jobs.json",
-        "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/02-intersection-left/02-intersection-left-nf4-cap2",
+        "job_manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/jobs.json",
+        "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2",
         "name": "02-intersection-left-nf4-cap2",
         "original_config": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/02-intersection-left-route.yaml",
         "original_config_sha256": "b57ef297ccdc59873193b05839d7349697e6b74c9b7fa1872a93407b2ca87a93",
         "original_options": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/02-intersection-left-route-options.json",
         "original_options_sha256": "01520ff644c880f5b28f3404d2d0ebdba62d7a3841a95ef96a3967805ef16335",
         "historical_capture": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/02-intersection-left-route",
-        "job_manifest_sha256": "940d3af477a6f74b480a1436bb1f4402572add64a0bf08130df53a9ced74ee73"
+        "job_manifest_sha256": "da09dd814bd8761e29703166542f67cec4cd52cb957b4a9115a8d18f4acd36fc"
       },
       {
         "number": 8,
@@ -229,15 +229,15 @@
             "front_inset": true
           }
         },
-        "job_manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/jobs.json",
-        "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v1/08-tight-bend/08-tight-bend-nf4-cap2",
+        "job_manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/jobs.json",
+        "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/08-tight-bend/08-tight-bend-nf4-cap2",
         "name": "08-tight-bend-nf4-cap2",
         "original_config": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/08-tight-bend-route.yaml",
         "original_config_sha256": "3eb7cc4cbda9e0f6f310a88670d6e3508cfe1dd1ac222027a7380dcfa683504d",
         "original_options": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/08-tight-bend-route-options.json",
         "original_options_sha256": "4d96f9631a87df6c74c7ea3931a805f6ac754e2975a78d9960e420467f3e5935",
         "historical_capture": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/08-tight-bend-route",
-        "job_manifest_sha256": "0fc3a15dd0c5d236e2f69f50b1c1fc4a505017e22ac34181a6bc64f286ea31cf"
+        "job_manifest_sha256": "f930a3fbe98e9f0607f8d133d1d3d6bc3baed4e58323407c03c19a5141176078"
       }
     ],
     "source_sha256": {
@@ -284,7 +284,7 @@
       "local/experiments/retained_probe.py": "4278a3cc1d33c4a504b4f4fbc01abcae90e025400d698e5075ba64cca752477b",
       "local/experiments/model_score_benchmark.py": "11855173a0ef975bc5154860434692b9dda64267084a5585bd2b287951556eeb",
       "local/experiments/test_validated_selection.py": "4dd6d3be1341b556d399871d7d32adcf212cb8aa386aad4e9cc86d6f1f5064e5",
-      "local/experiments/nf4_fixed_case_panel.py": "d7f7c0eb5df5cf97951f1f1500749fae42097e6d0f517a32c42966882db6de34",
+      "local/experiments/nf4_fixed_case_panel.py": "f35345f9cda432f081a24d22e7f2246f418e977d4fb798adfb41e570da868049",
       "local/experiments/test_policy_supervision.py": "a3604bd4d5f9ddd1c3d22f0c2a811cd59cb8c16cbe8ac2592dca24cfb6741859",
       "local/experiments/frame_sync.py": "711ec6c0442efd6d0d443d86ac91de4bfd77617d1afe084282dd135f05c46680",
       "local/experiments/test_proactive_probe.py": "bdddfc419af528a66e9f1017a96d74218f6ea9384dff9d02af53723d0cb24cf8",
@@ -342,7 +342,7 @@
       "local/experiments/audit_capture.py": "3d9c69e9f7c8612090263a51ff7cc407bddd9f2500b76482fc5ca86ac9ed8482",
       "local/experiments/inference_probe.py": "bcadc43eef935d07771df431218cea3744389e8689a8a6a5cb9123f203ddf26d",
       "local/experiments/projected_retention.py": "2500fdba1fb06d08585eb800c1ca19c8b0875897af9ec61610359a01c3510c3b",
-      "local/experiments/test_nf4_fixed_case_panel.py": "03ea7f25e4d35ac78c2620910eb8ecbf7aad7aaa2445ce5dd5861faf3f610177",
+      "local/experiments/test_nf4_fixed_case_panel.py": "a21b529f972dc4ec5a974261724ce99a31a0306d39462a2361a96c34081bd686",
       "local/experiments/audit_retention.py": "53ce8cd61d28d9474a2bb4cf1acdf2c2660098b4f451c3ea4f8001957db7747a",
       "local/experiments/plot_turn_predictions.py": "14de8e6f35544ad07ce580463a2a974ccc18ee6dec5f717b99cb8727de09d397",
       "local/experiments/stop_mission.py": "24c04f262c23c5c0b82f6db38243785fea2a5f087296f87b4876eda9890ad06f",
@@ -409,28 +409,36 @@
     "estimate_note": "Startup, two60s gates and bounded cleanup add time; stop after first failure; no retry."
   },
   "readiness": {
-    "utc": "2026-11-08T06:29:28.996035+00:00",
-    "manifest_sha256": "13b6bb9127ec867b7fa40f11e98e1bb3ec50d7576ae9fe92a92e13ce88c1fc10",
+    "utc": "2026-11-08T06:34:19.326565+00:00",
+    "state": "prepared_waiting_for_benchmark_handoff",
+    "manifest_sha256": "979265dfe7e5417ab682ff71d707e004bef589a243d9a7577ce6cfb4aa8e9010",
     "frozen_sources": 125,
-    "v4_sources_unchanged": 123,
-    "core_sources_unchanged": 117,
+    "all123_T_sources_unchanged": true,
+    "shared_core_sources_unchanged": 117,
     "checkpoint_files_verified": 11,
-    "no_capture_outputs": true,
-    "software_checks": {
+    "only_changes_from_unexecuted_v1": [
+      "local/experiments/nf4_fixed_case_panel.py",
+      "local/experiments/test_nf4_fixed_case_panel.py"
+    ],
+    "case_configs_options_starts_seeds_unchanged": true,
+    "predecessor_protocol": "outputs/nf4-fixed-case-panel-20261107-v1/jobs.json",
+    "no_gpu_launch": true,
+    "final_panel_supervisor_tests": {
+      "passed": 21,
+      "seconds": 4.95
+    },
+    "prior_full_cpu_suite": {
       "passed": 327,
       "skipped": 1,
-      "skip_reason": "CUDA-only test hidden for CPU suite",
       "seconds": 8.91
     },
-    "instantaneous_only": true,
-    "no_launch": true,
-    "free_gib": {
-      "GPU-46394453-71bb-15b9-1612-860b5714f750": 10.2265625,
-      "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 23.546875
-    },
-    "leases_available": true,
-    "port2000_closed": true,
-    "conditional_go": true
+    "resource_state": "Benchmark has priority for BF16 T on modelGPU0/renderGPU2; wait for explicit cleanup/handoff before original modelGPU1/renderGPU0 gate"
+  },
+  "superseded_v1": {
+    "state": "unexecuted",
+    "manifest_sha256": "13b6bb9127ec867b7fa40f11e98e1bb3ec50d7576ae9fe92a92e13ce88c1fc10",
+    "git_record_commit": "9edb07d",
+    "reason": "Propagate nonzero server cleanup before next case"
   },
   "planned_outcomes": [
     {

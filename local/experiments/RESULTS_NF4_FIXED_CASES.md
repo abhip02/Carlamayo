@@ -1,6 +1,7 @@
 # Fixed left-turn and tight-bend checks — 2026-11-07
 
-**Prepared, not executed.** These are two candidate-only specification checks
+**Version 2 prepared, not executed; waiting for the benchmark resource handoff.**
+These are two candidate-only specification checks
 of the unchanged NF4 policy that passed the T-junction. They do not have fresh
 six-attempt baselines. Only the [completed T-junction pair](RESULTS_NF4_POLICY.md)
 supports a measured 39.0% call-count reduction. Historical BF16 captures provide
@@ -21,7 +22,7 @@ trajectory generator or controller implementation changes are introduced.
 | 2 | 08: tight bend | 51 / 50 | Original lane-path start, 3 m/s, zero offsets | 28 s |
 
 Exact entry poses, routes, instructions, overhead settings and original config
-hashes are frozen in `outputs/nf4-fixed-case-panel-20261107-v1/jobs.json`.
+hashes are frozen in `outputs/nf4-fixed-case-panel-20261107-v2/jobs.json`.
 Each YAML is copied byte-for-byte from its accepted fixed-case input. Relative
 to the successful T candidate, options differ only in scene-specific seeds,
 instruction and route fields. Precision, sampling and controller options match.
@@ -51,16 +52,22 @@ historical case inputs with declared NF4 precision. It is not a newly executed
 NF4 baseline. It exists to keep the original strict controller validator and
 the two-option policy allowlist unchanged.
 
-- Panel implementation commit: `dbe7099`.
+- Panel implementation commit: `9e2cf8b`.
 - Root manifest SHA256:
-  `13b6bb9127ec867b7fa40f11e98e1bb3ec50d7576ae9fe92a92e13ce88c1fc10`.
+  `979265dfe7e5417ab682ff71d707e004bef589a243d9a7577ce6cfb4aa8e9010`.
 - Left child manifest SHA256:
-  `940d3af477a6f74b480a1436bb1f4402572add64a0bf08130df53a9ced74ee73`.
+  `da09dd814bd8761e29703166542f67cec4cd52cb957b4a9115a8d18f4acd36fc`.
 - Tight child manifest SHA256:
-  `0fc3a15dd0c5d236e2f69f50b1c1fc4a505017e22ac34181a6bc64f286ea31cf`.
+  `f930a3fbe98e9f0607f8d133d1d3d6bc3baed4e58323407c03c19a5141176078`.
 - 125 current Python sources are frozen; all 123 version 4 sources, including
   the 117 shared sources, are byte-identical. All 11 checkpoint files were
   reverified. No checkpoint is copied.
+
+Version 1 was never executed and is preserved as superseded. Review found that
+the frozen driver can return normally with a failed server-stop command. The
+version 2 adapter now explicitly rejects that cleanup status before the next
+case, even if the driving audit passes. Only the new adapter and its tests
+changed; all scene configs/options/starts/seeds remain identical to version 1.
 
 Both cases require the same model GPU1 and renderer GPU0, common GPU/port leases,
 and a fresh 60-second gate with at least 10.0 GiB model and 9.8 GiB renderer free.
@@ -68,6 +75,11 @@ At 2026-11-08 06:29:28 UTC, instantaneous free memory was 10.227 / 23.547 GiB,
 all leases were available, and port 2000 was closed. This is conditional
 readiness, not a reservation or a completed sustained gate. The model GPU is
 shared; runtime observations are diagnostic.
+
+At 06:34 UTC the panel is queued behind the benchmark's fresh BF16 T comparison
+(model GPU0, renderer GPU2). Wait for its explicit verified cleanup/handoff;
+do not claim those devices from an instantaneous free-memory reading. The
+panel retains its original model GPU1 / renderer GPU0 assignment.
 
 Each capture is capped at 1,800 seconds. Estimated combined capture cost is
 20–35 minutes, with startup, two resource gates, auditing and cleanup additional.
@@ -77,8 +89,10 @@ owned-process cleanup are bounded. Standard driving defaults remain unchanged.
 
 ## Verification and proposed command
 
-Full CPU verification: **327 tests passed, one CUDA-only rounding test skipped,
-8.91 seconds**. New checks cover unchanged policy, scoped CLI case selection,
+Full CPU verification before the final cleanup-status refinement: **327 tests
+passed, one CUDA-only rounding test skipped, 8.91 seconds**. Final panel and
+supervisor regression checks: **21 passed in 4.95 seconds**. Checks cover
+unchanged policy, scoped CLI case selection,
 ordered one-time execution, stopping after a failed quality result despite a
 normal launcher return, cleanup failures, unreadable captures, and restoration
 of the frozen driver after interruption. Existing supervisor checks cover
@@ -92,8 +106,8 @@ export CARLAMAYO_MODEL_GPUS=GPU-46394453-71bb-15b9-1612-860b5714f750
 source local/env.sh
 export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps:$CARLAMAYO_ROOT"
 .venv/bin/python -m local.experiments.nf4_fixed_case_panel run \
-  --output outputs/nf4-fixed-case-panel-20261107-v1 \
-  --container-prefix apomalap-carlamayo-nf4-fixed-20261107-v1
+  --output outputs/nf4-fixed-case-panel-20261107-v2 \
+  --container-prefix apomalap-carlamayo-nf4-fixed-20261107-v2
 ```
 
 `panel-status.json` will retain both planned outcomes. Each case has separate
