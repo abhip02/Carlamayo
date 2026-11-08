@@ -162,3 +162,27 @@ parent status, and the tracked compact study artifact.
 The model-loaded failure hypothesis remains untested by this protocol. Further
 GPU work requires renewed available resources and a separately recorded handoff;
 this stopped output is preserved permanently.
+
+## V3: one new resource attempt prepared
+
+After the [CPU cadence assessment](RESULTS_PROJECTED_CADENCE.md), a single new
+resource attempt was prepared under `outputs/loaded-left-camera-study-20261107-v3/`.
+The v2 refusal remains untouched. V3 retains exactly the same 131 frozen source
+entries, repaired loader, devices, configs/options, starts, O/P/P/O order, gates,
+240-second child bounds and zero-inference cutoff. Only output/config paths and
+fresh container names change. Its protocol SHA256 is
+`a3b6f3f78af3c8b36c335d4ac89e2622f43b18fa059d3d680efc9e6dd71fab0c`,
+registered at 08:23:52 UTC. The separate CPU assessment module is not imported
+by the capture and replaces none of those frozen sources.
+
+V3 passed independent source/input/command review. A single authorized
+availability watch began at **08:24:45 UTC**, for at most **20 minutes**. It reads
+only the fixed model3/render0 pair, spaces bounded queries at least 60 seconds
+apart, holds no leases and cannot launch anything. It stops on the first
+observation meeting both 11.0/9.8 GiB thresholds or at its deadline. An available
+reading still requires explicit coordination handoff and a new 60-second gate
+before any startup attempt. There is no device hopping or automatic retry.
+
+The watch is separate from the one observation included in the completed CPU
+assessment. Its live record is `availability-watch.json` in the v3 directory.
+No model or server has been launched from v3 at the time of this entry.
