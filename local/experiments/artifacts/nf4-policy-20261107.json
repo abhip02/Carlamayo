@@ -2399,5 +2399,100 @@
         "scope": "Single camera-only startup; not a driving/inference result or root-cause proof"
       }
     }
+  },
+  "proposed_v4": {
+    "state": "prepared_pending_review_not_run",
+    "manifest_sha256": "2e9656bcec4fbbb909c337fec64b18cc503e6884e7b2e5cde4ebf6e413677a0f",
+    "amendment": {
+      "utc": "2026-11-08T06:01:38.891478+00:00",
+      "purpose": "One proposed candidate after successful camera-only smoke; pending launch review",
+      "prior_failed_attempts": [
+        {
+          "path": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107/09-t-junction-nf4/nf4-status.json",
+          "sha256": "551d80d3b341d6eb5fdcaca0684a83ab45499001c23599b3291d8c965c6b1455"
+        },
+        {
+          "path": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v3/09-t-junction-nf4/nf4-status.json",
+          "sha256": "3a0a889e57ce7f235315957a4f1b57d06274661c9e755f48d493bc3e5e35a55a"
+        }
+      ],
+      "camera_smoke_cleanup": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/camera-startup-smoke-20261107-v1/cleanup.json",
+      "camera_smoke_cleanup_sha256": "c78042884f48bb79d0013628f4509cb8cf652c7d6662471870ec6d4bc6570303",
+      "supervisor": "local/experiments/supervise_nf4_policy.py",
+      "supervisor_sha256": "8666cd316b0c88ddf9e997aa7d8772c37e60ec983c0996a730fd33f4fa04a522",
+      "supervisor_commit": "02e82fb1d65ec8702cad7d44b2add4ea34794515",
+      "preserved_v3_source_hashes": 120,
+      "shared_sources_unchanged": 117,
+      "configs_options_checkpoint_unchanged": true,
+      "only_case": 9,
+      "extra_baselines": 0,
+      "red_not_authorized": true,
+      "probe_timeout_seconds": 5,
+      "capture_timeout_seconds": 1800,
+      "gate_seconds": 60,
+      "minimum_model_free_gib": 10.0,
+      "minimum_renderer_free_gib": 9.8,
+      "no_candidate_outputs_at_freeze": true,
+      "software_checks": {
+        "full_suite_passed": 319,
+        "full_suite_skipped": 1,
+        "skip_reason": "CUDA-only rounding test intentionally hidden for CPU run",
+        "supervisor_checks": 11,
+        "supervisor_seconds": 3.74
+      }
+    },
+    "environment_preflight": {
+      "utc": "2026-11-08T06:01:38.890859+00:00",
+      "metadata_versions": {
+        "torch": "2.8.0",
+        "transformers": "4.57.1",
+        "accelerate": "1.12.0",
+        "bitsandbytes": "0.48.2",
+        "numpy": "2.3.5",
+        "huggingface-hub": "0.36.0",
+        "safetensors": "0.7.0",
+        "carla": "0.9.16"
+      },
+      "origins": {
+        "torch": "/scratch/apomalap/thesis/.venv-alpamayo/lib/python3.12/site-packages/torch/__init__.py",
+        "bitsandbytes": "/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps/bitsandbytes/__init__.py",
+        "transformers": "/scratch/apomalap/thesis/.venv-alpamayo/lib/python3.12/site-packages/transformers/__init__.py",
+        "accelerate": "/scratch/apomalap/thesis/.venv-alpamayo/lib/python3.12/site-packages/accelerate/__init__.py",
+        "numpy": "/scratch/apomalap/thesis/.venv-alpamayo/lib/python3.12/site-packages/numpy/__init__.py",
+        "local.experiments.nf4_policy_pair": "/scratch/apomalap/thesis/carlamayo-nf4-policy/local/experiments/nf4_policy_pair.py"
+      },
+      "env": {
+        "PYTHONPATH": "/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps:/scratch/apomalap/thesis/carlamayo-nf4-policy",
+        "CARLAMAYO_ROOT": "/scratch/apomalap/thesis/carlamayo-nf4-policy",
+        "CARLAMAYO_MODEL_GPUS": "GPU-46394453-71bb-15b9-1612-860b5714f750",
+        "CUDA_VISIBLE_DEVICES": "GPU-46394453-71bb-15b9-1612-860b5714f750",
+        "CARLAMAYO_RENDER_GPU": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+        "CARLAMAYO_PROJECTION_CONTAINER": "apomalap-carlamayo-nf4-policy-20261107-v4",
+        "HF_HOME": "/scratch/apomalap/thesis/carlamayo-nf4-policy/../cache/huggingface",
+        "HF_HUB_CACHE": "/scratch/apomalap/thesis/carlamayo-nf4-policy/../cache/huggingface/hub",
+        "HF_HUB_OFFLINE": "1",
+        "TRANSFORMERS_OFFLINE": "1",
+        "XDG_CACHE_HOME": "/scratch/apomalap/thesis/carlamayo-nf4-policy/.runtime/cache",
+        "TMPDIR": "/scratch/apomalap/thesis/carlamayo-nf4-policy/.runtime/tmp",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
+        "TOKENIZERS_PARALLELISM": "false"
+      },
+      "prior_cpu_import_smoke": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v3/environment-preflight.json",
+      "prior_cpu_import_smoke_sha256": "2d80299e8fa272777cfb4357682f70fc8d81f54aa32ff4b181189d191549804a",
+      "gpu_model_loaded": false
+    },
+    "readiness": {
+      "utc": "2026-11-08T06:02:11.480168+00:00",
+      "instantaneous_only": true,
+      "sustained_gate_not_run_yet": true,
+      "no_launch": true,
+      "leases_available": true,
+      "free_gib": {
+        "GPU-46394453-71bb-15b9-1612-860b5714f750": 10.2265625,
+        "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+      },
+      "port2000_closed": true,
+      "conditional_go": true
+    }
   }
 }

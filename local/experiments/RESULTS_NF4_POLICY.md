@@ -277,6 +277,57 @@ complete the sampling-policy comparison. Both failed candidate attempts and
 the unattempted red case remain unchanged. No additional model/capture retry
 was launched as part of this diagnostic.
 
+### Proposed supervised candidate, version 4
+
+Version 4 is prepared for review; it has not been launched at this checkpoint
+(2026-11-08 06:02 UTC). Its aggregate manifest SHA256 is
+`2e9656bcec4fbbb909c337fec64b18cc503e6884e7b2e5cde4ebf6e413677a0f`.
+It preserves all 120 version 3 Python source hashes, including the 117 shared
+benchmark sources. Three separate diagnostic/supervision files bring its
+snapshot to 123 files. The checkpoint's 11 hashes, controller/options, configs
+and seeds were verified unchanged. Both failed starts and the camera-only pass
+are linked explicitly; there is no new baseline or red-light job.
+
+The new `supervise_nf4_policy` wrapper runs the unchanged frozen driver and
+intercepts only its exact registered capture command. It checks the owned
+server while that child runs; a dead server or three failed bounded Docker
+probes terminates only that child so the driver can record the failed result
+and clean up. The 1,800-second capture limit remains unchanged. Model/renderer
+memory minima and the 60-second gate remain unchanged. GPU/Docker probes have
+five-second deadlines; server helper shells and their Docker clients run in
+owned process groups, terminated together on timeout. Parent SIGTERM also
+passes through bounded cleanup.
+
+Supervisor commit: `02e82fb`; source SHA256:
+`8666cd316b0c88ddf9e997aa7d8772c37e60ec983c0996a730fd33f4fa04a522`.
+All 11 supervisor checks pass, including exact command interception, normal
+completion, server death, three failed probes, capture deadline, SIGTERM and a
+real CPU-only helper/descendant process cleanup. Full experiment suite: 319
+passed, one intentionally skipped CUDA rounding test with CUDA hidden, in
+8.73 seconds. Final supervisor-only checks passed in 3.74 seconds.
+
+Instantaneous readiness at 06:02:11 UTC: model GPU1 had 10.227 GiB free,
+renderer GPU0 had 9.962 GiB free, both GPU leases and the port lease were free,
+and port 2000 was closed. This is a **conditional go**, not a reservation or a
+completed sustained gate. The launch must recheck all conditions for 60 seconds
+under the original locks; no GPU hopping or automatic retry is allowed.
+
+After coordination, the reviewable command is:
+
+```bash
+export CARLAMAYO_MODEL_GPUS=GPU-46394453-71bb-15b9-1612-860b5714f750
+source local/env.sh
+export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps:$CARLAMAYO_ROOT"
+.venv/bin/python -m local.experiments.supervise_nf4_policy \
+  outputs/nf4-policy-pilot-20261107-v4/09-t-junction-nf4/jobs.json \
+  --model-gpu "$CARLAMAYO_MODEL_GPUS" \
+  --render-gpu GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580 \
+  --container apomalap-carlamayo-nf4-policy-20261107-v4
+```
+
+This wrapper changes infrastructure supervision, not driving policy, and makes
+no claim of lower inference time. No candidate pass exists at this checkpoint.
+
 Rollback: the accepted driving profile and ordinary launch defaults are
 unchanged. Use `e1f38d6` or the accepted driving branch to omit this experiment.
 No candidate policy is promoted based on one case. Broader fresh tests,
