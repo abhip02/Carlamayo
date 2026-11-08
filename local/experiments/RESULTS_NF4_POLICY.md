@@ -7,6 +7,13 @@ sampling also makes some accepted runs expensive. This study tests a smaller
 sampling budget without changing the simulator, native trajectory generator,
 map projection, speed controller, retention checks, or signal handling.
 
+**Latest result:** one prospectively paired NF4 T-junction candidate passes,
+using 114 native calls versus the baseline's 187. Observed decision p95 falls
+from 21.08 to 5.49 seconds, but shared GPUs and the declared renderer change
+confound clean timing attribution. The candidate still takes 8.19 minutes for
+11.4 simulated seconds and has only 8.43 cm minimum corner clearance. This is
+one controlled pass, not a reliability claim or a promoted default.
+
 Branch: `experiment/nf4-sampling-quality`, based on `e1f38d6`. The separate BF16
 latency investigation stays frozen at `056a83f` on
 `experiment/driving-latency-validation`; its eight-job live pilot is still
@@ -93,7 +100,7 @@ users' jobs are left alone. A zero process exit code alone is not a driving
 pass: route completion, speed, collision, full vehicle footprint, provenance
 audit and the sampling cap all have independent checks.
 
-## Verification and current results
+## Verification and preserved startup attempts
 
 Final pre-run software verification: **309 tests passed in 7.67 seconds**.
 Checks cover strict option differences, checkpoint mutations, device assignment,
@@ -169,29 +176,31 @@ No further retry or red-light run was launched.
 | Registered NF4 T baseline | Driving and provenance pass | 187 |
 | T candidate v2 | Dependency startup failure | 0 |
 | T candidate v3, explicit environment repair | CARLA camera-startup crash | 0 |
+| T candidate v4, after camera diagnostic | Driving and provenance pass | 114 |
 | Registered NF4 red baseline | Unattempted: renderer resource guard | 0 |
 | Red candidate | Pending / unattempted, no valid baseline pair | 0 |
 
-There are **zero completed comparable policy pairs**. The candidate has no new
-driving video and no measured speedup. The existing saved-state screen remains
-evidence for prioritizing two-attempt selection, not proof that it works in a
-new closed-loop rollout. Both startup failures remain in the tracked compact
-study record, alongside the baseline and unattempted red job.
+At the end of version 3 there were **zero completed comparable policy pairs**.
+The two startup failures produced no driving video or latency result. The later
+version 4 run adds one completed pair, detailed below. Both startup failures
+remain in the tracked compact study record, alongside the baseline and
+unattempted red job. The saved-state screen does not substitute for live tests
+of the other scenarios.
 
 [Tracked compact record](artifacts/nf4-policy-20261107.json) preserves the exact
 metrics, both startup failures, source/checkpoint hashes, environment versions,
-prospective amendments and cleanup proof. It is approximately 66 kB. Both local
-protocol/output folders together occupy about 14 MB; no model copies or new
-videos were created. The shared benchmark support is imported verbatim from
+prospective amendments and cleanup proof. The failed version 2/3 output folders
+together occupy about 14 MB. The completed version 4 capture and its two small
+review videos occupy about 123 MB; no model checkpoints were copied. The shared
+benchmark support is imported verbatim from
 the other task's registered snapshot so this branch does not depend on its
 uncommitted source edits.
 
-Next diagnostic: in a coordinated resource window, test CARLA camera startup
-without loading Alpamayo, using the same image, map and camera settings. Capture
-engine logging and peak renderer memory before considering another expensive
-model run. Do not silently substitute another renderer, relax driving criteria,
-or count these failures as successful low-latency driving. The separate BF16
-pilot still requires its originally declared idle-device conditions.
+The chosen next diagnostic was camera startup without loading Alpamayo, using
+the same image, map and camera settings; its result follows below. No renderer
+substitution or driving-criteria relaxation was used to turn these failures into
+a pass. The separate BF16 pilot still requires its originally declared
+idle-device conditions.
 
 ## Read-only crash comparison and prepared camera diagnostic
 
@@ -327,6 +336,59 @@ export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-d
 
 This wrapper changes infrastructure supervision, not driving policy, and makes
 no claim of lower inference time. No candidate pass exists at this checkpoint.
+
+### Version 4 execution: one matched T-junction pass
+
+After review, the single T-junction candidate passed all 13 renewed resource
+checks over 60 seconds: model free memory 10.227 GiB, renderer 9.962 GiB. The
+runtime pairing verifier passes: the same precision/loader, controller sources,
+config, route and declared GPU assignment were used, and initial x/y/z, angles
+and speed have **zero differences** from the registered baseline.
+
+| Measure | Registered baseline | Candidate v4 |
+| --- | ---: | ---: |
+| Driving and provenance audit | Pass | Pass |
+| Simulated duration / route exit | 11.2 s | 11.4 s |
+| Decisions | 112 | 114 |
+| Native trajectory calls | 187 | 114 |
+| Calls per decision | 1.670 | 1.000 |
+| Maximum calls at one decision | 6 | 1 (allowed cap 2) |
+| Retained model-plan decisions | 9 | 7 |
+| Projected-steering decisions | 112 | 114 |
+| Speed range | 2.609–4.593 m/s | 2.600–4.614 m/s |
+| Recorded collisions / footprint departures | 0 / 0 | 0 / 0 |
+| Minimum corner clearance | 8.751 cm | 8.428 cm |
+| Decision p50 / p95 | 3.574 / 21.080 s | 3.573 / 5.493 s |
+| Maximum decision time | 23.844 s | 7.200 s |
+| Rollout wall time | 719.38 s | 491.64 s |
+| Full capture process time | 767.72 s | 551.59 s |
+| Wall seconds per simulated second | 64.230 | 43.126 |
+
+The **39.0% reduction in calls** is a measured workload reduction. Every
+candidate decision used one fresh call; the two-attempt ceiling was never
+needed. This tests the combined relaxed preference band and smaller cap, not
+their effects separately. Per-decision median time barely changes; the observed
+long tail shrinks as repeated calls disappear. The observed wall reduction is
+31.7%, but these shared-device timings are diagnostic and do not establish a
+clean hardware, precision or isolated-runtime speedup.
+
+The car keeps moving and reaches the exit, but lane clearance remains narrow
+and is slightly lower than the baseline. This supports proceeding with further
+fixed tests, not claiming robust driving. Left turn, tight bend, red stop and
+varied starts still need fresh matched validation. The BF16 latency pilot is
+unexecuted, and ordinary driving defaults remain unchanged.
+
+No supervisor abort occurred. Capture, audit and server stop returned zero.
+At 2026-11-08 06:15:47 UTC, independent cleanup checks confirmed the model PID
+was gone, the owned container stopped, port 2000 closed, and all model/render/
+port leases were reacquired and released. The stopped container's exit 137
+followed intentional Docker shutdown. No red or additional baseline ran.
+
+Local evidence: `outputs/nf4-policy-pilot-20261107-v4/policy-comparison.json`,
+`runtime-pairing-live.json`, `cleanup.json`, the capture's audits, and its
+`supervision.json`. Both prior startup failures remain in the aggregate record.
+Review videos are in `outputs/nf4-policy-pilot-20261107-v4/review/`:
+`t-junction-nf4-cap2-front.mp4` and `t-junction-nf4-cap2-overhead.mp4`.
 
 Rollback: the accepted driving profile and ordinary launch defaults are
 unchanged. Use `e1f38d6` or the accepted driving branch to omit this experiment.

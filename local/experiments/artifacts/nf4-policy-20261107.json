@@ -1,12 +1,13 @@
 {
   "recorded_utc": "2026-11-08T05:39:00.679546+00:00",
-  "study": "Prospective NF4 capped-sampling policy; no completed comparable pairs",
+  "study": "Prospective NF4 capped-sampling policy; one completed comparable T-junction pair",
   "base_commit": "e1f38d6",
   "bf16_latency_branch_frozen_commit": "056a83f",
   "baseline_manifest_sha256": "d32599c5790ac78fcef991a18e1d2fd0b3b71cc28fa7fa60636e900993496c99",
   "candidate_manifests": {
     "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107/jobs.json": "e337747ad132ed783284a78289f5ffcb26ac7bfb848f6ec938a308d114814f51",
-    "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v3/jobs.json": "7af5c5caa85aaa07a534ef3c80c1f8e3c3411f01629dcbd15609670ad47c5c21"
+    "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v3/jobs.json": "7af5c5caa85aaa07a534ef3c80c1f8e3c3411f01629dcbd15609670ad47c5c21",
+    "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/jobs.json": "2e9656bcec4fbbb909c337fec64b18cc503e6884e7b2e5cde4ebf6e413677a0f"
   },
   "planned_scenarios": [
     "T-junction",
@@ -14,8 +15,8 @@
   ],
   "planned_baseline_jobs": 2,
   "planned_candidate_jobs": 2,
-  "extra_pre_inference_repair_attempts": 1,
-  "complete_comparable_pairs": 0,
+  "extra_pre_inference_repair_attempts": 2,
+  "complete_comparable_pairs": 1,
   "baseline_T": {
     "name": "09-t-junction-nf4",
     "capture": "/scratch/apomalap/thesis/carlamayo/outputs/quant-explore-20261107/closed-loop-pilot-v4/09-t-junction-nf4",
@@ -27,1269 +28,14 @@
       "timed_out": false,
       "wall_seconds": 767.7249701260589,
       "audit_returncode": 0,
-      "audit": {
-        "steering_mode": "route",
-        "controller_speed_cap_mps": 4.5,
-        "steering_gain": 1.4,
-        "hold_visual_stop": false,
-        "route": "t_junction",
-        "steps": 112,
-        "duration_s": 11.200000000000001,
-        "termination": "route_exit_reached",
-        "reached_exit_time_s": 11.200000000000001,
+      "audit_summary": {
+        "passed": true,
+        "integrity_pass": true,
+        "min_corner_clearance_m": 0.08750952525215072,
         "min_speed_mps": 2.609205085723931,
         "max_speed_mps": 4.593478310072776,
-        "final_speed_mps": 4.542808033333779,
-        "near_stop_times_s": [],
-        "min_corner_clearance_m": 0.08750952525215072,
-        "body_departure_times_s": [],
-        "max_projection_distance_m": 1.2230147062766454,
-        "projected_lane_switches": 2,
-        "projection_trace": [
-          {
-            "time_s": 0.0,
-            "distance_m": 0.0033045936609476844,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 32.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49258422851562
-            }
-          },
-          {
-            "time_s": 0.1,
-            "distance_m": 0.0030145764312943034,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 32.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 0.2,
-            "distance_m": 0.004189899271882205,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 33.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 0.30000000000000004,
-            "distance_m": 0.0038998820136101424,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 33.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 0.4,
-            "distance_m": 0.005563717326491686,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 33.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 0.5,
-            "distance_m": 0.006220020349541529,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 33.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 0.6000000000000001,
-            "distance_m": 0.006693279605943374,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 34.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 0.7000000000000001,
-            "distance_m": 0.006929909707928896,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 34.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49081420898438
-            }
-          },
-          {
-            "time_s": 0.8,
-            "distance_m": 0.004846401354184039,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 34.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49081420898438
-            }
-          },
-          {
-            "time_s": 0.9,
-            "distance_m": 0.005991217357504591,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 35.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 1.0,
-            "distance_m": 0.003693958704376593,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 35.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 1.1,
-            "distance_m": 0.00544931607347489,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 35.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 1.2000000000000002,
-            "distance_m": 0.006334621544431034,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 35.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.3,
-            "distance_m": 0.007319075049801685,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 36.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.4000000000000001,
-            "distance_m": 0.008402876734178262,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 36.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.5,
-            "distance_m": 0.0017553577236891946,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 36.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.6,
-            "distance_m": 0.002862040021042281,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 37.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.7000000000000002,
-            "distance_m": 0.003403941389247885,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 37.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.8,
-            "distance_m": 0.003869374384166032,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 37.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 1.9000000000000001,
-            "distance_m": 0.0043578871825224385,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 38.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 2.0,
-            "distance_m": 0.0052965804302261615,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 38.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 2.1,
-            "distance_m": 0.0011295627150464933,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 39.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 2.2,
-            "distance_m": 0.0049150416550230586,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 39.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 2.3000000000000003,
-            "distance_m": 0.006319368125657878,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 40.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49081420898438
-            }
-          },
-          {
-            "time_s": 2.4000000000000004,
-            "distance_m": 0.0014424600677359516,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 40.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 2.5,
-            "distance_m": 0.00016039883454611694,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 41.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 2.6,
-            "distance_m": 0.002480503780387965,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 41.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 2.7,
-            "distance_m": 0.0018316268027108054,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 42.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 2.8000000000000003,
-            "distance_m": 0.010158234411557072,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 42.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 2.9000000000000004,
-            "distance_m": 0.0288797082705785,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 42.697988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 3.0,
-            "distance_m": 0.007967952052537539,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 43.197988510131815,
-              "is_junction": false,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 3.1,
-            "distance_m": 0.010440625017012569,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 43.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 3.2,
-            "distance_m": 0.013363678908850096,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 43.697988510131815,
-              "is_junction": false,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 3.3000000000000003,
-            "distance_m": 0.016782873231128717,
-            "lane": {
-              "road_id": 59,
-              "lane_id": -5,
-              "s": 44.197988510131815,
-              "is_junction": false,
-              "yaw": -178.49256896972656
-            }
-          },
-          {
-            "time_s": 3.4000000000000004,
-            "distance_m": 0.020736342055898218,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 0.17798851013182437,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 3.5,
-            "distance_m": 0.0028925468686544593,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 0.6779885101318222,
-              "is_junction": true,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 3.6,
-            "distance_m": 0.02804778986490706,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 0.6779885101318222,
-              "is_junction": true,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 3.7,
-            "distance_m": 0.002503383273142263,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 1.17798851013182,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 3.8000000000000003,
-            "distance_m": 0.0018468808650070503,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 1.6779885101318177,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 3.9000000000000004,
-            "distance_m": 0.009852963541743913,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 2.1779885101318155,
-              "is_junction": true,
-              "yaw": -178.49085998535156
-            }
-          },
-          {
-            "time_s": 4.0,
-            "distance_m": 0.01365369627014566,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 2.6779885101318133,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 4.1000000000000005,
-            "distance_m": 0.012211236229486673,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 2.6779885101318133,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 4.2,
-            "distance_m": 0.010242128988349098,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 2.6779885101318133,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 4.3,
-            "distance_m": 0.009860590293845202,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 3.177988510131811,
-              "is_junction": true,
-              "yaw": -178.4908447265625
-            }
-          },
-          {
-            "time_s": 4.4,
-            "distance_m": 0.00885384578918128,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 4.177988510131806,
-              "is_junction": true,
-              "yaw": -174.9639434814453
-            }
-          },
-          {
-            "time_s": 4.5,
-            "distance_m": 0.72892992794227,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 4.677988510131804,
-              "is_junction": true,
-              "yaw": -172.3007354736328
-            }
-          },
-          {
-            "time_s": 4.6000000000000005,
-            "distance_m": 0.9425560593405959,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 5.677988510131801,
-              "is_junction": true,
-              "yaw": -166.97039794921875
-            }
-          },
-          {
-            "time_s": 4.7,
-            "distance_m": 0.8049335469589823,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 5.677988510131801,
-              "is_junction": true,
-              "yaw": -166.97039794921875
-            }
-          },
-          {
-            "time_s": 4.800000000000001,
-            "distance_m": 0.5886390543240058,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 6.177988510131799,
-              "is_junction": true,
-              "yaw": -164.30364990234375
-            }
-          },
-          {
-            "time_s": 4.9,
-            "distance_m": 0.8297885703902949,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 7.1779885101317955,
-              "is_junction": true,
-              "yaw": -158.9735870361328
-            }
-          },
-          {
-            "time_s": 5.0,
-            "distance_m": 1.0733258713823732,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 7.677988510131794,
-              "is_junction": true,
-              "yaw": -156.30897521972656
-            }
-          },
-          {
-            "time_s": 5.1000000000000005,
-            "distance_m": 1.2230147062766454,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 8.177988510131792,
-              "is_junction": true,
-              "yaw": -153.6432647705078
-            }
-          },
-          {
-            "time_s": 5.2,
-            "distance_m": 0.8915991022218622,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 8.67798851013179,
-              "is_junction": true,
-              "yaw": -150.9784698486328
-            }
-          },
-          {
-            "time_s": 5.300000000000001,
-            "distance_m": 0.8762012254259216,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 9.177988510131788,
-              "is_junction": true,
-              "yaw": -148.31333923339844
-            }
-          },
-          {
-            "time_s": 5.4,
-            "distance_m": 0.7533064608358073,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 9.677988510131787,
-              "is_junction": true,
-              "yaw": -145.6486358642578
-            }
-          },
-          {
-            "time_s": 5.5,
-            "distance_m": 0.8150727396269122,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 10.677988510131783,
-              "is_junction": true,
-              "yaw": -138.2029571533203
-            }
-          },
-          {
-            "time_s": 5.6000000000000005,
-            "distance_m": 0.7517036476980333,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 11.177988510131781,
-              "is_junction": true,
-              "yaw": -133.7595977783203
-            }
-          },
-          {
-            "time_s": 5.7,
-            "distance_m": 0.6918491354185525,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 11.67798851013178,
-              "is_junction": true,
-              "yaw": -129.31060791015625
-            }
-          },
-          {
-            "time_s": 5.800000000000001,
-            "distance_m": 0.6286259522734401,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 12.677988510131776,
-              "is_junction": true,
-              "yaw": -120.41812896728516
-            }
-          },
-          {
-            "time_s": 5.9,
-            "distance_m": 0.7121936302883813,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 13.677988510131772,
-              "is_junction": true,
-              "yaw": -111.525634765625
-            }
-          },
-          {
-            "time_s": 6.0,
-            "distance_m": 0.7349286460638045,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 14.677988510131769,
-              "is_junction": true,
-              "yaw": -102.63467407226562
-            }
-          },
-          {
-            "time_s": 6.1000000000000005,
-            "distance_m": 0.6955903251159793,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 15.177988510131767,
-              "is_junction": true,
-              "yaw": -98.18817138671875
-            }
-          },
-          {
-            "time_s": 6.2,
-            "distance_m": 0.6413765540679992,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 16.17798851013176,
-              "is_junction": true,
-              "yaw": -89.28692626953125
-            }
-          },
-          {
-            "time_s": 6.300000000000001,
-            "distance_m": 0.5374825435130054,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 16.677988510131758,
-              "is_junction": true,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 6.4,
-            "distance_m": 0.19961030096359067,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 16.677988510131758,
-              "is_junction": true,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 6.5,
-            "distance_m": 0.009748784087623828,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 17.177988510131755,
-              "is_junction": true,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 6.6000000000000005,
-            "distance_m": 0.031185434555949958,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 17.67798851013175,
-              "is_junction": true,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 6.7,
-            "distance_m": 0.08361690339300623,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 18.177988510131748,
-              "is_junction": true,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 6.800000000000001,
-            "distance_m": 0.08784634017539475,
-            "lane": {
-              "road_id": 1809,
-              "lane_id": -1,
-              "s": 18.177988510131748,
-              "is_junction": true,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 6.9,
-            "distance_m": 0.16109605572240893,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 37.20934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.0,
-            "distance_m": 0.02183367031803806,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 36.70934191672997,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 7.1000000000000005,
-            "distance_m": 0.06937155094384866,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 36.20934191672997,
-              "is_junction": false,
-              "yaw": -87.97649383544922
-            }
-          },
-          {
-            "time_s": 7.2,
-            "distance_m": 0.05995116521139647,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 35.70934191672997,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 7.300000000000001,
-            "distance_m": 0.019718952056443508,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 35.20934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.4,
-            "distance_m": 0.1451863772447492,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 34.70934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.5,
-            "distance_m": 0.15734777938635008,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 34.70934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.6000000000000005,
-            "distance_m": 0.1457590332260504,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 33.70934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.7,
-            "distance_m": 0.1953735090873627,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 33.20934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.800000000000001,
-            "distance_m": 0.18055550061746534,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 33.20934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 7.9,
-            "distance_m": 0.08326590084185306,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 32.70934191672997,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 8.0,
-            "distance_m": 0.08909839706137171,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 31.709341916729972,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 8.1,
-            "distance_m": 0.22555114441139287,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 31.709341916729972,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 8.200000000000001,
-            "distance_m": 0.14482775001889403,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 31.209341916729976,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 8.3,
-            "distance_m": 0.22532213591277309,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 30.70934191672998,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 8.4,
-            "distance_m": 0.1512860051614303,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 30.209341916729983,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 8.5,
-            "distance_m": 0.17833403738732284,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 29.709341916729986,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 8.6,
-            "distance_m": 0.1449649933814513,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 29.20934191672999,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 8.700000000000001,
-            "distance_m": 0.17766988581212817,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 28.709341916729993,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 8.8,
-            "distance_m": 0.08960978641193154,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 28.209341916729997,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 8.9,
-            "distance_m": 0.12201677912844543,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 28.209341916729997,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 9.0,
-            "distance_m": 0.0991676851172472,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 27.70934191673,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 9.1,
-            "distance_m": 0.08948752281206925,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 27.209341916730004,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 9.200000000000001,
-            "distance_m": 0.08514371653121663,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 26.709341916730008,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 9.3,
-            "distance_m": 0.060615316766289874,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 26.20934191673001,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 9.4,
-            "distance_m": 0.030414537998897324,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 25.709341916730015,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 9.5,
-            "distance_m": 0.02710902956741133,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 25.20934191673002,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 9.600000000000001,
-            "distance_m": 0.02226881341106804,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 24.709341916730022,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 9.700000000000001,
-            "distance_m": 0.005710233575827364,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 24.209341916730025,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 9.8,
-            "distance_m": 0.0020765973011427417,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 23.70934191673003,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 9.9,
-            "distance_m": 0.010893827017744676,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 23.209341916730033,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 10.0,
-            "distance_m": 0.014741492737827655,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 22.709341916730036,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 10.100000000000001,
-            "distance_m": 0.012856052738951816,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 22.709341916730036,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 10.200000000000001,
-            "distance_m": 0.008428105498637168,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 22.019269943237305,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          },
-          {
-            "time_s": 10.3,
-            "distance_m": 0.007893842929738956,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 21.51926994323731,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 10.4,
-            "distance_m": 0.004168170822611402,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 21.019269943237312,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 10.5,
-            "distance_m": 0.00358816029599974,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 21.019269943237312,
-              "is_junction": false,
-              "yaw": -87.9756851196289
-            }
-          },
-          {
-            "time_s": 10.600000000000001,
-            "distance_m": 0.00746632444552043,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 20.519269943237315,
-              "is_junction": false,
-              "yaw": -87.97562408447266
-            }
-          },
-          {
-            "time_s": 10.700000000000001,
-            "distance_m": 0.005748626009029476,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 20.01926994323732,
-              "is_junction": false,
-              "yaw": -87.9765625
-            }
-          },
-          {
-            "time_s": 10.8,
-            "distance_m": 0.0026413576503548706,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 19.519269943237322,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 10.9,
-            "distance_m": 0.004091923889246389,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 19.019269943237326,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 11.0,
-            "distance_m": 0.0005726621705564943,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 18.51926994323733,
-              "is_junction": false,
-              "yaw": -87.97565460205078
-            }
-          },
-          {
-            "time_s": 11.100000000000001,
-            "distance_m": 0.003549767970193029,
-            "lane": {
-              "road_id": 42,
-              "lane_id": 1,
-              "s": 18.019269943237333,
-              "is_junction": false,
-              "yaw": -87.97652435302734
-            }
-          }
-        ],
-        "inference_seconds": 669.7012081700377,
-        "inference_calls": 187,
-        "failed_decision_inference_calls": 0,
-        "speed_preference_misses": 15,
-        "cache_uses": 9,
-        "max_cache_age_s": 0.40000000000000036,
-        "wall_seconds": 719.3767694793642,
-        "mismatches": [],
-        "integrity_pass": true,
-        "passed": true,
-        "note": "Map-assisted steering is explicitly allowed here. Geometry measures recorded corners, not swept volume or obstacle safety."
+        "reached_exit_time_s": 11.200000000000001,
+        "body_departure_times_s": []
       }
     },
     "audit_boolean_consistent": true,
@@ -1385,6 +131,54 @@
         "red_mission": null
       },
       "policy_bound_verified": false
+    },
+    {
+      "name": "09-t-junction-nf4-cap2",
+      "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/09-t-junction-nf4/09-t-junction-nf4-cap2",
+      "state": "passed",
+      "passed": true,
+      "driver_result": {
+        "name": "09-t-junction-nf4-cap2",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_seconds": 551.5932627888396,
+        "audit_returncode": 0,
+        "audit_summary": {
+          "passed": true,
+          "integrity_pass": true,
+          "min_corner_clearance_m": 0.08428153971767682,
+          "min_speed_mps": 2.599800624350393,
+          "max_speed_mps": 4.613859148357337,
+          "reached_exit_time_s": 11.4,
+          "body_departure_times_s": []
+        }
+      },
+      "audit_boolean_consistent": true,
+      "metrics": {
+        "decisions": 114,
+        "recorded_trajectory_samples": 114,
+        "samples_per_decision": 1.0,
+        "max_samples_per_decision": 1,
+        "decision_seconds": {
+          "p50": 3.573387219570577,
+          "p95": 5.493054306041449,
+          "maximum": 7.199796454049647
+        },
+        "simulation_seconds": 11.4,
+        "rollout_wall_seconds": 491.6384946750477,
+        "wall_seconds_per_sim_second": 43.12618374342524,
+        "collision_recorded": false,
+        "route_exit_time_s": 11.4,
+        "min_corner_clearance_m": 0.08428153971767682,
+        "min_speed_mps": 2.599800624350393,
+        "max_speed_mps": 4.613859148357337,
+        "offroad_steps": 0,
+        "retained_decisions": 7,
+        "projected_decisions": 114,
+        "held_stop_decisions": 0,
+        "red_mission": null
+      },
+      "policy_bound_verified": true
     }
   ],
   "baseline_red": {
@@ -1498,10 +292,17 @@
     "policy_bound_verified": false
   },
   "runtime_pairing": {
-    "verified": false,
-    "errors": [
-      "Missing runtime pairing metadata"
-    ]
+    "verified": true,
+    "errors": [],
+    "initial_handover_absolute_differences": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0,
+      "speed": 0.0
+    }
   },
   "source_sha256": {
     "module/pygame_ui.py": "6bad6a403e592f731a5c32154c8954eb3eba3cc423d18a9ee67919dcfaf50a0f",
@@ -1747,27 +548,44 @@
     }
   },
   "cleanup": {
-    "utc": "2026-11-08T05:37:39.188911+00:00",
+    "utc": "2026-11-08T06:15:47.033948+00:00",
+    "owned_model_pid_gone": true,
+    "capture_pid": 3844870,
+    "container_state": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 137,
+      "Error": "",
+      "StartedAt": "2026-11-08T06:05:04.022190866Z",
+      "FinishedAt": "2026-11-08T06:14:43.771307459Z"
+    },
+    "owned_container_stopped": true,
+    "port2000_closed": true,
     "leases_reacquired": [
       "gpu-GPU-46394453-71bb-15b9-1612-860b5714f750.lock",
       "gpu-GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580.lock",
       "carla-port-2000.lock"
     ],
-    "port2000_closed": true,
-    "owned_model_pid_gone": true,
-    "owned_container_stopped": true,
-    "capture_exit": -15,
-    "trajectory_calls": 0
+    "driver_state": "completed",
+    "supervisor_state": "capture_finished",
+    "server_stop_returncode": 0,
+    "supervisor_abort_reason": null
   },
   "software_tests": {
     "passed": 309,
     "seconds": 7.67
   },
   "caveats": [
-    "No candidate drove or generated a trajectory. No policy speedup or reliability conclusion.",
-    "NF4 and shared GPUs; renderer changed from baseline GPU2 to candidate GPU0 before attempts.",
-    "Red baseline resource-blocked; red candidate not attempted.",
-    "Accepted defaults unchanged; BF16 live latency pilot not run."
+    "One NF4 controller-assisted fixed-start case passed; this does not establish general driving reliability.",
+    "39.0%fewer calls is measured workload; observed timing remains confounded by shared GPUs and declared renderer change.",
+    "Candidate mincornerclearance0.08428m remains narrow; all114 decisions used map-projected steering and7 retained native plans.",
+    "Both startup failures preserved; red baseline resource-blocked and red candidate unattempted.",
+    "Accepted defaults unchanged; BF16 live latency pilot not run; left/tight/red/varied-start fresh tests still needed."
   ],
   "camera_diagnostic": {
     "state": "one_camera_only_startup_pass_no_model_or_driving",
@@ -2401,7 +1219,7 @@
     }
   },
   "proposed_v4": {
-    "state": "prepared_pending_review_not_run",
+    "state": "executed_driving_and_provenance_pass",
     "manifest_sha256": "2e9656bcec4fbbb909c337fec64b18cc503e6884e7b2e5cde4ebf6e413677a0f",
     "amendment": {
       "utc": "2026-11-08T06:01:38.891478+00:00",
@@ -2493,6 +1311,317 @@
       },
       "port2000_closed": true,
       "conditional_go": true
+    },
+    "result": {
+      "study": "NF4 sampling policy, quality and call counts only",
+      "planned_baseline_jobs": 2,
+      "planned_candidate_jobs": 2,
+      "manifest_sha256": "2e9656bcec4fbbb909c337fec64b18cc503e6884e7b2e5cde4ebf6e413677a0f",
+      "pairs": [
+        {
+          "baseline": {
+            "name": "09-t-junction-nf4",
+            "capture": "/scratch/apomalap/thesis/carlamayo/outputs/quant-explore-20261107/closed-loop-pilot-v4/09-t-junction-nf4",
+            "state": "passed",
+            "passed": true,
+            "driver_result": {
+              "name": "09-t-junction-nf4",
+              "returncode": 0,
+              "timed_out": false,
+              "wall_seconds": 767.7249701260589,
+              "audit_returncode": 0,
+              "audit_summary": {
+                "passed": true,
+                "integrity_pass": true,
+                "min_corner_clearance_m": 0.08750952525215072,
+                "min_speed_mps": 2.609205085723931,
+                "max_speed_mps": 4.593478310072776,
+                "reached_exit_time_s": 11.200000000000001,
+                "body_departure_times_s": []
+              }
+            },
+            "audit_boolean_consistent": true,
+            "metrics": {
+              "decisions": 112,
+              "recorded_trajectory_samples": 187,
+              "samples_per_decision": 1.6696428571428572,
+              "max_samples_per_decision": 6,
+              "decision_seconds": {
+                "p50": 3.5743862530216575,
+                "p95": 21.079973717965185,
+                "maximum": 23.84351102495566
+              },
+              "simulation_seconds": 11.200000000000001,
+              "rollout_wall_seconds": 719.3767694793642,
+              "wall_seconds_per_sim_second": 64.23006870351465,
+              "collision_recorded": false,
+              "route_exit_time_s": 11.200000000000001,
+              "min_corner_clearance_m": 0.08750952525215072,
+              "min_speed_mps": 2.609205085723931,
+              "max_speed_mps": 4.593478310072776,
+              "offroad_steps": 0,
+              "retained_decisions": 9,
+              "projected_decisions": 112,
+              "held_stop_decisions": 0,
+              "red_mission": null
+            },
+            "policy_bound_verified": true
+          },
+          "candidate": {
+            "name": "09-t-junction-nf4-cap2",
+            "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/09-t-junction-nf4/09-t-junction-nf4-cap2",
+            "state": "passed",
+            "passed": true,
+            "driver_result": {
+              "name": "09-t-junction-nf4-cap2",
+              "returncode": 0,
+              "timed_out": false,
+              "wall_seconds": 551.5932627888396,
+              "audit_returncode": 0,
+              "audit_summary": {
+                "passed": true,
+                "integrity_pass": true,
+                "min_corner_clearance_m": 0.08428153971767682,
+                "min_speed_mps": 2.599800624350393,
+                "max_speed_mps": 4.613859148357337,
+                "reached_exit_time_s": 11.4,
+                "body_departure_times_s": []
+              }
+            },
+            "audit_boolean_consistent": true,
+            "metrics": {
+              "decisions": 114,
+              "recorded_trajectory_samples": 114,
+              "samples_per_decision": 1.0,
+              "max_samples_per_decision": 1,
+              "decision_seconds": {
+                "p50": 3.573387219570577,
+                "p95": 5.493054306041449,
+                "maximum": 7.199796454049647
+              },
+              "simulation_seconds": 11.4,
+              "rollout_wall_seconds": 491.6384946750477,
+              "wall_seconds_per_sim_second": 43.12618374342524,
+              "collision_recorded": false,
+              "route_exit_time_s": 11.4,
+              "min_corner_clearance_m": 0.08428153971767682,
+              "min_speed_mps": 2.599800624350393,
+              "max_speed_mps": 4.613859148357337,
+              "offroad_steps": 0,
+              "retained_decisions": 7,
+              "projected_decisions": 114,
+              "held_stop_decisions": 0,
+              "red_mission": null
+            },
+            "policy_bound_verified": true
+          },
+          "runtime_pairing": {
+            "verified": true,
+            "errors": [],
+            "initial_handover_absolute_differences": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "yaw": 0.0,
+              "pitch": 0.0,
+              "roll": 0.0,
+              "speed": 0.0
+            }
+          },
+          "complete_comparable_pair": true
+        },
+        {
+          "baseline": {
+            "name": "10-red-light-stop-nf4",
+            "capture": "/scratch/apomalap/thesis/carlamayo/outputs/quant-explore-20261107/closed-loop-pilot-v4/10-red-light-stop-nf4",
+            "state": "unattempted_resource_blocked",
+            "passed": false,
+            "resource_guard": {
+              "utc": "2026-11-08T05:09:27.627376+00:00",
+              "case": "10-red-light-stop-nf4",
+              "state": "unattempted_resource_blocked",
+              "renderer_gpu": "GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8",
+              "renderer_free_mib": 429,
+              "owned_renderer_mib": 7286,
+              "available_excluding_owned_renderer_gib": 7.5341796875,
+              "required_prestart_gib": 9.8,
+              "processes": [
+                {
+                  "pid": 3748598,
+                  "gpu": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+                  "mib": 19638
+                },
+                {
+                  "pid": 3737985,
+                  "gpu": "GPU-46394453-71bb-15b9-1612-860b5714f750",
+                  "mib": 8764
+                },
+                {
+                  "pid": 3736538,
+                  "gpu": "GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8",
+                  "mib": 16296
+                },
+                {
+                  "pid": 3737403,
+                  "gpu": "GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8",
+                  "mib": 7286
+                },
+                {
+                  "pid": 3711795,
+                  "gpu": "GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b",
+                  "mib": 23314
+                },
+                {
+                  "pid": 3588150,
+                  "gpu": "GPU-3f4e4372-21d9-bac9-f577-755a624eb99d",
+                  "mib": 21970
+                },
+                {
+                  "pid": 3475795,
+                  "gpu": "GPU-f74194f2-d19a-bbbe-3270-15ca355228f4",
+                  "mib": 17856
+                },
+                {
+                  "pid": 3475792,
+                  "gpu": "GPU-78628c0c-fb9d-2814-d558-6117b62e7739",
+                  "mib": 18298
+                }
+              ],
+              "reason": "Recheck external occupancy before allowing the next case. The running CARLA allocation is added back only to compare with the original pre-server headroom requirement.",
+              "action": "Created a labeled unattempted guard directory so the frozen runner refuses red capture via its existing no-overwrite check. No source, settings, command, or model output was changed. T continues under its original wall cap."
+            },
+            "driver_result": null,
+            "metrics": {
+              "decisions": 0,
+              "recorded_trajectory_samples": 0,
+              "samples_per_decision": null,
+              "max_samples_per_decision": 0,
+              "decision_seconds": null,
+              "simulation_seconds": null,
+              "rollout_wall_seconds": null,
+              "wall_seconds_per_sim_second": null,
+              "collision_recorded": false,
+              "route_exit_time_s": null,
+              "min_corner_clearance_m": null,
+              "min_speed_mps": null,
+              "max_speed_mps": null,
+              "offroad_steps": null,
+              "retained_decisions": 0,
+              "projected_decisions": 0,
+              "held_stop_decisions": 0,
+              "red_mission": null
+            },
+            "policy_bound_verified": false
+          },
+          "candidate": {
+            "name": "10-red-light-stop-nf4-cap2",
+            "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/10-red-light-stop-nf4/10-red-light-stop-nf4-cap2",
+            "state": "not_attempted",
+            "passed": false,
+            "driver_result": null,
+            "metrics": {
+              "decisions": 0,
+              "recorded_trajectory_samples": 0,
+              "samples_per_decision": null,
+              "max_samples_per_decision": 0,
+              "decision_seconds": null,
+              "simulation_seconds": null,
+              "rollout_wall_seconds": null,
+              "wall_seconds_per_sim_second": null,
+              "collision_recorded": false,
+              "route_exit_time_s": null,
+              "min_corner_clearance_m": null,
+              "min_speed_mps": null,
+              "max_speed_mps": null,
+              "offroad_steps": null,
+              "retained_decisions": 0,
+              "projected_decisions": 0,
+              "held_stop_decisions": 0,
+              "red_mission": null
+            },
+            "policy_bound_verified": false
+          },
+          "runtime_pairing": {
+            "verified": false,
+            "errors": [
+              "Missing runtime pairing metadata"
+            ]
+          },
+          "complete_comparable_pair": false
+        }
+      ],
+      "renderer_placement_amendment": {
+        "baseline_renderer": "GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8",
+        "candidate_renderer": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+        "reason": "Explicit monitor handoff: original renderer lacks headroom; same A5000 renderer class, same CARLA image/config. Declared before candidate outputs.",
+        "no_timing_promotion": true
+      },
+      "caveat": "Shared-device controller-assisted quality/call-count comparison. Timing is diagnostic only; incomplete/mismatched pairs are not pooled. No BF16 or general reliability claim."
+    },
+    "launch_review": {
+      "utc": "2026-11-08T06:03:57.722087+00:00",
+      "review": "Coordinator independently verified123sources,120v3sourceequivalence,config/options,supervisor and both manifests",
+      "allowed_case": 9,
+      "additional_attempts": 1,
+      "automatic_retries": 0,
+      "model_gpu": "GPU-46394453-71bb-15b9-1612-860b5714f750",
+      "renderer_gpu": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+      "gate_seconds": 60,
+      "minimum_free_gib": [
+        10.0,
+        9.8
+      ],
+      "capture_timeout_seconds": 1800,
+      "child_manifest_sha256": "afbd5e4bb36d5c2cd542513a75549efa86dd037e5238fbf09966764d2e3fb295",
+      "no_red_or_extra_baseline": true
+    },
+    "supervision": {
+      "state": "capture_finished",
+      "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/09-t-junction-nf4/jobs.json",
+      "model_gpu": "GPU-46394453-71bb-15b9-1612-860b5714f750",
+      "render_gpu": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+      "container": "apomalap-carlamayo-nf4-policy-20261107-v4",
+      "frozen_capture_seconds": 1800,
+      "server_probe_seconds": 5,
+      "maximum_failed_probes": 3,
+      "capture_pid": 3844870,
+      "last_container_state": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 3844116,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-08T06:05:04.022190866Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      },
+      "capture_returncode": 0,
+      "driver_state": "completed",
+      "server_stop_returncode": 0,
+      "results": [
+        {
+          "name": "09-t-junction-nf4-cap2",
+          "returncode": 0,
+          "timed_out": false,
+          "wall_seconds": 551.5932627888396,
+          "audit_returncode": 0
+        }
+      ]
     }
-  }
+  },
+  "review_videos": [
+    {
+      "path": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/review/t-junction-nf4-cap2-front.mp4",
+      "bytes": 2895631,
+      "sha256": "4906f1d542fd17aae4f30f89253f0f5e784f9fb3794922058fb6681bd77b4770"
+    },
+    {
+      "path": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-policy-pilot-20261107-v4/review/t-junction-nf4-cap2-overhead.mp4",
+      "bytes": 2644373,
+      "sha256": "a736cdf953c6e054707f80246a06d3216613d176e5d3cc367a4e10192d2ea403"
+    }
+  ]
 }
