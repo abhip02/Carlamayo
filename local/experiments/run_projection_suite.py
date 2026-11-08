@@ -12,11 +12,14 @@ import time
 import carla
 import yaml
 
+from local.experiments.fp8_quantization import PRECISIONS
+
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--single-gpu-model',action='store_true')
+    parser.add_argument('--precision', choices=PRECISIONS, default='bf16')
     parser.add_argument('--stop-on-failure',action='store_true',help='Stop after the first failed or unaudited capture')
     parser.add_argument('--require-pass',action='store_true',help='Return a nonzero exit code unless every requested capture passes')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
@@ -42,6 +45,7 @@ def main():
         git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
         model_gpus=os.environ.get('CUDA_VISIBLE_DEVICES'),
         model_placement='single_gpu' if args.single_gpu_model else 'sharded',
+        precision=args.precision,
         server_script=str(server_script),server_script_sha256=hashlib.sha256(server_script.read_bytes()).hexdigest(),
         steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
         cases=args.cases, manifest=str(manifest_path),
@@ -70,6 +74,7 @@ def main():
                 if key in case:config[key]=copy.deepcopy(case[key])
             config['rollouts']=[{k:case[k] for k in ('name','distance_before_intersection_m','lateral_offset_m','speed_mps','heading_offset_deg')}]
             options=dict(steering_mode=mode,num_samples=1,seed=case['seed'],flow_seed=case['flow_seed'],
+                precision=args.precision,
                 flow_temperature=1.,guard_trajectory_format=True,acknowledged_preroll=True,
                 acknowledged_controls=True,wait_for_snapshot=True,verify_signal=True,
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],

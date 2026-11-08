@@ -76,7 +76,8 @@ def main():
         if not (capture/'projection-audit.json').exists():continue
         report=json.loads((capture/'projection-audit.json').read_text())
         video=out/(name+'-targets.mp4')
-        render_video(capture,video,case.get('title',name),report)
+        precision=status.get('precision','bf16')
+        render_video(capture,video,case.get('title',name)+' | '+precision,report)
         rows=[{k:float(v) for k,v in r.items()} for r in csv.DictReader((capture/'000_verifai/ego.csv').open())]
         body=json.loads((capture/'footprint-audit.json').read_text())['frames']
         axis=axes.flat[int(name[:2])-1]
@@ -87,9 +88,10 @@ def main():
         results.append(dict(name=name,title=case.get('title',name),video=str(video),**{k:v for k,v in report.items() if k not in ('projection_trace','near_stop_times_s','body_departure_times_s')}))
     fig.savefig(out/'scene-metrics.png',dpi=150);fig.savefig(out/'scene-metrics.pdf');plt.close(fig)
     summary=dict(state=status['state'],expected_cases=len(manifest['scenarios']),completed=len(status['results']),
+                 precision=status.get('precision','bf16'),
                  passed=sum(r['passed'] for r in results),results=results,scope=manifest.get('note'))
     (out/'suite-results.json').write_text(json.dumps(summary,indent=2)+'\n')
-    lines=['# Ten driving scenes','',f"Completed {len(status['results'])}; passed {summary['passed']}. Every recorded attempt is retained.",'',
+    lines=['# Ten driving scenes','',f"Precision: {summary['precision']}",'',f"Completed {len(status['results'])}; passed {summary['passed']}. Every recorded attempt is retained.",'',
            '| Scenario | Outcome | End time | Speed range | Corner clearance | Video |','| --- | --- | --- | --- | --- | --- |']
     for r in sorted(results,key=lambda x:x['name']):
         lines.append(f"| {r['title']} | {'Pass' if r['passed'] else 'Incomplete / fail'} | {r['duration_s']:.1f} s | {r['min_speed_mps']:.2f}–{r['max_speed_mps']:.2f} m/s | {r['min_corner_clearance_m']:.3f} m | [Watch]({Path(r['video']).name}) |")

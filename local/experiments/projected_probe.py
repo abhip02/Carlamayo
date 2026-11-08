@@ -143,7 +143,7 @@ def capture(args, output):
             raise RuntimeError('Single-GPU comparison requires one visible GPU with native BF16 support')
         checkpoint = args.checkpoint or str(runner.ROOT.parent /
             'cache/huggingface/hub/models--nvidia--Alpamayo-1.5-10B/snapshots' / runner.SNAPSHOT)
-        print('Loading unchanged BF16 model on one GPU for single-sample comparison', flush=True)
+        print(f"Loading BF16 checkpoint on one GPU; experiment precision: {options.get('precision', 'bf16')}", flush=True)
         model, processor = adapter.load_model(checkpoint_path=checkpoint,
             attn_implementation='sdpa', device_map={'': 0}, max_memory={0: '23GiB'})
         model.eval()
