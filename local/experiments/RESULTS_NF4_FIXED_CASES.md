@@ -154,10 +154,12 @@ live driving-policy evidence. This panel adds no successful driving video.
 The container has no useful saved stack trace. Its temporary
 `/tmp/CarlaUE4-Linux-Shipping` file is empty, so no large dump was copied. The
 normal repository loops (`module/loops/closed_loop.py` and `live_open_loop.py`)
-set up cameras and the collision sensor, wait one second, then load the model.
-The experimental capture loads the model first; `acknowledged_preroll.py`
-spawns the cameras and immediately disables vehicle physics and starts history
-ticks without that one-second pause.
+set up cameras and the collision sensor, then wait one second. Their normal
+model loading occurs before CARLA setup; only OOM-free mode defers loading
+until after that pause. The earlier statement that all normal loading happens
+after cameras was incorrect. The experimental capture also loads its model
+before cameras; `acknowledged_preroll.py` spawns the cameras and immediately
+disables vehicle physics and starts history ticks without that one-second pause.
 
 This is a demonstrated startup-sequence difference, **not a proven defect or
 root cause**. A separate model-free left-scene diagnostic could test an explicit
