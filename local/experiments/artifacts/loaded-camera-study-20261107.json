@@ -1,7 +1,9 @@
 {
   "state": "prepared_not_executed",
+  "unexecuted_v1_protocol_sha256": "be8f05edfa726ec5755f2b656ca40f1c4d1dcec402a7da8b67a0ee177100560e",
+  "v1_superseded_reason": "Add bounded runtime free-memory measurements for both GPUs before any launch",
   "protocol": {
-    "registered_utc": "2026-11-08T07:46:15.209421+00:00",
+    "registered_utc": "2026-11-08T07:58:14.740214+00:00",
     "source_sha256": {
       "local/replay_overhead.py": "02e12ab7e94c02654457dc3d92a268b9b61ddd18aba4c2a7369208cf40f4c380",
       "local/run_driving.py": "bce73a731f73538a0ef727322f18bd47e15afe12f5023f32e5bc9086212e2e98",
@@ -54,7 +56,7 @@
       "local/experiments/audit_projection.py": "00423fac9c8e476e4c0261f9d6ddf9adff21e8c1de79286a689358c3e452efb2",
       "local/experiments/test_plan_interval_probe.py": "1a952f87e66a2fd4e39b469e49e60260eed8864e7d5aeb7912a3bcb69508ba7c",
       "local/experiments/audit_stop_line.py": "b0f694f1b1e8f05ba9d773559a916e0a7e1ba9d698757c7091c33471fe9a33b3",
-      "local/experiments/test_loaded_camera_study.py": "f2578ab8143b93f1dd364f41adc3f1a16ef42805b1accbf82f3f1189bf601f20",
+      "local/experiments/test_loaded_camera_study.py": "5da2d92ccd4c037414a8b1114039c66ba2f10bc56346b8ea99b2882cf801a98a",
       "local/experiments/plot_turns.py": "23ba7d243c4fe74a48d8fa502d2f8a262bca6726a70f148d247a4bd929f3e076",
       "local/experiments/__init__.py": "33ea8285fe5e42e3b480e980db0a4b495f3f6eda6ae910cac5909da1c04c70d7",
       "local/experiments/test_projected_limits.py": "ac0fd66397398878525a829fcda4fec0a95064c13d0a5b75ad447f68b8bc1796",
@@ -96,7 +98,7 @@
       "local/experiments/render_scene_suite.py": "9e115518d2ec08460652dea4bcb4d0a8135592b406cbfe323aae34bea83c88e0",
       "local/experiments/left_camera_study.py": "34e61024457aab9b31f7f8fe637e163dd227043d48ef502a3cfe6b10ea1016dc",
       "local/experiments/camera_projection.py": "54c176a4db8813d7b1a836587ac39c202ec4261ad8a91379a0d71510feb5ac06",
-      "local/experiments/loaded_camera_study.py": "be5f33f0297a6dca69cf550cb3573a4fbea08d83b1fb9d18429b16b8994ea943",
+      "local/experiments/loaded_camera_study.py": "4d500097989e4b13d38b90d677e20a044825db3165e661351b67065238e789c2",
       "local/experiments/test_projected_retention.py": "84225bdc9991671712757942fa6e2ea4fa3121e6770acb65f2dbf652e2c91beb",
       "local/experiments/prefix_resume_probe.py": "4781d3d8f0c73d402d83b316cd5e7e33ee04e7a7de437df209d5cfa4e6f5afe0",
       "local/experiments/audit_quality.py": "ff725aae78673af028551448ddbd7a06838100a7877441b332865cd14d26d681",
@@ -153,18 +155,18 @@
       {
         "name": "01-original",
         "pause_seconds": 0,
-        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v1-01-original",
+        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-01-original",
         "command": [
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.loaded_camera_study",
           "child",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/01-original-jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/01-original-jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -172,26 +174,26 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/01-original"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/01-original"
         ],
-        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/01-original-jobs.json",
-        "manifest_sha256": "fc08c0f69f92c0d90c347714725cd39d15a83c6ade595851532e7454aa0f5792"
+        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/01-original-jobs.json",
+        "manifest_sha256": "ec4cfbc01017df3c065bc7bedd9f949aa9137658658af218b9ab378f4f8dc87a"
       },
       {
         "name": "02-pause",
         "pause_seconds": 1,
-        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v1-02-pause",
+        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-02-pause",
         "command": [
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.loaded_camera_study",
           "child",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/02-pause-jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/02-pause-jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -199,26 +201,26 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/02-pause"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/02-pause"
         ],
-        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/02-pause-jobs.json",
-        "manifest_sha256": "06c5f320228afde80e42bea562c2f07d44de4ac8b8beb5cf26cbdbb51cd90c93"
+        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/02-pause-jobs.json",
+        "manifest_sha256": "2661e0e7b037e1395fe55ee9cebe3ab812da6828cceb10c5fb08eda43ffc31b8"
       },
       {
         "name": "03-pause",
         "pause_seconds": 1,
-        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v1-03-pause",
+        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-03-pause",
         "command": [
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.loaded_camera_study",
           "child",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/03-pause-jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/03-pause-jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -226,26 +228,26 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/03-pause"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/03-pause"
         ],
-        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/03-pause-jobs.json",
-        "manifest_sha256": "35e616f8f10a3e302056af405f1a983e26c20ee597c26681f81229df3679c14e"
+        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/03-pause-jobs.json",
+        "manifest_sha256": "344959b209d223bcf366873204eaea0c7c28278384f65e8e708b947af589add3"
       },
       {
         "name": "04-original",
         "pause_seconds": 0,
-        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v1-04-original",
+        "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-04-original",
         "command": [
           "/scratch/apomalap/thesis/carlamayo-nf4-policy/.venv/bin/python",
           "-m",
           "local.experiments.loaded_camera_study",
           "child",
           "--jobs-manifest",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/04-original-jobs.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/04-original-jobs.json",
           "--config",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left.yaml",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left.yaml",
           "--options",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/left-options.json",
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/left-options.json",
           "--checkpoint",
           "/scratch/apomalap/thesis/carlamayo/outputs/model-score-benchmark-20261105/nf4/checkpoint",
           "--duration",
@@ -253,10 +255,10 @@
           "--capture-frames",
           "0",
           "--output",
-          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/04-original"
+          "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/04-original"
         ],
-        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v1/04-original-jobs.json",
-        "manifest_sha256": "020105460a5de4b9a07c02120ecf40e04dd1fa5f1ffe9f22ef778b56c73891c8"
+        "manifest": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/loaded-left-camera-study-20261107-v2/04-original-jobs.json",
+        "manifest_sha256": "7fbddeca4bc2f69e833f0f5d06f58b403312d766a18bd5d1480467c694ca3da5"
       }
     ],
     "native_calls": 0,
@@ -264,6 +266,16 @@
     "maximum_starts": 4,
     "retries": 0,
     "child_limit_seconds": 240,
+    "runtime_memory_monitor": {
+      "gpus": [
+        "GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b",
+        "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580"
+      ],
+      "minimum_interval_seconds": 5,
+      "probe_timeout_seconds": 5,
+      "post_launch_free_memory_gate": false,
+      "errors": "Retain failed query/error separately, never substitute a value; interruptions stop the study."
+    },
     "headroom_gate": {
       "seconds": 60,
       "model_free_gib": 11.0,

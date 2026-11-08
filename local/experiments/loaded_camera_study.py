@@ -116,6 +116,9 @@ def prepare(output, left_manifest, repair_source):
         prior_failed_manifest=str(left_manifest.resolve()),prior_failed_manifest_sha256=digest(left_manifest),
         repair_source=str(repair_source.resolve()),repair_sha256=REPAIR_SHA,order=list(ORDER),trials=[],
         native_calls=0,vqa_calls=0,maximum_starts=4,retries=0,child_limit_seconds=CHILD_LIMIT,
+        runtime_memory_monitor=dict(gpus=[MODEL_GPU,RENDER_GPU],minimum_interval_seconds=5,
+            probe_timeout_seconds=5,post_launch_free_memory_gate=False,
+            errors='Retain failed query/error separately, never substitute a value; interruptions stop the study.'),
         headroom_gate=dict(seconds=60,model_free_gib=11.,renderer_free_gib=9.8),
         model_device_amendment=dict(old='GPU-46394453-71bb-15b9-1612-860b5714f750',new=MODEL_GPU,
             reason='Original model GPU1 below11GiB gate; fixed GPU3 assignment proposed after benchmark release. No device hopping.',
@@ -209,16 +212,36 @@ def supervise(command,env,log,container,state,save):
     child_process=subprocess.Popen(command,env=env,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
     state['child_pid']=child_process.pid;save()
     deadline=time.monotonic()+CHILD_LIMIT
+    next_memory_probe=0.
+    state['runtime_memory_samples']=[]
     try:
         while child_process.poll() is None:
-            if time.monotonic()>=deadline:
+            remaining=deadline-time.monotonic()
+            if remaining<=0:
                 raise TimeoutError('Startup prefix exceeded240seconds')
-            server=json.loads(subprocess.check_output(['docker','inspect','--format','{{json .State}}',container],timeout=5))
+            server=json.loads(subprocess.check_output(['docker','inspect','--format','{{json .State}}',container],timeout=min(5,remaining)))
             state['last_server_state']=server
             if not server['Running']:
                 raise RuntimeError('Owned CARLA exited during loaded startup')
+            sampled_at=time.monotonic()
+            # A query is at most5seconds and never starts in the deadline's last
+            # five seconds. Both arms record identical instrumentation; post-load
+            # free memory is evidence, not the prelaunch gate applied a second time.
+            if sampled_at>=next_memory_probe and deadline-sampled_at>=5:
+                sample=dict(utc=now(),elapsed_s=sampled_at-(deadline-CHILD_LIMIT))
+                try:
+                    sample['free_gib']=guard.bounded_memory([MODEL_GPU,RENDER_GPU],[0.,0.])
+                except InterruptedError:
+                    raise
+                except Exception as error:
+                    sample['error']=repr(error)
+                state['runtime_memory_samples'].append(sample)
+                next_memory_probe=time.monotonic()+5
             save()
-            try:child_process.wait(timeout=1)
+            remaining=deadline-time.monotonic()
+            if remaining<=0:
+                raise TimeoutError('Startup prefix exceeded240seconds')
+            try:child_process.wait(timeout=min(1,remaining))
             except subprocess.TimeoutExpired:pass
         state['child_returncode']=child_process.returncode
     finally:

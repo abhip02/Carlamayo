@@ -77,7 +77,16 @@ the earlier 10 MiB per-container rotation bound.
 Each start acquires model, renderer and port-2000 leases together, then requires
 60 seconds continuously above 11.0 / 9.8 GiB free. The capture prefix has a
 240-second deadline, Docker probes five seconds, port readiness 60 seconds,
-and bounded owned-process/group cleanup. A dead server aborts its waiting model
+and bounded owned-process/group cleanup. Version 2 additionally samples free
+memory for **both declared GPUs** while the child runs, at intervals of at least
+five seconds with five-second query limits. Failed queries retain explicit errors
+and no invented memory values. The prelaunch 11.0/9.8 GiB thresholds are not
+reapplied after our own allocations begin. No query starts in the final five
+seconds of the child budget, and server probes/waits respect the remaining
+240-second deadline. Interruptions remain interruptions, not query errors.
+Version 1 was never executed and is preserved as superseded; review added this
+monitor because shared allocations can grow after a passed gate. The monitoring
+is identical in both arms. A dead server aborts its waiting model
 child. Every outcome is preserved. A camera/model startup failure can be followed
 by the next predeclared observation; it never adds an attempt. Resource refusal,
 cleanup failure, interruption, forbidden inference or corrupt result stops the
@@ -90,15 +99,16 @@ scene, seed or sampling-policy change is made.
 
 ## Frozen inputs and verification
 
-Root: `outputs/loaded-left-camera-study-20261107-v1/`.
+Root: `outputs/loaded-left-camera-study-20261107-v2/`.
 
 - Protocol SHA256:
-  `be8f05edfa726ec5755f2b656ca40f1c4d1dcec402a7da8b67a0ee177100560e`.
-- Registered 2026-11-08 07:46:15 UTC; 130 Python sources plus the server shell
+  `6f7ad9de8cd8d73a1390e32626fabac360d7617844c7c28a2e6fc2e0e1993c05`.
+- Registered 2026-11-08 07:58:14 UTC; 130 Python sources plus the server shell
   hashed. Each trial has a separate hashed capture manifest.
 - Full CPU suite before the final input-preflight refinement: **369 passed,
   one CUDA-only test skipped, 8.10 seconds**. Final prefix tests: **26 passed,
-  3.91 seconds**. They cover exact cutoff, cleanup order, hook restoration,
+  3.91 seconds**. After adding runtime memory monitoring, focused prefix and
+  process supervision checks: **40 passed in 4.71 seconds**. They cover exact cutoff, cleanup order, hook restoration,
   blocked inference paths, repaired-loader identity, memory gates, supervision
   failures and fixed trial/stop rules.
 - CPU-only environment preflight confirms the local controller path and
@@ -112,7 +122,7 @@ export CARLAMAYO_MODEL_GPUS=GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b
 source local/env.sh
 export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps:$CARLAMAYO_ROOT"
 .venv/bin/python -m local.experiments.loaded_camera_study run \
-  --output outputs/loaded-left-camera-study-20261107-v1
+  --output outputs/loaded-left-camera-study-20261107-v2
 ```
 
 Do not invoke a child directly: the parent supplies the leases, gates, deadlines

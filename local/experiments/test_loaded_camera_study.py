@@ -145,6 +145,38 @@ def test_repair_is_exact_reviewed_copy():
     assert study.digest(study.ROOT/'local/experiments/nf4_startup_loader.py')==study.REPAIR_SHA
 
 
+@pytest.mark.parametrize('memory_fault',['none','timeout','interrupt'])
+def test_runtime_samples_both_gpus_without_reapplying_gate_and_records_errors(monkeypatch,memory_fault):
+    clock=[0.];probes=[]
+    class RunningChild(Child):
+        def wait(self,timeout):
+            if self.returncode is not None:return self.returncode
+            clock[0]+=timeout
+            if clock[0]>=12:self.returncode=0;return 0
+            raise subprocess.TimeoutExpired('child',timeout)
+    child=RunningChild();state={}
+    monkeypatch.setattr(study.subprocess,'Popen',lambda *a,**kw:child)
+    monkeypatch.setattr(study.time,'monotonic',lambda:clock[0])
+    def query(command,**kwargs):
+        if command[0]=='docker':return '{"Running":true}'
+        assert command[0]=='nvidia-smi' and kwargs['timeout']==5
+        probes.append(clock[0])
+        if memory_fault=='interrupt':raise InterruptedError('parent')
+        if memory_fault=='timeout' and len(probes)==1:raise subprocess.TimeoutExpired('memory',5)
+        # Both below the prelaunch gates: our own live allocations are allowed.
+        return f'{study.MODEL_GPU}, 512\n{study.RENDER_GPU}, 256\n'
+    monkeypatch.setattr(study.subprocess,'check_output',query)
+    if memory_fault=='interrupt':
+        with pytest.raises(InterruptedError):study.supervise(['child'],{},None,'owned',state,lambda:None)
+        assert child.returncode==-15
+    else:
+        study.supervise(['child'],{},None,'owned',state,lambda:None)
+        assert child.returncode==0 and probes==[0.,5.,10.]
+        rows=state['runtime_memory_samples']
+        assert rows[-1]['free_gib']=={study.MODEL_GPU:.5,study.RENDER_GPU:.25}
+        if memory_fault=='timeout':assert 'error' in rows[0] and 'free_gib' not in rows[0]
+
+
 def test_child_delegates_exact_capture_prefix_and_waits_for_its_cleanup(monkeypatch,tmp_path):
     from local.experiments import nf4_policy_pair as policy, nf4_startup_loader as repaired
     from local.experiments import acknowledged_preroll, inference_probe
