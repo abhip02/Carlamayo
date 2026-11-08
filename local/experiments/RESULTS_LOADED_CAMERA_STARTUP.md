@@ -1,6 +1,7 @@
 # Model-loaded left startup prefixes — 2026-11-07
 
-**Prepared, not executed.** The six [model-free camera trials](RESULTS_CAMERA_STARTUP.md)
+**Blocked before the first launch by the model-memory gate. No model, server
+or startup prefix was executed.** The six [model-free camera trials](RESULTS_CAMERA_STARTUP.md)
 all passed, with no demonstrated benefit from a one-second pause. They omitted
 model loading and some pre-camera setup. This next diagnostic retains the full
 failed left capture prefix, but stops before driving or visual-signal inference.
@@ -62,8 +63,9 @@ than the required 11 GiB free. Before outcomes, this protocol therefore declares
 observed failure is retained. There is no fallback device or gate reduction.
 Changing the physical model GPU and shared host load prevents exact timing
 equivalence to the failed capture; both comparison arms use the same new pair.
-The benchmark currently owns GPU0/GPU3 for its separate red repair. This study
-must wait for verified cleanup and explicit coordination handoff.
+The benchmark released GPU0/GPU3 after its red repair and independent cleanup
+at 07:50:22 UTC. This study subsequently received review and explicit handoff,
+but renewed measurement found insufficient model memory before any launch.
 
 ## Four predeclared starts and bounds
 
@@ -115,7 +117,8 @@ Root: `outputs/loaded-left-camera-study-20261107-v2/`.
   bitsandbytes 0.48.2 in the existing benchmark dependency directory. CUDA was
   hidden and uninitialized; no model or server was loaded.
 
-After review and resource handoff, the exact environment is required:
+The following command was invoked once after review and handoff, then stopped
+at its first memory check. Do not rerun the preserved output:
 
 ```bash
 export CARLAMAYO_MODEL_GPUS=GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b
@@ -126,4 +129,36 @@ export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-d
 ```
 
 Do not invoke a child directly: the parent supplies the leases, gates, deadlines
-and container ownership checks. Nothing has been launched from this protocol.
+and container ownership checks. No model or server was launched from this
+protocol because its initial gate refused the available resources.
+
+
+## Preserved resource refusal
+
+At 2026-11-08 08:02:07 UTC, the first check found model GPU3 had **8.38 GiB
+free, below the required 11.0 GiB**. The parent stopped in 0.194 seconds and
+exited 1. There were zero successful gate samples, zero container starts, zero
+model loads and zero native/VQA calls. The remaining three starts were not
+attempted. No retry, lower threshold or device switch occurred. This adds no
+camera, driving or inference-timing result.
+
+| Planned observation | Recorded outcome | Actual model/server starts |
+| --- | --- | ---: |
+| 01 original | Resource refusal before launch | 0 |
+| 02 pause | Not attempted after refusal | 0 |
+| 03 pause | Not attempted after refusal | 0 |
+| 04 original | Not attempted after refusal | 0 |
+
+The generic cleanup checker expected an existing owned container, so the raw
+parent status retains `cleanup_verified=false` for the absent container. That
+record was not rewritten. An independent check at **08:04:07 UTC** verified all
+four prospective containers absent, no child ever created, port 2000 closed,
+and model/renderer/port leases reacquired and released. A first read-only check
+used case-sensitive Docker error text and stopped on its assertion; a corrected
+case-insensitive check confirmed absence. No start or stop command resulted from
+that check. Evidence is `resource-refusal-cleanup.json`, alongside the untouched
+parent status, and the tracked compact study artifact.
+
+The model-loaded failure hypothesis remains untested by this protocol. Further
+GPU work requires renewed available resources and a separately recorded handoff;
+this stopped output is preserved permanently.

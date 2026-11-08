@@ -1,5 +1,5 @@
 {
-  "state": "prepared_not_executed",
+  "state": "blocked_before_first_launch",
   "unexecuted_v1_protocol_sha256": "be8f05edfa726ec5755f2b656ca40f1c4d1dcec402a7da8b67a0ee177100560e",
   "v1_superseded_reason": "Add bounded runtime free-memory measurements for both GPUs before any launch",
   "protocol": {
@@ -329,5 +329,69 @@
     "bitsandbytes_origin": "/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-deps/bitsandbytes/__init__.py",
     "bitsandbytes_version": "0.48.2",
     "note": "CPU-only origins/metadata check; runtime CUDA is fixed to modelGPU3 by trial launcher, not exercised here."
-  }
+  },
+  "study_status": {
+    "state": "stopped_before_next_trial",
+    "protocol_sha256": "6f7ad9de8cd8d73a1390e32626fabac360d7617844c7c28a2e6fc2e0e1993c05",
+    "started_utc": "2026-11-08T08:02:07.138084+00:00",
+    "trials": [
+      {
+        "name": "01-original",
+        "state": "trial_error",
+        "prefix_pass": false,
+        "cleanup_verified": false,
+        "error": "RuntimeError('Insufficient free memory on GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b: 8.38 GiB < 11.00')"
+      },
+      {
+        "name": "02-pause",
+        "state": "not_attempted"
+      },
+      {
+        "name": "03-pause",
+        "state": "not_attempted"
+      },
+      {
+        "name": "04-original",
+        "state": "not_attempted"
+      }
+    ],
+    "finished_utc": "2026-11-08T08:02:07.332477+00:00"
+  },
+  "first_gate_status": {
+    "state": "trial_error",
+    "container": "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-01-original",
+    "pause_seconds": 0,
+    "headroom": [],
+    "error": "RuntimeError('Insufficient free memory on GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b: 8.38 GiB < 11.00')",
+    "cleanup": {
+      "utc": "2026-11-08T08:02:07.285802+00:00",
+      "verified": false,
+      "error": "CalledProcessError(1, ['docker', 'inspect', '--format', '{{json .}}', 'apomalap-carlamayo-loaded-left-camera-study-20261107-v2-01-original'])",
+      "all_three_leases_reacquired": true
+    },
+    "prefix_result": {},
+    "prefix_pass": false
+  },
+  "resource_refusal_cleanup": {
+    "verified_utc": "2026-11-08T08:04:07.024246+00:00",
+    "classification": "prelaunch_resource_refusal_no_owned_work_started",
+    "start_attempted": false,
+    "model_loaded": false,
+    "inference_calls": 0,
+    "owned_child_created": false,
+    "containers": {
+      "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-01-original": "absent;never created",
+      "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-02-pause": "absent;never created",
+      "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-03-pause": "absent;never created",
+      "apomalap-carlamayo-loaded-left-camera-study-20261107-v2-04-original": "absent;never created"
+    },
+    "port2000_closed": true,
+    "all_three_leases_reacquired_and_released": true,
+    "verified": true,
+    "raw_parent_cleanup_note": "Generic cleanup_snapshot expected an existing container and returned verified:false for absent container; independent check confirms no resource was ever launched and leases released.",
+    "gate_error": "RuntimeError('Insufficient free memory on GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b: 8.38 GiB < 11.00')"
+  },
+  "actual_model_loads": 0,
+  "actual_container_starts": 0,
+  "actual_native_vqa_calls": 0
 }

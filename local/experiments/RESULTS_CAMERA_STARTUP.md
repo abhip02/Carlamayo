@@ -173,7 +173,10 @@ in `outputs/left-camera-study-20261107-v2/camera-comparison.json` and the tracke
 The next [model-loaded startup-prefix study](RESULTS_LOADED_CAMERA_STARTUP.md)
 is prepared separately: at most four starts, no native or VQA inference, full
 failed-left startup sequence through handover, and the reviewed allocator repair.
-It has not run and waits for resource handoff and review.
+Its first launch gate was subsequently refused: model GPU3 had 8.38 GiB free
+against an 11 GiB requirement. No model or server started, and all planned
+startup prefixes remain untested. The refusal and verified lease release are
+retained in that study's report.
 
 This result provides no evidence for adding the pause. It also cannot exonerate
 the startup path when a model is loaded: model allocation/loading time and
