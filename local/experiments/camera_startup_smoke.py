@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import signal
 import socket
 import subprocess
 import sys
@@ -17,6 +18,16 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def write(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
+
+
+def renderer_memory(gpu, minimum):
+    rows = subprocess.check_output(['nvidia-smi', '--query-gpu=uuid,memory.free',
+                                    '--format=csv,noheader,nounits'], text=True, timeout=5)
+    free = {parts[0].strip(): float(parts[1])/1024 for row in rows.splitlines()
+            if (parts := row.split(','))}
+    if free[gpu] < minimum:
+        raise RuntimeError(f'Insufficient renderer headroom: {free[gpu]:.2f} GiB < {minimum:.2f}')
+    return {gpu: free[gpu]}
 
 
 def camera_child(config_path, output):
@@ -79,35 +90,18 @@ def camera_child(config_path, output):
         world.apply_settings(previous)
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, required=True, help='Recorded config.json, unchanged')
-    parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--render-gpu')
-    parser.add_argument('--container')
-    parser.add_argument('--child', action='store_true', help=argparse.SUPPRESS)
-    args = parser.parse_args()
-    if args.child:
-        camera_child(args.config, args.output)
-        return
-    if not args.render_gpu or not args.container:
-        parser.error('--render-gpu and --container are required')
-    from local.experiments.resource_lease import lease, check_memory
-    args.output.mkdir(parents=True, exist_ok=False)
-    status = dict(state='prepared', model_loaded=False, render_gpu=args.render_gpu,
-                  container=args.container, child_timeout_seconds=180, headroom=[])
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES='', CARLAMAYO_RENDER_GPU=args.render_gpu,
-               CARLAMAYO_PROJECTION_CONTAINER=args.container, PYTHONDONTWRITEBYTECODE='1')
+def run_diagnostic(args, status, env):
+    from local.experiments.resource_lease import lease
     server = ['bash', str(ROOT/'local/experiments/projected_server.sh')]
     child = None
     with lease([args.render_gpu], port=2000):
         # Refuse every existing container, including our own old diagnostics.
         if subprocess.run(['docker', 'container', 'inspect', args.container],
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode == 0:
             raise ValueError('Choose a new container name; preserve previous attempts')
         ready_at = time.monotonic() + 60
         while True:
-            free = check_memory([args.render_gpu], [9.8])
+            free = renderer_memory(args.render_gpu, 9.8)
             status['headroom'].append(dict(unix_time=time.time(), free_gib=free))
             write(args.output/'status.json', status)
             if time.monotonic() >= ready_at:
@@ -136,14 +130,14 @@ def main():
                 child = subprocess.Popen(command, env=env, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT)
                 deadline = time.monotonic()+180
                 while child.poll() is None:
-                    state = json.loads(subprocess.check_output(['docker', 'inspect', '--format', '{{json .State}}', args.container]))
+                    state = json.loads(subprocess.check_output(['docker', 'inspect', '--format', '{{json .State}}', args.container], timeout=5))
                     status['container_state'] = state
                     if not state['Running']:
                         raise RuntimeError('Owned CARLA exited during camera startup')
                     if time.monotonic() >= deadline:
                         raise TimeoutError('Camera subprocess exceeded 180 seconds')
                     status['renderer_memory_samples'].append(dict(unix_time=time.time(),
-                        free_gib=check_memory([args.render_gpu], [0])))
+                        free_gib=renderer_memory(args.render_gpu, 0)))
                     write(args.output/'status.json', status)
                     time.sleep(1)
                 status.update(state='completed' if child.returncode == 0 else 'child_error', returncode=child.returncode)
@@ -167,7 +161,41 @@ def main():
                     status['server_stop_returncode'] = subprocess.run(server+['stop'], env=env, cwd=ROOT, timeout=25).returncode
                 finally:
                     write(args.output/'status.json', status)
-    if status.get('returncode') != 0:
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config', type=Path, required=True, help='Recorded config.json, unchanged')
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--render-gpu')
+    parser.add_argument('--container')
+    parser.add_argument('--child', action='store_true', help=argparse.SUPPRESS)
+    args = parser.parse_args()
+    if args.child:
+        camera_child(args.config, args.output)
+        return
+    if not args.render_gpu or not args.container:
+        parser.error('--render-gpu and --container are required')
+    args.output.mkdir(parents=True, exist_ok=False)
+    status = dict(state='prepared', model_loaded=False, render_gpu=args.render_gpu,
+                  container=args.container, child_timeout_seconds=180, probe_timeout_seconds=5, headroom=[])
+    env = dict(os.environ, CUDA_VISIBLE_DEVICES='', CARLAMAYO_RENDER_GPU=args.render_gpu,
+               CARLAMAYO_PROJECTION_CONTAINER=args.container, PYTHONDONTWRITEBYTECODE='1')
+    write(args.output/'status.json', status)
+    def interrupted(signum, frame):
+        # Let bounded cleanup finish if an outer timeout sends another SIGTERM.
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        raise InterruptedError('Diagnostic received SIGTERM')
+    previous_handler = signal.signal(signal.SIGTERM, interrupted)
+    try:
+        run_diagnostic(args, status, env)
+    except BaseException as error:
+        status.update(state='blocked_before_start' if status['state']=='prepared' else 'error', error=repr(error))
+        raise
+    finally:
+        write(args.output/'status.json', status)
+        signal.signal(signal.SIGTERM, previous_handler)
+    if status.get('returncode') != 0 or status.get('server_stop_returncode') != 0:
         raise SystemExit(1)
 
 

@@ -1772,26 +1772,72 @@
   "camera_diagnostic": {
     "state": "prepared_not_run",
     "source": "local/experiments/camera_startup_smoke.py",
-    "source_sha256": "33fec4aae0e52e4399ab3d90c8fa597976e17cdf18075cd44ecdc9c1b06d55fd",
+    "source_sha256": "96b6bc32b1d515881d09e0444e56ede7ce386f87885a66676167198d64439310",
     "cpu_guard_checks": [
       {
         "case": "existing_container",
         "passed": true,
+        "state": "blocked_before_start",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "inspect_timeout",
+        "passed": true,
+        "state": "blocked_before_start",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "gpu_probe_timeout",
+        "passed": true,
+        "state": "blocked_before_start",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "low_headroom",
+        "passed": true,
+        "state": "blocked_before_start",
         "real_docker_gpu_or_server_calls": 0
       },
       {
         "case": "occupied_port",
         "passed": true,
+        "state": "blocked_before_start",
         "real_docker_gpu_or_server_calls": 0
       },
       {
         "case": "dead_server",
         "passed": true,
+        "state": "error",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "monitor_probe_timeout",
+        "passed": true,
+        "state": "error",
         "real_docker_gpu_or_server_calls": 0
       },
       {
         "case": "log_timeout_cleanup",
         "passed": true,
+        "state": "error",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "sigterm_cleanup",
+        "passed": true,
+        "state": "error",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "camera_timeout",
+        "passed": true,
+        "state": "error",
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "child_ignores_term",
+        "passed": true,
+        "state": "error",
         "real_docker_gpu_or_server_calls": 0
       }
     ],
@@ -1905,6 +1951,29 @@
         }
       }
     ],
-    "diagnosis": "Same image/command/environment/scene/camera rig; declared renderer differs. No established crash cause; GPU memory pressure not ruled out by OOMKilled=false."
+    "diagnosis": "Same image/command/environment/scene/camera rig; declared renderer differs. No established crash cause; GPU memory pressure not ruled out by OOMKilled=false.",
+    "initial_cpu_guard_checks": [
+      {
+        "case": "existing_container",
+        "passed": true,
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "occupied_port",
+        "passed": true,
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "dead_server",
+        "passed": true,
+        "real_docker_gpu_or_server_calls": 0
+      },
+      {
+        "case": "log_timeout_cleanup",
+        "passed": true,
+        "real_docker_gpu_or_server_calls": 0
+      }
+    ],
+    "review_fix": "Bound every Docker/GPU probe to5s; persist preflight failure; handle SIGTERM through bounded owned cleanup."
   }
 }

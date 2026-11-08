@@ -233,12 +233,20 @@ source local/env.sh
 ```
 
 The exact render UUID must be recorded when scheduling this separate diagnostic.
-CPU syntax and `--help` checks pass. Four CPU-only mocked guard checks also
-pass: an existing container is refused, an occupied port prevents server start,
-a dead server terminates the owned child, and a logging timeout still attempts
-owned-server cleanup. These checks make no Docker/GPU calls. The diagnostic
-has not been executed against CARLA, and a future camera-startup pass would
-still not validate driving or latency.
+CPU syntax and `--help` checks pass. Review found unbounded Docker/GPU probes
+and missing parent SIGTERM handling in the first diagnostic revision. The next
+revision bounds each probe to five seconds, records preflight failures as
+`blocked_before_start`, and handles SIGTERM through owned-child/server cleanup.
+The frozen resource helper and 117 shared sources remain unchanged.
+
+Eleven CPU-only mocked failure checks pass: existing container, Docker inspect
+timeout, GPU probe timeout, low headroom, occupied port, dead server, monitoring
+probe timeout, logging timeout, parent SIGTERM, camera execution timeout and a
+child ignoring SIGTERM. They check failure records, signal-handler restoration,
+bounded escalation to kill only that child, and attempted owned-server cleanup.
+These checks make no Docker/GPU calls. The diagnostic has not been executed
+against CARLA; a future camera-startup pass would still not validate driving or
+latency. Its execution deadline excludes bounded startup and cleanup time.
 
 Rollback: the accepted driving profile and ordinary launch defaults are
 unchanged. Use `e1f38d6` or the accepted driving branch to omit this experiment.
