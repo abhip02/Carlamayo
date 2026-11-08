@@ -1,6 +1,7 @@
 # Fixed left-turn and tight-bend checks — 2026-11-07
 
-**Version 2 prepared, not executed; waiting for the benchmark resource handoff.**
+**Version 2 stopped after a left-turn simulator startup failure. Tight bend was
+not attempted.**
 These are two candidate-only specification checks
 of the unchanged NF4 policy that passed the T-junction. They do not have fresh
 six-attempt baselines. Only the [completed T-junction pair](RESULTS_NF4_POLICY.md)
@@ -110,6 +111,56 @@ export PYTHONPATH="/scratch/apomalap/thesis/carlamayo/.runtime/quant-benchmark-d
   --container-prefix apomalap-carlamayo-nf4-fixed-20261107-v2
 ```
 
-`panel-status.json` will retain both planned outcomes. Each case has separate
-driver status, supervisor status, capture and audit files. The two new outcome
-slots are currently **unattempted**; no new driving or timing conclusion is made.
+`panel-status.json` retains both planned outcomes. Each case has separate
+driver status, supervisor status and capture files. No new driving or timing
+conclusion is made from this panel's failed startup.
+
+## Executed outcome: left startup failure; tight unattempted
+
+Following the explicit benchmark and monitor handoff, all 125 source hashes,
+both child manifests and absent capture outputs were rechecked. The left case
+passed all 13 checks over its renewed 60-second gate: model GPU1 had 10.227 GiB
+free and renderer GPU0 had 23.547 GiB free. The NF4 model loaded with 624 packed
+layers and 7.09 GiB reported model allocation.
+
+After spawning all four cameras, CARLA exited with **signal 11 / exit 139** at
+2026-11-08 06:52:13 UTC. Its `OOMKilled` flag was false. There were **zero native
+trajectory calls and zero driving decisions**. This is an infrastructure error,
+not a failed left-turn trajectory or a timing result. Renderer headroom was
+large at startup; the evidence does not establish the crash's cause.
+
+The server-death supervisor detected the exited server and terminated only its
+waiting capture child. Capture wall time was 63.69 seconds and child return code
+-15. The panel exited 1 and stopped exactly as declared. Tight bend remains
+`not_attempted` with the recorded reason that the prior case did not pass. No
+automatic retry, altered seed, extra baseline or GPU reassignment occurred.
+
+At 06:53:53 UTC, independent checks confirmed the model PID was gone, owned
+container stopped, port 2000 closed, and both GPU leases plus the port lease
+were reacquired and released. The owned server-stop command returned zero.
+Evidence is `outputs/nf4-fixed-case-panel-20261107-v2/panel-status.json`,
+`cleanup.json`, `left-carla-crash.log`, and the left case's driver/supervisor logs.
+
+| Planned case | Result | Calls / decisions |
+| --- | --- | ---: |
+| Left turn | CARLA camera-startup crash before inference | 0 / 0 |
+| Tight bend | Unattempted after first nonpass | 0 / 0 |
+
+The completed T-junction pass and its 39.0% call reduction remain the only new
+live driving-policy evidence. This panel adds no successful driving video.
+
+## Read-only startup comparison
+
+The container has no useful saved stack trace. Its temporary
+`/tmp/CarlaUE4-Linux-Shipping` file is empty, so no large dump was copied. The
+normal repository loops (`module/loops/closed_loop.py` and `live_open_loop.py`)
+set up cameras and the collision sensor, wait one second, then load the model.
+The experimental capture loads the model first; `acknowledged_preroll.py`
+spawns the cameras and immediately disables vehicle physics and starts history
+ticks without that one-second pause.
+
+This is a demonstrated startup-sequence difference, **not a proven defect or
+root cause**. A separate model-free left-scene diagnostic could test an explicit
+sensor-ready pause while preserving starts and recording every attempt. No
+such change or additional GPU test was applied here; all frozen driving sources
+and the candidate policy remain unchanged.

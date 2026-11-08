@@ -1,5 +1,5 @@
 {
-  "state": "prepared_waiting_for_benchmark_handoff",
+  "state": "stopped_after_left_camera_startup_failure",
   "protocol": {
     "study": "Candidate-only fixed left/tight specification checks; no fresh baseline",
     "registered_utc": "2026-11-08T06:33:40.638472+00:00",
@@ -443,11 +443,185 @@
   "planned_outcomes": [
     {
       "name": "02-intersection-left-nf4-cap2",
-      "state": "not_attempted"
+      "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2",
+      "state": "execution_error",
+      "passed": false,
+      "driver_result": {
+        "name": "02-intersection-left-nf4-cap2",
+        "returncode": -15,
+        "timed_out": false,
+        "wall_seconds": 63.68657723488286
+      },
+      "metrics": {
+        "decisions": 0,
+        "recorded_trajectory_samples": 0,
+        "samples_per_decision": null,
+        "max_samples_per_decision": 0,
+        "decision_seconds": null,
+        "simulation_seconds": null,
+        "rollout_wall_seconds": null,
+        "wall_seconds_per_sim_second": null,
+        "collision_recorded": false,
+        "route_exit_time_s": null,
+        "min_corner_clearance_m": null,
+        "min_speed_mps": null,
+        "max_speed_mps": null,
+        "offroad_steps": null,
+        "retained_decisions": 0,
+        "projected_decisions": 0,
+        "held_stop_decisions": 0,
+        "red_mission": null
+      },
+      "policy_bound_verified": false
     },
     {
       "name": "08-tight-bend-nf4-cap2",
-      "state": "not_attempted"
+      "state": "not_attempted",
+      "reason": "Not attempted after earlier nonpassing case"
     }
-  ]
+  ],
+  "panel_result": {
+    "state": "stopped_after_nonpassing_case",
+    "planned": 2,
+    "results": [
+      {
+        "name": "02-intersection-left-nf4-cap2",
+        "capture": "/scratch/apomalap/thesis/carlamayo-nf4-policy/outputs/nf4-fixed-case-panel-20261107-v2/02-intersection-left/02-intersection-left-nf4-cap2",
+        "state": "execution_error",
+        "passed": false,
+        "driver_result": {
+          "name": "02-intersection-left-nf4-cap2",
+          "returncode": -15,
+          "timed_out": false,
+          "wall_seconds": 63.68657723488286
+        },
+        "metrics": {
+          "decisions": 0,
+          "recorded_trajectory_samples": 0,
+          "samples_per_decision": null,
+          "max_samples_per_decision": 0,
+          "decision_seconds": null,
+          "simulation_seconds": null,
+          "rollout_wall_seconds": null,
+          "wall_seconds_per_sim_second": null,
+          "collision_recorded": false,
+          "route_exit_time_s": null,
+          "min_corner_clearance_m": null,
+          "min_speed_mps": null,
+          "max_speed_mps": null,
+          "offroad_steps": null,
+          "retained_decisions": 0,
+          "projected_decisions": 0,
+          "held_stop_decisions": 0,
+          "red_mission": null
+        },
+        "policy_bound_verified": false
+      },
+      {
+        "name": "08-tight-bend-nf4-cap2",
+        "state": "not_attempted",
+        "reason": "Not attempted after earlier nonpassing case"
+      }
+    ],
+    "current": null
+  },
+  "cleanup": {
+    "utc": "2026-11-08T06:53:53.516142+00:00",
+    "panel_state": "stopped_after_nonpassing_case",
+    "supervisor_abort": "owned_server_exited",
+    "driver_results": [
+      {
+        "name": "02-intersection-left-nf4-cap2",
+        "returncode": -15,
+        "timed_out": false,
+        "wall_seconds": 63.68657723488286
+      }
+    ],
+    "container_state": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 139,
+      "Error": "",
+      "StartedAt": "2026-11-08T06:51:02.965640234Z",
+      "FinishedAt": "2026-11-08T06:52:13.789428913Z"
+    },
+    "owned_model_pid_gone": true,
+    "owned_container_stopped": true,
+    "port2000_closed": true,
+    "leases_reacquired_and_released": true,
+    "server_stop_returncode": 0,
+    "left_decisions": 0,
+    "left_calls": 0,
+    "tight_state": "not_attempted"
+  },
+  "launch_handoff": {
+    "utc": "2026-11-08T06:49:57.051870+00:00",
+    "state": "explicit_monitor_handoff_received_launching_once",
+    "manifest_sha256": "979265dfe7e5417ab682ff71d707e004bef589a243d9a7577ce6cfb4aa8e9010",
+    "sources_verified": 125,
+    "case_order": [
+      2,
+      8
+    ],
+    "no_retries": true,
+    "stop_after_first_nonpass": true,
+    "source": "monitor independently reviewed BF16cleanup and released resources"
+  },
+  "benchmark_handoff": {
+    "source": "/scratch/apomalap/thesis/carlamayo/outputs/quant-explore-20261107/closed-loop-pilot-v6/cleanup-handoff.json",
+    "sha256": "e168f89a5e02ce5513593af07f5488d56b770b11e6f538610e760a7728a763c7",
+    "evidence": {
+      "utc": "2026-11-08T06:47:22.976295+00:00",
+      "capture_pid_gone": true,
+      "container_state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-11-08T06:37:00.513525376Z",
+        "FinishedAt": "2026-11-08T06:46:59.663602665Z"
+      },
+      "server_stop_returncode": 0,
+      "port_2000_closed": true,
+      "gpu_and_port_leases_reacquired_and_released": true,
+      "model_gpu": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+      "renderer_gpu": "GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8",
+      "gpu_snapshot": "0, GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580, 24112 MiB, 0 %\n1, GPU-46394453-71bb-15b9-1612-860b5714f750, 10472 MiB, 0 %\n2, GPU-216b01e6-03fa-563d-0ff0-739ef6f558f8, 24112 MiB, 0 %\n3, GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b, 7164 MiB, 9 %\n4, GPU-3f4e4372-21d9-bac9-f577-755a624eb99d, 10376 MiB, 19 %\n5, GPU-f74194f2-d19a-bbbe-3270-15ca355228f4, 6162 MiB, 76 %\n6, GPU-78628c0c-fb9d-2814-d558-6117b62e7739, 5720 MiB, 100 %\n",
+      "process_snapshot": "3761864, GPU-46394453-71bb-15b9-1612-860b5714f750, 13632 MiB\n3789694, GPU-ce1bea0e-c85a-f48a-a1ad-5c2bc153e10b, 16940 MiB\n3798809, GPU-3f4e4372-21d9-bac9-f577-755a624eb99d, 13642 MiB\n3475795, GPU-f74194f2-d19a-bbbe-3270-15ca355228f4, 17856 MiB\n3475792, GPU-78628c0c-fb9d-2814-d558-6117b62e7739, 18298 MiB\n"
+    }
+  },
+  "supervision": {
+    "state": "capture_aborted",
+    "case_number": 2,
+    "container": "apomalap-carlamayo-nf4-fixed-20261107-v2-02",
+    "capture_pid": 3908795,
+    "last_container_state": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 139,
+      "Error": "",
+      "StartedAt": "2026-11-08T06:51:02.965640234Z",
+      "FinishedAt": "2026-11-08T06:52:13.789428913Z"
+    },
+    "abort_reason": "owned_server_exited",
+    "capture_returncode": -15,
+    "driver_state": "completed",
+    "server_stop_returncode": 0
+  },
+  "startup_note": "Normal loops have a1s camera/collision settling pause beforemodel load; experimental pre-roll begins immediately aftercamera setup. Hypothesis only; no correction/newGPUtest applied."
 }
