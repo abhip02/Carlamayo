@@ -126,3 +126,27 @@ CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
 The runner refuses existing study status or trial directories and verifies all
 frozen source/config hashes. Rollback is simply not invoking this diagnostic;
 no driving default or model/controller implementation changed.
+
+## Read-only latency finding
+
+The completed T candidate already made only one native proposal on every step:
+114 calls for 114 control ticks. Its probe timers total 441.84 seconds, including
+the periodic visual signal queries; the enclosing decision timers total 445.86
+seconds out of 491.64 seconds rollout wall time. Median enclosing decision time
+is 3.573 seconds. These shared-GPU observations explain the remaining expense;
+they do not isolate model kernels or prove quantization acceleration.
+
+`local/run_intersection.py::run_rollout` synchronously requests a prediction on
+every 0.1-second simulated control tick. The ordinary `closed_loop.py` sync mode
+does the same. Its optional async mode instead has a one-second wall-clock
+submission interval and at most one pending worker request; that mode is not
+active in these captures. Switching modes would change trajectory age and
+closed-loop behavior, so no runtime improvement is claimed from its existence.
+
+A future isolated test could reduce replanning frequency while continuing to
+control from a validated, correctly anchored model plan between predictions.
+It would need new steering/age/signal-response checks and live driving evidence.
+No cadence change has been implemented. Further retry reduction alone cannot
+remove the successful candidate's one-call-per-tick cost. Compact evidence and
+the complete prospective camera protocol are retained in
+`artifacts/camera-startup-study-20261107.json`.
