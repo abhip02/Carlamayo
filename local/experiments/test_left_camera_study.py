@@ -78,7 +78,7 @@ def test_logged_start_preserves_core_container_settings():
     assert '--network=host' in cmd and '--shm-size=2g' in cmd
     assert cmd[cmd.index('-e')+1]=='NVIDIA_VISIBLE_DEVICES=void'
     assert cmd[cmd.index(study.IMAGE)+1:] == ['bash','CarlaUE4.sh','-RenderOffScreen',
-        '-nosound','-carla-rpc-port=2000','-StdOut','-FullStdOutLogOutput']
+        '-nosound','-carla-rpc-port=2000']
     assert 'max-size=10m' in cmd and 'max-file=1' in cmd
 
 

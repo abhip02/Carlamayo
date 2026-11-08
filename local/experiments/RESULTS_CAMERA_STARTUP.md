@@ -74,10 +74,12 @@ a reliable fix.
 
 Both arms retain the exact Docker image digest, CDI renderer assignment, host
 network, 2 GiB shared memory, NVIDIA environment and CARLA arguments from
-`projected_server.sh`. They add `-StdOut -FullStdOutLogOutput`, documented as
-general Unreal logging flags in [Epic's UE4.27 reference](https://dev.epicgames.com/documentation/en-us/unreal-engine/pixel-streaming-reference?application_version=4.27).
-This CARLA image is UE4.26 shipping; whether these flags produce useful extra
-logs is unverified. The existing off-screen invocation follows
+`projected_server.sh`. The shipped engine arguments are unchanged in version 2. Version 1 proposed
+extra engine logging, but was never executed: review removed those flags because
+support in this UE4.26 shipping build was unverified and extra engine logging
+could perturb the suspected startup race. Version 1 remains preserved as
+superseded. Identical client timestamp instrumentation remains in both arms.
+The existing off-screen invocation follows
 [CARLA 0.9.16's Docker guidance](https://carla.readthedocs.io/en/0.9.16/build_docker/).
 
 Per-container `json-file` logging is limited to `max-size=10m,max-file=1`, using
@@ -100,16 +102,17 @@ started during preparation.
 
 ## Frozen protocol and checks
 
-Root: `outputs/left-camera-study-20261107-v1/`.
+Current root: `outputs/left-camera-study-20261107-v2/`. Version 1 was unexecuted.
 
 - Protocol SHA256:
-  `37990bac4980c441f8047d084ea9cfa7cad7f9811778daf7e2684e6c6516db2f`.
+  `a43283d63e6efd3a1210eef6e43a9d93c2a0a8e892a91a3f2c4750cc6aac1093`.
 - Config SHA256:
   `5d8803e4e05b94604b7338b0d45b5fb4fff5e275573113968da0f244512c2f2e`.
-- Registered 2026-11-08 07:09:15 UTC; 127 Python files plus the server shell
+- Registered 2026-11-08 07:11:42 UTC; 127 Python files plus the server shell
   hashed, including all 125 prior Python files.
 - Full CPU suite: **343 passed, one CUDA-only test skipped, 8.22 seconds**.
-  Focused harness/process supervision: **25 passed, 5.43 seconds**.
+  Focused harness/process supervision: **25 passed, 5.43 seconds**. After
+  removing the engine logging flags, all **14 harness tests passed in 0.19 seconds**.
 
 After review and resource handoff, from this worktree:
 
@@ -117,7 +120,7 @@ After review and resource handoff, from this worktree:
 source local/env.sh
 CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
   .venv/bin/python -m local.experiments.left_camera_study run \
-  --output outputs/left-camera-study-20261107-v1
+  --output outputs/left-camera-study-20261107-v2
 ```
 
 The runner refuses existing study status or trial directories and verifies all

@@ -25,7 +25,6 @@ ROOT = Path(__file__).resolve().parents[2]
 RENDER_GPU = 'GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580'
 IMAGE = 'carlasim/carla@sha256:aaf1df22702780ece072069e23d03c4879b002ae028c79744b09c4c7ddbae953'
 ORDER = (0, 1, 1, 0, 0, 1)
-ENGINE_FLAGS = ['-StdOut', '-FullStdOutLogOutput']
 
 
 def read(path):
@@ -47,14 +46,14 @@ def now():
 
 def start_command(container):
     # Same image, CDI device, labels, network, shm, environment and CARLA options
-    # as projected_server.sh. Only container log rotation and UE logging differ.
+    # as projected_server.sh. Only per-container log rotation differs.
     return ['docker', 'run', '-d', '--name', container,
         '--label', f'apomalap.carlamayo.root={ROOT}',
         '--label', f'apomalap.carlamayo.render_gpu={RENDER_GPU}',
         '--device', f'nvidia.com/gpu={RENDER_GPU}', '--network=host', '--shm-size=2g',
         '--log-driver', 'json-file', '--log-opt', 'max-size=10m', '--log-opt', 'max-file=1',
         '-e', 'NVIDIA_VISIBLE_DEVICES=void', IMAGE,
-        'bash', 'CarlaUE4.sh', '-RenderOffScreen', '-nosound', '-carla-rpc-port=2000', *ENGINE_FLAGS]
+        'bash', 'CarlaUE4.sh', '-RenderOffScreen', '-nosound', '-carla-rpc-port=2000']
 
 
 def prepare(config, frozen_manifest, output):
@@ -87,11 +86,10 @@ def prepare(config, frozen_manifest, output):
         limitations=['No model loading/inference or model GPU memory allocation; shared imports may import torch/adapter classes.',
             'Unmeasured model/processor loading interval omitted; no artificial delay substitutes for it.',
             'No OpenDRIVE export/route generation or controller setup; overhead and acknowledged pre-roll retained.',
-            'Both arms have identical extra logging/instrumentation; UE4.27 flags may be ignored by CARLA UE4.26 shipping build.',
+            'Both arms have identical client instrumentation and Docker log rotation; shipped engine arguments are unchanged.',
             'Three observations per arm cannot establish startup reliability or a driving fix.'],
         continuation='Complete each predeclared trial once even if camera startup fails; stop on resource refusal, interruption, or unverified cleanup.',
-        sources={'engine_logging':'https://dev.epicgames.com/documentation/en-us/unreal-engine/pixel-streaming-reference?application_version=4.27',
-            'offscreen':'https://carla.readthedocs.io/en/0.9.16/build_docker/',
+        sources={'offscreen':'https://carla.readthedocs.io/en/0.9.16/build_docker/',
             'log_rotation':'https://docs.docker.com/engine/logging/drivers/json-file/'}))
 
 
