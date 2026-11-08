@@ -157,7 +157,15 @@ def run_one(case, assignment, container):
         status.update(state='driver_error',error=repr(error));raise
     finally:
         driver.subprocess,driver.check_memory,driver.argparse,sys.argv=originals
-        signal.signal(signal.SIGTERM,old_handler);save()
+        signal.signal(signal.SIGTERM,old_handler)
+        driver_path=manifest_path.parent/'nf4-status.json'
+        if driver_path.exists():
+            driver_status=policy.read(driver_path)
+            status.update(driver_state=driver_status.get('state'),server_stop_returncode=driver_status.get('server_stop_returncode'))
+        save()
+    if status.get('server_stop_returncode') != 0:
+        status.update(state='cleanup_error',error='Owned server stop did not succeed');save()
+        raise RuntimeError(status['error'])
 
 
 def run_panel(manifest_path, container_prefix, execute=run_one, assess=outcome):

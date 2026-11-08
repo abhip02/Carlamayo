@@ -105,3 +105,21 @@ def test_scoped_driver_adapter_intercepts_left_capture_and_restores_on_failure(m
     assert captured==[command]
     assert (driver.subprocess,driver.check_memory,driver.argparse,panel.sys.argv,signal.getsignal(signal.SIGTERM))==original
     assert json.loads((tmp_path/'supervision.json').read_text())['state']=='driver_error'
+
+
+@pytest.mark.parametrize('stop_code',[0,1])
+def test_real_driver_stop_status_is_required_for_a_successful_case(monkeypatch,tmp_path,stop_code):
+    from local.experiments import run_nf4_pilot as driver
+    command=['python','-m','local.experiments.nf4_policy_pair','capture',
+        '--output',str(tmp_path/'capture'),'--config',str(tmp_path/'scene.yaml'),'--options',str(tmp_path/'options.json')]
+    path=tmp_path/'jobs.json';assignment=dict(model_gpu='GPU-model',renderer_gpu='GPU-render')
+    path.write_text(json.dumps(dict(jobs=[dict(command=command)],execution_assignment=assignment)))
+    case=dict(number=2,job_manifest=str(path),job_manifest_sha256=panel.policy.sha256(path))
+    monkeypatch.setattr(panel.bridge,'verify_manifest',lambda *a:None)
+    def execute():
+        (tmp_path/'nf4-status.json').write_text(json.dumps(dict(state='completed',server_stop_returncode=stop_code)))
+    monkeypatch.setattr(driver,'main',execute)
+    if stop_code:
+        with pytest.raises(RuntimeError,match='server stop'):panel.run_one(case,assignment,'owned')
+    else:panel.run_one(case,assignment,'owned')
+    assert json.loads((tmp_path/'supervision.json').read_text())['server_stop_returncode']==stop_code
