@@ -1,5 +1,5 @@
 {
-  "state": "prepared_not_executed",
+  "state": "completed_all_planned_trials",
   "protocol": {
     "registered_utc": "2026-11-08T07:11:42.078596+00:00",
     "state": "prepared_not_executed",
@@ -407,5 +407,494 @@
     "end_to_end_decision_median_s": 3.573387219570577,
     "rollout_wall_s": 491.6384946750477,
     "probe_time_includes_visual_signal_queries": true
+  },
+  "handover_comparison_protocol": {
+    "registered_before_trials": true,
+    "reference_file": "/scratch/apomalap/thesis/carlamayo/outputs/driving-investigation-19-stop-hold/02-intersection-left-route/000_verifai/initial.json",
+    "reference_sha256": "b9e5b2c0ed549d042ea5ef7642836744821871a853afc66aaab1c00dc61a943f",
+    "historical_reference_note": "Same fixed left input; history source only, not fresh policy comparator",
+    "reference_actual_handover": {
+      "x": -6.126131534576416,
+      "y": 113.31777954101562,
+      "z": -0.0053094481118023396,
+      "roll": 4.5356728151091374e-07,
+      "pitch": -0.019199660047888756,
+      "yaw": 89.63745880126953,
+      "speed": 2.952395680508971
+    },
+    "tolerances": {
+      "position_per_axis_m": 0.001,
+      "angle_wrapped_per_axis_deg": 0.001,
+      "speed_mps": 0.01
+    },
+    "record": "signed raw component deltas for every successful trial versus fixed historical handover; also versus first successful original arm by planned order",
+    "camera_success_and_handover_match_are_separate": true,
+    "failed_trials": "retain errors and absent handover; never count as matched"
+  },
+  "result": {
+    "study_state": "completed_all_planned_trials",
+    "protocol_sha256": "a43283d63e6efd3a1210eef6e43a9d93c2a0a8e892a91a3f2c4750cc6aac1093",
+    "model_loaded": false,
+    "inference_calls": 0,
+    "original_passes": 3,
+    "pause_passes": 3,
+    "total_trials": 6,
+    "all_handovers_matched_history": true,
+    "all_handovers_matched_first_original": true,
+    "all_cleanup_verified": true,
+    "study_wall_s": 696.035071,
+    "trials": [
+      {
+        "name": "01-original",
+        "pause_s": 0,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 22.791931027080864,
+        "camera_setup_to_first_frame_s": 0.48119026189669967,
+        "pre_roll_to_handover_s": 6.570077025797218,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 15.8662109375,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.135694+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:20:01.330617188Z",
+            "FinishedAt": "2026-11-08T07:20:55.640250556Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "3f6db11221644a8f1176df7f1280fd716042ad39352dce5bb802c8a738d906fd",
+          "camera-result.json": "6e6763bb4f1da40a4e9bff628a1aa1c75380b0caed83622819454b7b76a77a1b",
+          "handover.json": "28c1e8540e29aab44bc1711bdbfc3c6b7d0f15d8fa3a914af959e74c8b7e5e3f",
+          "events.jsonl": "025dba76f30adab6ef5f0877e0d49bbc1028db5702db02921dfba18cfbf7f687",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      },
+      {
+        "name": "02-pause",
+        "pause_s": 1,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 24.332082635723054,
+        "camera_setup_to_first_frame_s": 1.4780240370891988,
+        "pre_roll_to_handover_s": 7.776021565776318,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 15.740234375,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.175350+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:21:56.013165518Z",
+            "FinishedAt": "2026-11-08T07:22:51.439346924Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "c839c39993daaaf29c70a9cbf73fcbf430cc29d57628abbcb31acf4969634255",
+          "camera-result.json": "bdc081bd020cce99f7eae50cd5ebe7ae6ac6d53183134e8c9c8742e1cb7bc9bd",
+          "handover.json": "42e3983103e0939a51792dbf0733a2d2f76109f3f3b61ec56630e84ed8a445e9",
+          "events.jsonl": "a42ce6f2ada401cbb45277c4e40d5189bb9746ba50e08aa4f77e16c96a30e6ff",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      },
+      {
+        "name": "03-pause",
+        "pause_s": 1,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 24.313286039978266,
+        "camera_setup_to_first_frame_s": 1.5002966509200633,
+        "pre_roll_to_handover_s": 7.681278292089701,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 15.8173828125,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.211317+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:23:51.806591338Z",
+            "FinishedAt": "2026-11-08T07:24:47.400937115Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "7d0bd199ab1334e6e302ab1ea34d31c4227c782119d18fd1ad156dec7abca845",
+          "camera-result.json": "d3d15a1d37e6da440baf2d8e983454b23402cb884e2f1634e275708952aae2fa",
+          "handover.json": "78d4ce4c56f8ce9b5811f58d68483c913acca7cfe0a2733c5848aaeaf169c8d3",
+          "events.jsonl": "bb663a98cb570c761b1841870049213c034fc4c2d4f827521837d8a44af8e11d",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      },
+      {
+        "name": "04-original",
+        "pause_s": 0,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 26.873468830250204,
+        "camera_setup_to_first_frame_s": 0.430770015809685,
+        "pre_roll_to_handover_s": 6.581891609821469,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 15.82421875,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.247681+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:25:47.792494242Z",
+            "FinishedAt": "2026-11-08T07:26:43.314669544Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "7b2c1844aebe184613c84a3ed211bd4f1a28a46509489fc9d654c494ef74fa04",
+          "camera-result.json": "bdc081bd020cce99f7eae50cd5ebe7ae6ac6d53183134e8c9c8742e1cb7bc9bd",
+          "handover.json": "61b90959531a9c0ad187d6dd5c2ef26aea44d25755a154a1eac5a8ae6b2869d8",
+          "events.jsonl": "a47a3c47e140b539726a4f92f2ad9008150d9747f2259aa61f48677bee8d452d",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      },
+      {
+        "name": "05-original",
+        "pause_s": 0,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 27.17369071021676,
+        "camera_setup_to_first_frame_s": 0.42036863788962364,
+        "pre_roll_to_handover_s": 5.318621747661382,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 11.0654296875,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.285580+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:27:43.889763902Z",
+            "FinishedAt": "2026-11-08T07:28:40.211533022Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "ac150e045d2e8341cc92c8a0f445c6ac1bbfb65891093dae81a0bb6972f2d6ba",
+          "camera-result.json": "7861be71b5090307c93c8bf3cce969bdc1bb6522d4325d915f56631d48cfa392",
+          "handover.json": "90755990ddb598a66fb5887aea1e14035e58a518749825d229749068a9f4c5d3",
+          "events.jsonl": "d778eb48dd189deaecabca1d2e8738c411a34c09dd7e1ab0aa9f86cc9b074279",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      },
+      {
+        "name": "06-pause",
+        "pause_s": 1,
+        "camera_pass": true,
+        "camera_frame_sets": 16,
+        "retained_frames": 4,
+        "actual_handover": {
+          "x": -6.126131534576416,
+          "y": 113.31777954101562,
+          "z": -0.0053094481118023396,
+          "roll": 4.5356728151091374e-07,
+          "pitch": -0.019199660047888756,
+          "yaw": 89.63745880126953,
+          "speed": 2.9523956775665283
+        },
+        "vs_historical": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": -2.942442733910866e-09
+          },
+          "matched": true
+        },
+        "vs_first_original": {
+          "raw_signed_deltas": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "speed": 0.0
+          },
+          "matched": true
+        },
+        "child_elapsed_s": 23.902049080003053,
+        "camera_setup_to_first_frame_s": 1.4681739201769233,
+        "pre_roll_to_handover_s": 6.959277317393571,
+        "recorded_gate_checks": 13,
+        "sampled_min_renderer_free_gib": 10.751953125,
+        "cleanup_verified": true,
+        "final_cleanup": {
+          "utc": "2026-11-08T07:31:21.322113+00:00",
+          "verified": true,
+          "container_state": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2026-11-08T07:29:40.59532275Z",
+            "FinishedAt": "2026-11-08T07:30:36.931091042Z"
+          },
+          "owned_container": true,
+          "child_gone": true,
+          "port_closed": true,
+          "leases_reacquired": true
+        },
+        "evidence_sha256": {
+          "status.json": "400b446be51d1f81479f723ad123fdc8b8f57335bccd52a54026529578c60dea",
+          "camera-result.json": "bdc081bd020cce99f7eae50cd5ebe7ae6ac6d53183134e8c9c8742e1cb7bc9bd",
+          "handover.json": "42e3983103e0939a51792dbf0733a2d2f76109f3f3b61ec56630e84ed8a445e9",
+          "events.jsonl": "a270c88be3139e7b61747d340305dd04781f5e4795e30dafe7e0cf6dd883dd85",
+          "child.log": "ffa92e8fb1ce3059a2e7c71be95a57eedc87c72fa914405a71c516952e178ed6",
+          "server.log": "6fe224dee70cd1e2db11d8e74131b279ba8dbe7c3270a47b7b8961b59d4881ca"
+        }
+      }
+    ],
+    "conclusion": "No crash reproduced in this model-free setting and no demonstrated pause benefit. No pause promoted to driving sources. Model-loaded startup cause remains unresolved; no new driving quality or latency result."
   }
 }

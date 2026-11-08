@@ -1,7 +1,9 @@
 # Camera startup investigation — 2026-11-07
 
-**Six model-free left-scene trials are prepared, not executed.** Driving is not
-fully fixed. The successful NF4 T-junction candidate uses 39.0% fewer native
+**All six model-free left-scene trials passed: original 3/3, pause 3/3.** No
+crash was reproduced and no pause benefit was demonstrated. The pause is not
+promoted to driving code. Driving is not fully fixed. The successful NF4
+T-junction candidate uses 39.0% fewer native
 calls, but takes 8.19 minutes for 11.4 simulated seconds. The subsequent left
 case crashed before inference, and tight bend was not attempted. See the
 [driving result](RESULTS_NF4_POLICY.md) and [failed panel](RESULTS_NF4_FIXED_CASES.md).
@@ -95,10 +97,10 @@ helpers use owned process groups, bounded termination, and the frozen ownership
 labels. Independent cleanup checks require the child gone, owned container
 stopped, port closed, and both leases reacquired/released. No other job is killed.
 
-Estimated study cost: **12–18 minutes**, with a conservative **42-minute maximum**
-including six gates and bounded startup/cleanup. It waits for the separate
-benchmark red-pair cleanup and an explicit resource handoff; no server was
-started during preparation.
+Prospective study cost estimate: **12–18 minutes**, with a conservative **42-minute maximum**
+including six gates and bounded startup/cleanup. Actual total was **696.04
+seconds (11.60 minutes)**. Execution followed the separate benchmark red-pair
+cleanup and explicit monitor handoff; no server was started during preparation.
 
 ## Frozen protocol and checks
 
@@ -114,7 +116,8 @@ Current root: `outputs/left-camera-study-20261107-v2/`. Version 1 was unexecuted
   Focused harness/process supervision: **25 passed, 5.43 seconds**. After
   removing the engine logging flags, all **14 harness tests passed in 0.19 seconds**.
 
-After review and resource handoff, from this worktree:
+Executed once after review and resource handoff, from this worktree (do not
+rerun this completed output):
 
 ```bash
 source local/env.sh
@@ -126,6 +129,51 @@ CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
 The runner refuses existing study status or trial directories and verifies all
 frozen source/config hashes. Rollback is simply not invoking this diagnostic;
 no driving default or model/controller implementation changed.
+
+## Executed six-trial result
+
+The study ran from 2026-11-08 07:19:01 UTC for 696.04 seconds and exited zero.
+Every trial passed all 13 gate checks, collected 16 synchronized four-camera
+history sets, retained four history images, and reached the acknowledged
+handover. All planned trials were executed exactly once in the declared order.
+
+| Trial | Pause | Camera result | Collected history sets | Cleanup |
+| --- | ---: | --- | ---: | --- |
+| 01 original | 0 s | Pass | 16 | Verified |
+| 02 pause | 1 s | Pass | 16 | Verified |
+| 03 pause | 1 s | Pass | 16 | Verified |
+| 04 original | 0 s | Pass | 16 | Verified |
+| 05 original | 0 s | Pass | 16 | Verified |
+| 06 pause | 1 s | Pass | 16 | Verified |
+
+Raw signed x/y/z and roll/pitch/yaw differences from the fixed historical left
+handover are zero for every trial. Speed differs by only
+`-2.942442733910866e-09 m/s` (the state readers use slightly different numeric
+operations). All six match the first original arm exactly. Thus every observed
+handover satisfies the declared per-axis 0.001 m / 0.001 degree / 0.01 m/s
+tolerances. Both the historical reference and the first successful original
+comparison rule were recorded before any trials; no best-match selection was
+used. Camera success and handover matching remain separate measurements.
+
+Time from camera-setup completion to the first collected frame was 0.420–0.481
+seconds without a pause and 1.468–1.500 seconds with the pause included. These
+are observed client collection times, not the first sensor callback or a
+controlled latency benchmark. Sampled renderer free memory fell from roughly
+15.7–15.9 GiB during early children to minima of 11.07 / 10.75 GiB in the last
+two. The shared host changed during the study; no idle-device timing claim is
+made. All gates still passed and no other job was stopped.
+
+Independent final checks reconfirmed all six owned children gone, containers
+stopped, port 2000 closed, and renderer/port leases reacquired and released.
+There were **zero model loads and zero inference calls**. The complete outcomes,
+raw handover deltas, event/log hashes, sampled memory and cleanup evidence are
+in `outputs/left-camera-study-20261107-v2/camera-comparison.json` and the tracked
+`artifacts/camera-startup-study-20261107.json`.
+
+This result provides no evidence for adding the pause. It also cannot exonerate
+the startup path when a model is loaded: model allocation/loading time and
+some pre-camera setup were explicitly omitted. The full-capture crash cause
+remains unresolved, and left/tight driving validation remains incomplete.
 
 ## Read-only latency finding
 
