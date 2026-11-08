@@ -211,7 +211,8 @@ controller or camera-configuration defect**. GPU memory pressure and renderer
 instability remain hypotheses, not diagnoses. No frozen source was changed.
 The comparison is saved in `outputs/nf4-policy-pilot-20261107-v3/container-comparison.json`.
 
-The new standalone `camera_startup_smoke` diagnostic is **prepared, not run**.
+The new standalone `camera_startup_smoke` diagnostic was prepared separately;
+its one subsequent camera-only result is recorded below.
 It uses the existing acknowledged pre-roll, four-camera rig, overhead observer,
 Town03 configuration, timestep and clear/green setup without calling any model
 loader. CUDA is hidden from its Python client. It checks renderer headroom for
@@ -244,9 +245,37 @@ timeout, GPU probe timeout, low headroom, occupied port, dead server, monitoring
 probe timeout, logging timeout, parent SIGTERM, camera execution timeout and a
 child ignoring SIGTERM. They check failure records, signal-handler restoration,
 bounded escalation to kill only that child, and attempted owned-server cleanup.
-These checks make no Docker/GPU calls. The diagnostic has not been executed
-against CARLA; a future camera-startup pass would still not validate driving or
-latency. Its execution deadline excludes bounded startup and cleanup time.
+These checks make no Docker/GPU calls. A camera-startup pass does not validate
+driving or latency. Its execution deadline excludes bounded startup and cleanup
+time.
+
+### Single camera-only execution: pass
+
+The explicitly scheduled diagnostic used the same renderer GPU0 and unchanged
+version 3 `config.json`. All 13 headroom checks over 60 seconds passed at about
+9.96 GiB free. The four cameras delivered synchronized image arrays with shape
+`[4, 1080, 1920, 3]`; the acknowledged pre-roll completed with four retained
+history frames and final simulator frame 60. Collision sensor setup was reached.
+**No model was loaded and no trajectory inference ran.**
+
+The driver and camera child exited 0; the owned server stop command returned 0.
+The container's final exit code was 137 following that intentional Docker stop,
+not the earlier spontaneous signal-11 crash. All 29 renderer memory samples
+are retained; minimum observed shared-device free memory was **2.114 GiB**.
+That measures the whole shared device, not this renderer's isolated allocation,
+and one-second sampling cannot rule out shorter memory spikes.
+
+Cleanup was verified at 2026-11-08 05:52:22 UTC: container stopped, camera client
+process gone, port 2000 closed, renderer/port leases reacquired and released.
+Evidence: `outputs/camera-startup-smoke-20261107-v1/`, including
+`camera-result.json`, `status.json`, `server.log`, and `cleanup.json`. The
+diagnostic ran from commit `bd761c4` and its source hash is in the cleanup record.
+
+This shows that the same rig **can start** on the selected GPU. It does not
+establish the earlier crash's cause, prove that model loading caused it, or
+complete the sampling-policy comparison. Both failed candidate attempts and
+the unattempted red case remain unchanged. No additional model/capture retry
+was launched as part of this diagnostic.
 
 Rollback: the accepted driving profile and ordinary launch defaults are
 unchanged. Use `e1f38d6` or the accepted driving branch to omit this experiment.

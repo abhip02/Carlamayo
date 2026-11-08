@@ -1770,7 +1770,7 @@
     "Accepted defaults unchanged; BF16 live latency pilot not run."
   ],
   "camera_diagnostic": {
-    "state": "prepared_not_run",
+    "state": "one_camera_only_startup_pass_no_model_or_driving",
     "source": "local/experiments/camera_startup_smoke.py",
     "source_sha256": "96b6bc32b1d515881d09e0444e56ede7ce386f87885a66676167198d64439310",
     "cpu_guard_checks": [
@@ -1974,6 +1974,430 @@
         "real_docker_gpu_or_server_calls": 0
       }
     ],
-    "review_fix": "Bound every Docker/GPU probe to5s; persist preflight failure; handle SIGTERM through bounded owned cleanup."
+    "review_fix": "Bound every Docker/GPU probe to5s; persist preflight failure; handle SIGTERM through bounded owned cleanup.",
+    "execution": {
+      "status.json": {
+        "state": "completed",
+        "model_loaded": false,
+        "render_gpu": "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580",
+        "container": "apomalap-carlamayo-camera-smoke-20261107-v1",
+        "child_timeout_seconds": 180,
+        "probe_timeout_seconds": 5,
+        "headroom": [
+          {
+            "unix_time": 1794116967.9189622,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116973.0030384,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116978.0784922,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116983.1613982,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116988.2422051,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116993.3171322,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794116998.397496,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117003.4789078,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117008.5605342,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117013.643012,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117018.7293382,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117023.808761,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          },
+          {
+            "unix_time": 1794117028.1411805,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 9.9619140625
+            }
+          }
+        ],
+        "renderer_memory_samples": [
+          {
+            "unix_time": 1794117035.6482084,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117036.758983,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117037.8887038,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117038.996445,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117040.1097991,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117041.2230203,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 8.2509765625
+            }
+          },
+          {
+            "unix_time": 1794117042.3451688,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 7.6982421875
+            }
+          },
+          {
+            "unix_time": 1794117043.487381,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 6.8935546875
+            }
+          },
+          {
+            "unix_time": 1794117044.654332,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 6.0556640625
+            }
+          },
+          {
+            "unix_time": 1794117045.8033435,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 5.25
+            }
+          },
+          {
+            "unix_time": 1794117046.920061,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.6943359375
+            }
+          },
+          {
+            "unix_time": 1794117048.1168036,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.4287109375
+            }
+          },
+          {
+            "unix_time": 1794117049.239724,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.4189453125
+            }
+          },
+          {
+            "unix_time": 1794117050.362814,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.34765625
+            }
+          },
+          {
+            "unix_time": 1794117051.4788003,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.345703125
+            }
+          },
+          {
+            "unix_time": 1794117052.5891142,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.3955078125
+            }
+          },
+          {
+            "unix_time": 1794117053.70581,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.3955078125
+            }
+          },
+          {
+            "unix_time": 1794117054.821222,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 4.146484375
+            }
+          },
+          {
+            "unix_time": 1794117055.9351006,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.8134765625
+            }
+          },
+          {
+            "unix_time": 1794117057.0625622,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.578125
+            }
+          },
+          {
+            "unix_time": 1794117058.1895986,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.345703125
+            }
+          },
+          {
+            "unix_time": 1794117059.3319466,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.099609375
+            }
+          },
+          {
+            "unix_time": 1794117060.455508,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.1025390625
+            }
+          },
+          {
+            "unix_time": 1794117061.63518,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 2.95703125
+            }
+          },
+          {
+            "unix_time": 1794117062.8203173,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 3.03515625
+            }
+          },
+          {
+            "unix_time": 1794117063.93625,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 2.1142578125
+            }
+          },
+          {
+            "unix_time": 1794117065.0538456,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 2.3779296875
+            }
+          },
+          {
+            "unix_time": 1794117066.1681883,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 2.3857421875
+            }
+          },
+          {
+            "unix_time": 1794117067.283605,
+            "free_gib": {
+              "GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580": 2.390625
+            }
+          }
+        ],
+        "container_state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3820676,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-08T05:50:28.312995218Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "returncode": 0,
+        "server_stop_returncode": 0
+      },
+      "camera-result.json": {
+        "passed": true,
+        "model_loaded": false,
+        "camera_order": [
+          "camera_cross_left_120fov",
+          "camera_front_wide_120fov",
+          "camera_cross_right_120fov",
+          "camera_front_tele_30fov"
+        ],
+        "rig": {
+          "camera_cross_left_120fov": {
+            "x": 2.472564,
+            "y": -0.93782,
+            "z": 0.917814,
+            "pitch": -0.909268,
+            "yaw": -66.083303,
+            "roll": -0.289044,
+            "fov": 92.31476045767843
+          },
+          "camera_front_wide_120fov": {
+            "x": 1.696904,
+            "y": 0.010188,
+            "z": 1.435701,
+            "pitch": -0.443195,
+            "yaw": 0.48923,
+            "roll": 0.155228,
+            "fov": 92.09398846568621
+          },
+          "camera_cross_right_120fov": {
+            "x": 2.478202,
+            "y": 0.954542,
+            "z": 0.928658,
+            "pitch": 1.410818,
+            "yaw": 66.837341,
+            "roll": -0.175652,
+            "fov": 92.60703278822449
+          },
+          "camera_front_tele_30fov": {
+            "x": 1.66703,
+            "y": -0.073855,
+            "z": 1.443884,
+            "pitch": 0.575408,
+            "yaw": 0.872023,
+            "roll": -0.244831,
+            "fov": 29.186721007739845
+          }
+        },
+        "width": 1920,
+        "height": 1080,
+        "config": {
+          "map": "Town03",
+          "junction_entry": {
+            "x": 109.98685455322266,
+            "y": -76.50132751464844,
+            "z": 8.0,
+            "yaw": -178.49090576171875,
+            "lane_width": 3.5,
+            "road_id": 59,
+            "lane_id": -5,
+            "s": 28.697988510131836,
+            "is_junction": false,
+            "junction_id": -1
+          },
+          "duration_s": 22.0,
+          "instruction": "Turn right at the T-junction, then continue along the road.",
+          "seed": 42,
+          "overhead": {
+            "enabled": true,
+            "height_m": 80,
+            "center_ahead_m": 20,
+            "front_inset": true
+          },
+          "rollouts": [
+            {
+              "name": "09-t-junction",
+              "distance_before_intersection_m": 0,
+              "lateral_offset_m": 0,
+              "speed_mps": 3,
+              "heading_offset_deg": 0
+            }
+          ]
+        },
+        "retained_history_frames": 4,
+        "last_image_shape": [
+          4,
+          1080,
+          1920,
+          3
+        ],
+        "final_frame": 60,
+        "requested_pose": {
+          "x": 109.98685455322266,
+          "y": -76.50132751464844,
+          "z": 7.99477481842041,
+          "yaw": -178.49090576171875,
+          "lane_width": 3.5,
+          "road_id": 59,
+          "lane_id": -5,
+          "s": 28.697988510131836,
+          "is_junction": false,
+          "junction_id": -1
+        }
+      },
+      "cleanup.json": {
+        "utc": "2026-11-08T05:52:22.338458+00:00",
+        "branch_commit": "bd761c4d1f20e8d21dc8cc3f92b275787c2542b8",
+        "diagnostic_source_sha256": "96b6bc32b1d515881d09e0444e56ede7ce386f87885a66676167198d64439310",
+        "config_path": "outputs/nf4-policy-pilot-20261107-v3/09-t-junction-nf4/09-t-junction-nf4-cap2/config.json",
+        "container_state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 137,
+          "Error": "",
+          "StartedAt": "2026-11-08T05:50:28.312995218Z",
+          "FinishedAt": "2026-11-08T05:51:24.727492317Z"
+        },
+        "owned_container_stopped": true,
+        "leases_reacquired": [
+          "gpu-GPU-fd2c05bc-4b86-6451-49ae-c9e3f7f79580.lock",
+          "carla-port-2000.lock"
+        ],
+        "port2000_closed": true,
+        "owned_client_processes_gone": true,
+        "driver_returncode": 0,
+        "headroom_samples": 13,
+        "renderer_memory_samples": 29,
+        "minimum_renderer_free_gib": 2.1142578125,
+        "camera_passed": true,
+        "model_loaded": false,
+        "retained_history_frames": 4,
+        "last_image_shape": [
+          4,
+          1080,
+          1920,
+          3
+        ],
+        "scope": "Single camera-only startup; not a driving/inference result or root-cause proof"
+      }
+    }
   }
 }
