@@ -1,7 +1,8 @@
 # Model-loaded left startup prefixes — 2026-11-07
 
-**Blocked before the first launch by the model-memory gate. No model, server
-or startup prefix was executed.** The six [model-free camera trials](RESULTS_CAMERA_STARTUP.md)
+**V3 completed on 2026-11-09: all four model-loaded startup trials passed, with
+zero trajectory/VQA calls and verified cleanup.** The earlier v2 resource refusal
+is preserved below. The six [model-free camera trials](RESULTS_CAMERA_STARTUP.md)
 all passed, with no demonstrated benefit from a one-second pause. They omitted
 model loading and some pre-camera setup. This next diagnostic retains the full
 failed left capture prefix, but stops before driving or visual-signal inference.
@@ -186,3 +187,17 @@ before any startup attempt. There is no device hopping or automatic retry.
 The watch is separate from the one observation included in the completed CPU
 assessment. Its live record is `availability-watch.json` in the v3 directory.
 No model or server has been launched from v3 at the time of this entry.
+
+## V3 execution after user resume, 2026-11-09
+
+All four O/P/P/O starts passed in 592.84 seconds total. All handovers match the
+fixed historical reference and the first original arm. Each trial loaded 624 NF4
+layers; startup allocated peak was 9.724 GiB under the reviewed 0.45 fraction.
+The simulator crash was not reproduced on the now-idle GPUs. Both original and
+pause arms passed twice, so no pause benefit was demonstrated and none is promoted.
+All owned children/containers stopped, port 2000 closed and leases released.
+See `outputs/loaded-left-camera-study-20261107-v3/comparison.json`.
+
+Next: the unchanged cap2 policy is tested on the original left/tight cases, with
+the declared loader-budget repair, model GPU3/render GPU0, fresh resource gates
+and no camera pause. Success here does not prove robustness under GPU contention.
