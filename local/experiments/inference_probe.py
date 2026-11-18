@@ -48,6 +48,23 @@ def acquire_experiment_lock():
     return lock
 
 
+def trajectory_generation_options(options, visual_signal):
+    """Opt-in native trajectory prefill, retaining the visual stop text path."""
+    mode = options.get("traffic", {}).get("trajectory_generation", "reasoned")
+    if mode == "reasoned":
+        return options
+    if mode != "direct":
+        raise ValueError("Unknown traffic trajectory generation mode")
+    conflicts = {"prompt_style", "max_generation_length", "completed_reasoning",
+                 "reasoning_prefix", "complete_visual_stop_intent"}.intersection(options)
+    if conflicts:
+        raise ValueError(f"Direct trajectory mode conflicts with explicit overrides: {sorted(conflicts)}")
+    effective = {**options, "prompt_style": "trajectory_only"}
+    if visual_signal not in ("red", "yellow"):
+        effective["max_generation_length"] = 1
+    return effective
+
+
 class Probe:
     def __init__(self, model, output):
         from alpamayo1_5 import helper
@@ -256,10 +273,16 @@ class Probe:
             self.trace["visual_signal"] = self.visual_signal
             self.trace["visual_signal_answer"] = self.visual_signal_answer
             self.trace["visual_signal_check_index"] = self.visual_signal_index
+        self.options = trajectory_generation_options(options, self.visual_signal)
+        if options.get("traffic", {}).get("trajectory_generation") == "direct":
+            self.trace["trajectory_generation"] = "direct"
+            self.trace["effective_prompt_style"] = self.options["prompt_style"]
+            self.trace["effective_max_generation_length"] = self.options.get("max_generation_length", 256)
+        if options.get("verify_signal"):
             if self.visual_signal in ("red", "yellow"):
                 stop_option = ("completed_reasoning" if options.get("complete_visual_stop_intent")
                                else "reasoning_prefix")
-                self.options = {**options, stop_option:
+                self.options = {**self.options, stop_option:
                                 f"Stop and remain stopped for the {self.visual_signal} traffic light"}
         for device in range(torch.cuda.device_count()):
             torch.cuda.reset_peak_memory_stats(device)

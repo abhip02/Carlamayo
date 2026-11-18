@@ -48,10 +48,12 @@ class CommandedRouteMap:
 
 class ProjectedSteeringFollower(TrajectoryFollower):
     def __init__(self, vehicle, mode='map', route=None, speed_cap_mps=None, steering_gain=1.,
-                 hold_visual_stop=False):
+                 hold_visual_stop=False, native_lookahead_min_m=None):
         if mode not in ('native', 'map', 'route'):
             raise ValueError('Steering mode must be native, map or route')
-        super().__init__(vehicle)
+        if native_lookahead_min_m is not None and mode != 'native':
+            raise ValueError('Native lookahead experiment requires native steering')
+        super().__init__(vehicle, lookahead_min_m=native_lookahead_min_m)
         if speed_cap_mps is not None and (not math.isfinite(speed_cap_mps) or speed_cap_mps <= 0):
             raise ValueError('Speed ceiling must be positive and finite')
         if not math.isfinite(steering_gain) or not 0.5 <= steering_gain <= 2.:

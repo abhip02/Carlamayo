@@ -149,3 +149,28 @@ def test_cleanup_reports_recoverable_teardown_failures(capsys):
     assert "Warning: failed to destroy sensor cam_front_wide" in output
     assert "Warning: failed to destroy ego vehicle" in output
     assert "Warning: failed to restore world asynchronous mode" in output
+
+
+@pytest.mark.parametrize("camera_count", [1, 4, 7])
+def test_camera_rgb_channels_and_history_ownership(monkeypatch, camera_count):
+    monkeypatch.setattr(carla_interface.cfg, "IMG_HEIGHT", 6)
+    monkeypatch.setattr(carla_interface.cfg, "IMG_WIDTH", 9)
+    interface = CARLAInterface()
+    interface.camera_order = [f"camera_{i}" for i in range(camera_count)]
+    rng = np.random.default_rng(21)
+    packets = rng.integers(0, 256, (camera_count, 6, 9, 4), dtype=np.uint8)
+    # Alpha varies independently. Packets arrive out of camera order.
+    for index in reversed(range(camera_count)):
+        interface.sensor_queue.put((20, interface.camera_order[index],
+                                    types.SimpleNamespace(raw_data=packets[index].tobytes())))
+    first = interface.get_camera_images(frame_id=20)
+    expected = packets[..., [2, 1, 0]]
+    np.testing.assert_array_equal(first, expected)
+    assert first.dtype == np.uint8 and first.flags.c_contiguous
+    for name in interface.camera_order:
+        interface.sensor_queue.put((21, name, types.SimpleNamespace(
+            raw_data=np.zeros((6, 9, 4), dtype=np.uint8).tobytes())))
+    second = interface.get_camera_images(frame_id=21)
+    assert not np.shares_memory(first, second)
+    second.fill(123)
+    np.testing.assert_array_equal(first, expected)

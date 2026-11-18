@@ -56,6 +56,40 @@ def test_native_arm_is_identical_and_does_not_query_map():
     assert not road.calls
 
 
+def test_shorter_native_lookahead_preserves_prediction_differences_without_map_access():
+    def forbidden_map_access():
+        raise AssertionError('Native steering must not access the map')
+    v = vehicle(None)
+    v.get_world = forbidden_map_access
+    responses = []
+    for offset in (-.2, 0., .2):
+        follower = ProjectedSteeringFollower(v, 'native', native_lookahead_min_m=2.)
+        path = np.column_stack((np.arange(1,65)*.3, np.full(64,offset), np.zeros(64)))
+        before = path.copy()
+        steer, _, _, debug = follower.compute_control(carla.Transform(), path, 3., np.full(64,3.))
+        responses.append(steer)
+        assert debug['lookahead_m'] == pytest.approx(3.2)
+        assert debug['projected_target_xyz'] is None
+        assert debug['projection_distance_m'] == 0.
+        np.testing.assert_array_equal(path, before)
+    assert responses[0] < responses[1] == 0. < responses[2]
+    # The override is instance-local: subsequent default followers remain unchanged.
+    default = ProjectedSteeringFollower(v, 'native')
+    result = default.compute_control(carla.Transform(), path, 3., np.full(64,3.))
+    assert result[3]['lookahead_m'] == pytest.approx(5.2)
+
+
+@pytest.mark.parametrize('minimum', [0., -1., float('nan'), float('inf'), 13.])
+def test_invalid_native_lookahead_is_rejected(minimum):
+    with pytest.raises(ValueError, match='Lookahead minimum'):
+        ProjectedSteeringFollower(vehicle(None), 'native', native_lookahead_min_m=minimum)
+
+
+def test_native_lookahead_cannot_silently_change_projected_arm():
+    with pytest.raises(ValueError, match='requires native steering'):
+        ProjectedSteeringFollower(vehicle(Road()), 'map', native_lookahead_min_m=2.)
+
+
 def test_planned_stop_stays_a_stop_with_projection():
     road=Road()
     a,b=TrajectoryFollower(vehicle(road)),ProjectedSteeringFollower(vehicle(road))

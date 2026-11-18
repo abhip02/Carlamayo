@@ -79,7 +79,7 @@ class SingleSampleProbe(native.Probe):
         return result
 
 
-def capture(args, output):
+def capture(args, output, probe_class_override=None):
     options = json.loads(args.options.read_text())
     mode = options.get('steering_mode')
     if mode not in ('native', 'map', 'route') or options.get('num_samples') != 1:
@@ -90,6 +90,8 @@ def capture(args, output):
     originals = (runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model,
                  runner.trajectory_to_world, runner.OverheadRecorder)
     cache_enabled=bool(options.get('projection_cache_age_s'))
+    async_enabled=bool(options.get('async_inference'))
+    anchored_execution=cache_enabled or async_enabled
     # Native capture has already saved the shared sources; add experiment-specific code.
     experiment_path = output / 'experiment.json'
     experiment = json.loads(experiment_path.read_text())
@@ -109,19 +111,24 @@ def capture(args, output):
             if mode == 'route':
                 route = json.loads((output / 'generated-routes.json').read_text())['routes'][options['validation_route']]
             super().__init__(vehicle, mode, route, options.get('controller_speed_cap_mps'),
-                             options.get('steering_gain', 1.), options.get('hold_visual_stop', False))
+                             options.get('steering_gain', 1.), options.get('hold_visual_stop', False),
+                             native_lookahead_min_m=options.get('native_lookahead_min_m'))
             self.index = 0
 
         def compute_control(self, tf, world, speed, speeds, elapsed_sec=0.):
             if self.hold_visual_stop:
                 record = json.loads((output / f'frame_{self.index:03d}.json').read_text())
                 self.observe_visual_signal(record['visual_signal'], record['visual_signal_check_index'])
-            if cache_enabled:
+            if anchored_execution:
                 from local.experiments.projected_retention import ACTIVE
                 elapsed_sec=ACTIVE.execution_age
                 if not np.array_equal(world,ACTIVE.execution_world):
                     raise RuntimeError('Cached world anchor changed before control')
-            control = super().compute_control(tf, world, speed, speeds, elapsed_sec)
+            if async_enabled and elapsed_sec > runner.defaults.TRAJECTORY_MAX_AGE_SEC:
+                control = (0., 0., 1., dict(async_expired_plan=True,
+                    projection_distance_m=0., projected_lane=None))
+            else:
+                control = super().compute_control(tf, world, speed, speeds, elapsed_sec)
             native.write_json(output / f'control_{self.index:03d}.json', json_finite({
                 'time_s': self.index * .1, 'world_trajectory': np.asarray(world).tolist(),
                 'native_speeds': np.asarray(speeds).tolist(), 'elapsed_sec': elapsed_sec,
@@ -156,23 +163,26 @@ def capture(args, output):
         if mode != 'route' or not options.get('verify_signal'):
             raise ValueError('Speed selection requires commanded-route projection and signal checks')
         probe_class = SpeedSelectedProbe
-    if cache_enabled:
+    if anchored_execution:
         from local.experiments import projected_retention as retaining
         from local.experiments.validated_selection import pose_transform
-        if probe_class is SingleSampleProbe:
-            raise ValueError('Projected retention requires bounded speed selection')
-        probe_class=retaining.RetainedSpeedProbe
+        if cache_enabled:
+            if probe_class is SingleSampleProbe:
+                raise ValueError('Projected retention requires bounded speed selection')
+            probe_class=retaining.RetainedSpeedProbe
         class RetainingRecorder(originals[5]):
             def add_frame(self,*args,**kwargs):
                 active=retaining.ACTIVE
                 if kwargs.get('prediction') is not None and active.execution_record is not None:
                     record=active.execution_record
-                    source=record.get('retention',{}).get('source_context',record['context'])
+                    source=record.get('async_execution',record.get('retention',{})).get('source_context',record['context'])
                     kwargs.update(prediction=np.vstack((runner.rear_axle_xyz(pose_transform(source['world_pose'])),active.execution_world)),
                                   prediction_time=source['time_s'])
                 return super().add_frame(*args,**kwargs)
         runner.trajectory_to_world=retaining.anchored_world_path
         runner.OverheadRecorder=RetainingRecorder
+    if probe_class_override is not None:
+        probe_class=probe_class_override
     if options.get('scene_policy'):
         from local.experiments.scene_routes import scene_scope
         class ScopedProbe(probe_class):
@@ -196,7 +206,7 @@ def capture(args, output):
     finally:
         (runner.TrajectoryFollower, runner.connect_world, native.Probe, runner.load_sharded_model,
          runner.trajectory_to_world, runner.OverheadRecorder) = originals
-        if cache_enabled:
+        if anchored_execution:
             retaining.ACTIVE=None
 
 

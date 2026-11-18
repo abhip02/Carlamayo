@@ -89,7 +89,12 @@ def max_path_curvature(path_xy):
 class TrajectoryFollower:
     """Stateful follower for one ego vehicle; create a new one after a respawn."""
 
-    def __init__(self, vehicle):
+    def __init__(self, vehicle, *, lookahead_min_m=None):
+        if lookahead_min_m is None:
+            lookahead_min_m = cfg.PID_LOOKAHEAD_MIN_M
+        if not math.isfinite(lookahead_min_m) or not 0 < lookahead_min_m <= cfg.PID_LOOKAHEAD_MAX_M:
+            raise ValueError('Lookahead minimum must be positive, finite and no larger than the maximum')
+        self.lookahead_min_m = float(lookahead_min_m)
         wheels = vehicle.get_physics_control().wheels
         self.max_steer_rad = math.radians(max(w.max_steer_angle for w in wheels))
         self._integral = 0.0
@@ -177,8 +182,8 @@ class TrajectoryFollower:
         path = wp_world[start_idx:, :2]
 
         lookahead_m = float(np.clip(
-            cfg.PID_LOOKAHEAD_MIN_M + cfg.PID_LOOKAHEAD_SPEED_GAIN * speed_mps,
-            cfg.PID_LOOKAHEAD_MIN_M, cfg.PID_LOOKAHEAD_MAX_M,
+            self.lookahead_min_m + cfg.PID_LOOKAHEAD_SPEED_GAIN * speed_mps,
+            self.lookahead_min_m, cfg.PID_LOOKAHEAD_MAX_M,
         ))
         distances = np.linalg.norm(path - ego_xy, axis=1)
         ahead = np.nonzero(distances >= lookahead_m)[0]
