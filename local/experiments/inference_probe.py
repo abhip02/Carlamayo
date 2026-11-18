@@ -382,6 +382,12 @@ def capture(args, output):
 
         def load_model(self, *values, **kwargs):
             model, processor = super().load_model(*values, **kwargs)
+            from local.experiments.fp8_quantization import apply_precision
+            report = apply_precision(model, options.get("precision", "bf16"))
+            report["checkpoint"] = str(kwargs.get("checkpoint_path") or self.model_id)
+            write_json(output / "precision.json", report)
+            print(f"Precision: {report['precision']}; quantized Linear layers: "
+                  f"{len(report['quantized_layers'])}", flush=True)
             self.probe_processor = processor
             active["probe"] = Probe(model, output)
             self.index = 0
@@ -572,6 +578,7 @@ def main():
             "module/inference.py", "module/adapters/alpamayo_1_5.py",
             "local/run_intersection.py", "local/run_driving.py",
             "local/experiments/inference_probe.py", "local/experiments/camera_projection.py",
+            "local/experiments/fp8_quantization.py",
             "local/experiments/candidate_selection.py", "local/experiments/frame_sync.py",
             "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
             "local/experiments/validated_selection.py", "local/experiments/retained_probe.py",

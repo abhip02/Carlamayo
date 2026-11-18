@@ -11,6 +11,16 @@ are recorded in [round 19](experiments/RESULTS_ROUND19.md).
 
 ## Ten distinct scene tests
 
+The FP8 experiment branch `experiment/ten-driving-scenes-fp8` starts at
+`e1f38d6` on `experiment/ten-driving-scenes`. Add
+`--precision fp8-w8a8-emulated` to the suite command below to test E4M3 linear
+weights and activations on the available A5000 GPUs. The baseline is **BF16**.
+This quantize/dequantize implementation uses BF16 storage and computation; it
+tests numerical effects, without native FP8 acceleration or memory savings.
+See [the FP8 experiment record](experiments/RESULTS_FP8.md) for coverage,
+validation, results and reproduction. Omit the option for the BF16 baseline;
+`--precision fp8-w8a16-emulated` selects the optional weights-only ablation.
+
 The opt-in suite is on `experiment/ten-driving-scenes`. It covers the same
 intersection going straight, left and right; two curved-road directions; two
 roundabout exits; a tight bend; an elevated T-junction; and a red-light stop.
