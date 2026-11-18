@@ -1,5 +1,84 @@
 # Isolated driving-inference investigation
 
+Traffic extension (2026-11-15): the original ten routes now have a separate,
+explicit lead-traffic manifest. The latest complete evaluation (v19) passed
+**8/10** cases in **26.12 minutes of capture time, 39.14 minutes including
+setup, cleanup and two startup retries**. All ten had no recorded collision or
+lane departure. Left turn and long roundabout failed the original progress and
+unnecessary-stop checks. Tight bend reached its endpoint at 26.0 seconds against its original
+28.0-second deadline; this single pass does not establish repeatability.
+[Results and trace scope](../../../experiments/round19-traffic-async-20261114-evaluation/REPORT.txt),
+[all ten videos, including failures](../../../experiments/round19-traffic-async-20261114-evaluation/v19-deliverables/ten-traffic-evaluation-videos.zip),
+and [videos, traces, audits and frozen source](../../../experiments/round19-traffic-async-20261114-evaluation/v19-deliverables/traffic-evaluation-compact-videos-and-traces.zip).
+
+The earlier best full traffic evaluation (v14) passed 7/10 in 60.38 total
+minutes. The latest result used 35.2% less total time and 214 native predictions
+versus 655. Settings and driving outcomes differ; this is observed evaluation
+cost, not the cost of ten successful traces or an isolated causal speedup.
+A separate two-stop-case pilot (v20) reused the existing simulator between cases
+and passed both, taking 5.85 minutes versus 6.48 minutes separately in v19.
+That 9.8% observed saving is not yet validated across the full suite.
+
+The v19 traffic profile retains BF16/SDPA Alpamayo1.5, the camera/history
+values, original ego starts, routes, seeds, deadlines and map-assisted steering.
+It uses one native trajectory, a common 3.0 m/s target ceiling, and one-second
+fresh-state planning with physics paused for inference. Red/yellow, heading and
+navigation refreshes remain. Fine updates triggered only by measured
+deceleration are disabled. A bounded native-motion commitment preserves source
+ages and all overrides; it activated for one tick in v19. Camera-history storage
+is reused with bit-exact input and ownership checks. **229 runtime tests** and
+**17 separate simulator-orchestration tests** passed.
+
+Traffic launch boost and the empty-road motion-ranking profile are disabled.
+Independent audits verify every applied control. No model-input resizing,
+model replacement, synthetic motion, expired-plan reuse or relaxed driving
+criteria are used. The left-turn failure includes a fresh native prediction
+that says to stop for red while its saved views show green; the diagnostic
+inputs are preserved separately. The long-roundabout failure in this full run remains recorded; subsequent pilots are described below.
+All failed attempts and their costs remain in the report. Earlier pilots and
+the short-following limitations remain documented; no passes are pooled across
+experiments. There is **no accepted full traffic checkpoint** yet: all ten must
+pass one frozen profile and an unchanged repeat. Current traffic coverage is
+one declared lead per route, not dense traffic or pedestrian validation.
+
+
+Follow-up (2026-11-15): v23/23b used 1.5-second base planning with a separate
+1-second refresh during measured braking. Braking, red queue and long roundabout
+passed; left turn failed. The first launcher was interrupted after the completed
+braking case, so these are explicitly split runs, not a completed four-case
+batch. The roundabout capture took 215.43 seconds versus 246.34 seconds in the
+previous passing pilot. No full-suite success or repeat is established.
+
+A retrospective traffic-route check found that the left-turn lead made an
+unintended U-turn. An exact recorded-control replay reproduced both vehicles'
+original positions with zero difference, isolating the NPC setup. Traffic fixture
+revision 3 adds an independent lead-route audit and uses outgoing-road anchors
+only for an unambiguous single-junction exit; more complex paths remain dense.
+Its path arguments match tested left/right corrections and preserve the other
+eight paths. Original ego starts, deadlines and physical criteria remain; this
+is a new traffic workload revision, not a pass of the old U-turn scenario.
+The five-case corrected-traffic pilot v26 passed four cases: right turn, braking,
+red queue and long roundabout. Left remained moving but ended 3.76 metres short
+of its unchanged 15-second deadline. Capture took 9.86 minutes; completed attempts
+including one startup retry took 16.45 minutes. The v27 focused pilot with a common
+3.5 m/s ceiling and 0.5-second measured-braking refresh passed first roundabout
+(minimum vehicle clearance 1.47 metres), but again failed left endpoint. It was
+rejected; the further safety pilot and full suite were not launched. Its two
+cases cost 4.51 minutes capture and 6.79 minutes including setup. A controlled ceiling-only
+variant v28 also passed braking but failed left, ending 5.93 metres short; it
+was rejected. Fifty additional paired saved-input predictions reproduced all
+25 baseline outputs exactly but found no consistent benefit from map-based
+navigation rewording. No wording change was applied. All these fixed batches
+have finished; there is still no complete corrected-traffic ten-case pass.
+
+The camera conversion now writes pixel-identical RGB into independent frame
+storage without an intermediate camera-stack copy. Optional
+`--capture-all-native-inputs` records every actual request for diagnostics;
+recording time counts and it does not add model calls. The current source passed
+229 focused checks plus two additional NPC-path guard checks. Quantization work
+remains paused. [Follow-up evidence and all failed attempts](../../../experiments/round19-traffic-followup-20261115/REPORT.txt).
+
+
 Current investigation: [driving latency](RESULTS_LATENCY.md). The original
 accepted profile is still the default. Retry limits and a lower preference
 band are isolated, software-tested candidates; fresh driving validation is

@@ -304,12 +304,15 @@ class CARLAInterface:
         missing = [name for name in self.camera_order if name not in frame_data]
         if missing:
             raise TimeoutError(f"Missing camera frames: {missing}")
-        images = []
-        for name in self.camera_order:
+        # Each call owns its output: older frames remain in the history deque.
+        # Convert contiguous BGRA directly into the final RGB camera slots.
+        images = np.empty((len(self.camera_order), cfg.IMG_HEIGHT, cfg.IMG_WIDTH, 3),
+                          dtype=np.uint8)
+        for index, name in enumerate(self.camera_order):
             array = np.frombuffer(frame_data[name].raw_data, dtype=np.uint8)
-            array = array.reshape((cfg.IMG_HEIGHT, cfg.IMG_WIDTH, 4))[:, :, :3]
-            images.append(cv2.cvtColor(array, cv2.COLOR_BGR2RGB))
-        return np.array(images)
+            array = array.reshape((cfg.IMG_HEIGHT, cfg.IMG_WIDTH, 4))
+            cv2.cvtColor(array, cv2.COLOR_BGRA2RGB, dst=images[index])
+        return images
 
     def get_ego_state(self):
         transform = self.ego_vehicle.get_transform()

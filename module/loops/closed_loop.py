@@ -18,6 +18,7 @@ import traceback
 import torch
 
 from module import config as cfg
+from module.async_inference import run_inference_worker
 from module.carla_interface import CARLAInterface
 from module.data_collection import RunRecorder
 from module.inference import (
@@ -302,78 +303,59 @@ def run(adapter, args):
                     "ego_tf": carla_if.ego_vehicle.get_transform(),
                 }
 
-            def _inference_worker():
-                while not inference_stop.is_set():
-                    try:
-                        req = inference_request_q.get(timeout=0.1)
-                    except queue.Empty:
-                        continue
-                    if req is None:
-                        break
-                    req_frame = int(req["frame"])
-                    try:
-                        t0 = time.time()
-                        model_data = adapter.prepare_model_input(
-                            req["images_array"], req["history_xyz"], req["history_rot"],
-                            req["t0_us"],
-                        )
-                        if req["mode"] == "vqa":
-                            extra = _run_vqa_with_linalg_fallback(
-                                model_data, question=req["vqa_question"]
-                            )
-                            result = {
-                                "mode": "vqa",
-                                "frame_submitted": req_frame,
-                                "extra": extra,
-                                "answer": adapter.extract_answer_text(extra),
-                                "inference_time": time.time() - t0,
-                                "vqa_question": req["vqa_question"],
-                                "prompt_revision": req["prompt_revision"],
-                                "respawn_revision": req["respawn_revision"],
-                            }
-                        else:
-                            navigation_text = (
-                                req["navigation_text"] if req["mode"] == "navigation" else ""
-                            )
-                            navigation_weight = (
-                                req["navigation_weight"] if req["mode"] == "navigation" else 1.0
-                            )
-                            pred_xyz, extra = _run_inference_with_nav_fallback(
-                                model_data,
-                                navigation_text=navigation_text,
-                                navigation_weight=navigation_weight,
-                            )
-                            result = {
-                                "mode": req["mode"],
-                                "frame_submitted": req_frame,
-                                "pred_xyz": pred_xyz,
-                                "extra": extra,
-                                "inference_time": time.time() - t0,
-                                "navigation_text": navigation_text,
-                                "navigation_weight": navigation_weight,
-                                "history_xyz": req["history_xyz"],
-                                "history_rot": req["history_rot"],
-                                "ego_tf": req["ego_tf"],
-                                "prompt_revision": req["prompt_revision"],
-                                "respawn_revision": req["respawn_revision"],
-                            }
-                    except Exception as e:
-                        result = {
-                            "frame_submitted": req_frame,
-                            "error": str(e),
-                            "traceback": traceback.format_exc(),
-                            "respawn_revision": req.get("respawn_revision"),
-                        }
-
-                    while True:
-                        try:
-                            inference_result_q.get_nowait()
-                        except queue.Empty:
-                            break
-                    inference_result_q.put_nowait(result)
+            def _process_inference_request(req):
+                req_frame = int(req["frame"])
+                t0 = time.time()
+                model_data = adapter.prepare_model_input(
+                    req["images_array"], req["history_xyz"], req["history_rot"],
+                    req["t0_us"],
+                )
+                if req["mode"] == "vqa":
+                    extra = _run_vqa_with_linalg_fallback(
+                        model_data, question=req["vqa_question"]
+                    )
+                    result = {
+                        "mode": "vqa",
+                        "frame_submitted": req_frame,
+                        "extra": extra,
+                        "answer": adapter.extract_answer_text(extra),
+                        "inference_time": time.time() - t0,
+                        "vqa_question": req["vqa_question"],
+                        "prompt_revision": req["prompt_revision"],
+                        "respawn_revision": req["respawn_revision"],
+                    }
+                else:
+                    navigation_text = (
+                        req["navigation_text"] if req["mode"] == "navigation" else ""
+                    )
+                    navigation_weight = (
+                        req["navigation_weight"] if req["mode"] == "navigation" else 1.0
+                    )
+                    pred_xyz, extra = _run_inference_with_nav_fallback(
+                        model_data,
+                        navigation_text=navigation_text,
+                        navigation_weight=navigation_weight,
+                    )
+                    result = {
+                        "mode": req["mode"],
+                        "frame_submitted": req_frame,
+                        "pred_xyz": pred_xyz,
+                        "extra": extra,
+                        "inference_time": time.time() - t0,
+                        "navigation_text": navigation_text,
+                        "navigation_weight": navigation_weight,
+                        "history_xyz": req["history_xyz"],
+                        "history_rot": req["history_rot"],
+                        "ego_tf": req["ego_tf"],
+                        "prompt_revision": req["prompt_revision"],
+                        "respawn_revision": req["respawn_revision"],
+                    }
+                return result
 
             worker_thread = threading.Thread(
-                target=_inference_worker, name="alpamayo-inference-worker", daemon=True
+                target=run_inference_worker,
+                args=(inference_request_q, inference_result_q, inference_stop, _process_inference_request),
+                name="alpamayo-inference-worker", daemon=True
             )
             worker_thread.start()
 

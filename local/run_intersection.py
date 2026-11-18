@@ -140,6 +140,19 @@ def add_video_frame(writer, rgb, elapsed, state, label):
     writer.write(bgr)
 
 
+def stack_camera_history(frames, buffer=None):
+    """Stack the same camera history while reusing its NumPy allocation.
+
+    The adapter copies this interleaved RGB array into its own channel-first
+    tensor before the next tick can overwrite the scratch buffer.
+    """
+    if buffer is None:
+        first = frames[0]
+        buffer = np.empty((first.shape[0], len(frames), *first.shape[1:]),
+                          dtype=first.dtype)
+    return np.stack(frames, axis=1, out=buffer)
+
+
 def run_rollout(client, world, adapter, model, processor, config, entry, spec, out):
     out.mkdir()
     interface = CARLAInterface(camera_configs=adapter.source_camera_configs)
@@ -154,6 +167,7 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
         if config.get("overhead", {}).get("enabled", True):
             overhead = OverheadRecorder(world, entry, out, config.get("overhead"), label=out.name)
         frames, target = initialize_ego(interface, entry, spec)
+        camera_stack = None
         state = interface.get_ego_state()
         summary.update(requested_world_pose=target, actual_handover=state)
         write_json(out / "initial.json", summary)
@@ -175,11 +189,15 @@ def run_rollout(client, world, adapter, model, processor, config, entry, spec, o
                                    0, state["speed"], front_rgb=frames[-1][adapter.viz_camera_slot])
             for step in range(round(config["duration_s"] / DT)):
                 xyz, rot = interface.get_history_in_local_frame()
-                data = adapter.prepare_model_input(np.stack(frames, axis=1), xyz, rot,
+                camera_stack = stack_camera_history(frames, camera_stack)
+                data = adapter.prepare_model_input(camera_stack, xyz, rot,
                                                    round(elapsed * 1_000_000))
                 data["camera_indices"] = torch.tensor(adapter.source_camera_indices)
-                torch.manual_seed(config["seed"])
-                torch.cuda.manual_seed_all(config["seed"])
+                # The async probe seeds inside its single inference worker.
+                # Reseeding here would race an in-flight model generation.
+                if not config.get("async_inference", False):
+                    torch.manual_seed(config["seed"])
+                    torch.cuda.manual_seed_all(config["seed"])
                 inference_started = time.monotonic()
                 pred, extra = adapter.run_inference(model, processor, data,
                                                     navigation_text=config.get("instruction"),

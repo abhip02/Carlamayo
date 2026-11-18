@@ -14,10 +14,85 @@ import carla
 import yaml
 
 
+def traffic_trajectory_generation(case):
+    mode = case.get('traffic', {}).get('trajectory_generation', 'reasoned')
+    if mode not in ('reasoned', 'direct'):
+        raise ValueError('Traffic trajectory generation must be reasoned or direct')
+    return mode
+
+
+def native_flow_temperature(case):
+    value = case.get('traffic', {}).get('flow_temperature', 1.)
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value) or not 0. <= value <= 1.):
+        raise ValueError('Traffic flow temperature must be finite and between 0 and 1')
+    return float(value)
+
+
+def declared_traffic_speed_cap(case, requested=None):
+    value = case.get('traffic', {}).get('controller_speed_cap_mps')
+    if value is None:
+        return requested
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value) or not 1. <= value <= 4.5):
+        raise ValueError('Traffic speed ceiling must be finite and between 1 and 4.5m/s')
+    if requested is not None and requested != value:
+        raise ValueError('Requested speed ceiling differs from the traffic declaration')
+    return float(value)
+
+
+def validate_motion_commitment(commitment, base_interval, rest_interval=None):
+    if commitment is None:
+        return
+    if (isinstance(commitment, bool) or not isinstance(commitment, (int, float))
+            or not math.isfinite(commitment) or not .1 <= commitment <= .5
+            or abs(commitment * 10 - round(commitment * 10)) > 1e-6
+            or base_interval is None or not math.isfinite(base_interval)
+            or base_interval + commitment > 3. + 1e-8 or rest_interval is not None):
+        raise ValueError('Native motion commitment requires fresh planning, a0.1–0.5s duration on the0.1s grid, base+duration<=3s, and no rest extension')
+
+
+def validate_deceleration_interval(value, base_interval, fine_interval, signal_only):
+    if value is None:
+        return
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or isinstance(base_interval,bool) or not isinstance(base_interval,(int,float))
+            or not math.isfinite(base_interval) or not .1<=base_interval<=3.
+            or not .1 <= value <= base_interval
+            or abs(value * 10 - round(value * 10)) > 1e-6
+            or isinstance(fine_interval,bool) or not isinstance(fine_interval,(int,float))
+            or not math.isfinite(fine_interval) or not .1<=fine_interval<=value
+            or signal_only is not True):
+        raise ValueError('Separate deceleration planning requires a0.1s-grid interval between the signal-only fine interval and base interval')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--single-gpu-model',action='store_true')
+    parser.add_argument('--capture-all-native-inputs',action='store_true',
+                        help='Diagnostic only: save each requested native input; all recording time counts')
+    parser.add_argument('--async-deceleration-planning-interval-s',type=float,
+                        help='Optional shorter fresh interval during measured braking; signal-only fine updates remain separate')
+    parser.add_argument('--async-inference',action='store_true',help='Use the shared asynchronous worker with source-pose anchoring and expiry braking')
+    parser.add_argument('--async-max-pending-sim-s',type=float,
+                        help='Pause physics after this much simulation time while a request is pending')
+    parser.add_argument('--async-retention-age-s',type=float,default=0.)
+    parser.add_argument('--async-fine-planning-interval-s',type=float,
+                        help='Shorter fresh planning interval while moving with a visual stop signal or measured deceleration of at least 0.5m/s^2')
+    parser.add_argument('--async-fine-planning-signal-only',action='store_true',
+                        help='Use the fine interval only with model visual red/yellow, not deceleration alone')
+    parser.add_argument('--async-fresh-planning-interval-s',type=float,
+                        help='Optional sparse planning with physics paused for current-state inference at these simulation intervals')
+    parser.add_argument('--async-motion-commitment-s',type=float,
+                        help='Briefly execute native motion that begins before the normal planning boundary; maximum0.5s after its onset')
+    parser.add_argument('--async-rest-planning-interval-s',type=float,
+                        help='Bounded interval for plans whose original measured speed is at most0.2m/s; earlier fine/heading/navigation refreshes still apply')
+    parser.add_argument('--async-revalidate-delayed-plans',action='store_true',
+                        help='Reapply existing moving-plan checks at actual execution age; pause for fresh inference when needed')
+    parser.add_argument('--async-max-pending-heading-deg',type=float,
+                        help='Pause physics when heading changes by this much while inference is pending')
     parser.add_argument('--stop-on-failure',action='store_true',help='Stop after the first failed or unaudited capture')
     parser.add_argument('--require-pass',action='store_true',help='Return a nonzero exit code unless every requested capture passes')
     parser.add_argument('--server-script',type=Path,default=Path('local/server.sh'))
@@ -33,6 +108,42 @@ def main():
     parser.add_argument('--steering-gain',type=float,default=1.)
     parser.add_argument('--cache-age-s',type=float,default=0.)
     args=parser.parse_args()
+    if args.async_inference and args.cache_age_s:
+        parser.error('Async mode does not support motion-ranked history')
+    if args.async_retention_age_s:
+        if not args.async_inference or args.speed_selection_attempts<2 or not math.isfinite(args.async_retention_age_s) or not 0<args.async_retention_age_s<=3:
+            parser.error('Async retention requires bounded selection and a positive age at most3seconds')
+    if args.async_max_pending_sim_s is not None:
+        limit = args.async_max_pending_sim_s
+        if not args.async_inference or not math.isfinite(limit) or not .1 <= limit <= 3. or abs(limit*10-round(limit*10)) > 1e-6:
+            parser.error('Async simulation advance limit must be a multiple of 0.1 seconds between 0.1 and 3')
+    if args.async_revalidate_delayed_plans and not args.async_retention_age_s:
+        parser.error('Delayed-plan revalidation requires the original async retention admission policy')
+    if args.async_max_pending_heading_deg is not None:
+        limit=args.async_max_pending_heading_deg
+        if not args.async_inference or not math.isfinite(limit) or not 1 <= limit <= 90:
+            parser.error('Async heading limit must be finite and between 1 and 90 degrees')
+    if args.async_fresh_planning_interval_s is not None:
+        interval=args.async_fresh_planning_interval_s
+        if not args.async_inference or not math.isfinite(interval) or not .1<=interval<=3 or abs(interval*10-round(interval*10))>1e-6:
+            parser.error('Fresh planning interval must be a multiple of 0.1 seconds between 0.1 and 3')
+    if args.async_fine_planning_interval_s is not None:
+        fine=args.async_fine_planning_interval_s
+        if (args.async_fresh_planning_interval_s is None or not math.isfinite(fine)
+                or not .1<=fine<=args.async_fresh_planning_interval_s or abs(fine*10-round(fine*10))>1e-6):
+            parser.error('Fine planning requires fresh planning and a multiple of 0.1 seconds no larger than its base interval')
+    if args.async_rest_planning_interval_s is not None:
+        rest=args.async_rest_planning_interval_s
+        if (args.async_fresh_planning_interval_s is None or not math.isfinite(rest)
+                or not args.async_fresh_planning_interval_s<=rest<=3. or abs(rest*10-round(rest*10))>1e-6):
+            parser.error('Rest planning must be a multiple of0.1seconds between the base interval and3seconds')
+    if args.async_fine_planning_signal_only and args.async_fine_planning_interval_s is None:
+        parser.error('Signal-only fine planning requires a declared fine interval')
+    try:
+        validate_deceleration_interval(args.async_deceleration_planning_interval_s, args.async_fresh_planning_interval_s, args.async_fine_planning_interval_s, args.async_fine_planning_signal_only)
+        validate_motion_commitment(args.async_motion_commitment_s, args.async_fresh_planning_interval_s, args.async_rest_planning_interval_s)
+    except ValueError as error:
+        parser.error(str(error))
     low, high = args.speed_preference_mps
     if not all(math.isfinite(v) for v in (low, high)) or not 0 < low < high:
         parser.error('speed preference must be finite, positive and increasing')
@@ -59,12 +170,23 @@ def main():
         steering_modes=args.steering_modes,speed_selection_attempts=args.speed_selection_attempts,
         speed_preference_mps=args.speed_preference_mps,
         speed_selection_max_seconds=args.speed_selection_max_seconds,
+        capture_all_native_inputs=args.capture_all_native_inputs,
         cases=args.cases, manifest=str(manifest_path),
         manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
         renderer_gpu=os.environ.get('CARLAMAYO_RENDER_GPU'),
         renderer_container=os.environ.get('CARLAMAYO_PROJECTION_CONTAINER'),
         controller_speed_cap_mps=args.speed_cap_mps,steering_gain=args.steering_gain,
         projection_cache_age_s=args.cache_age_s,
+        async_max_pending_sim_s=args.async_max_pending_sim_s,
+        async_max_pending_heading_deg=args.async_max_pending_heading_deg,
+        async_retention_age_s=args.async_retention_age_s,
+        async_fresh_planning_interval_s=args.async_fresh_planning_interval_s,
+        async_motion_commitment_s=args.async_motion_commitment_s,
+        async_rest_planning_interval_s=args.async_rest_planning_interval_s,
+        async_fine_planning_interval_s=args.async_fine_planning_interval_s,
+        async_fine_planning_signal_only=args.async_fine_planning_signal_only,
+        async_deceleration_planning_interval_s=args.async_deceleration_planning_interval_s,
+        async_revalidate_delayed_plans=args.async_revalidate_delayed_plans,
         scope='One candidate per inference; explicit bounded native-speed selection and bounded cache only if requested. Route mode constrains projection to the commanded map corridor.')
     sources={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
              for folder in ('module','local') for p in (root/folder).rglob('*.py')}
@@ -80,20 +202,46 @@ def main():
         for mode in args.steering_modes:
             name=f"{case['route']}-{mode}" if args.cases == [1,4] and len(manifest['scenarios']) == 5 else f"{case['name']}-{mode}"
             config=copy.deepcopy(base)
+            if args.async_inference:
+                config['async_inference']=True
             config['duration_s']=case['duration_s']
             for key in ('junction_entry', 'overhead'):
                 if key in case:config[key]=copy.deepcopy(case[key])
             config['rollouts']=[{k:case[k] for k in ('name','distance_before_intersection_m','lateral_offset_m','speed_mps','heading_offset_deg')}]
             options=dict(steering_mode=mode,num_samples=1,seed=case['seed'],flow_seed=case['flow_seed'],
-                flow_temperature=1.,guard_trajectory_format=True,acknowledged_preroll=True,
+                flow_temperature=native_flow_temperature(case),guard_trajectory_format=True,acknowledged_preroll=True,
                 acknowledged_controls=True,wait_for_snapshot=True,verify_signal=True,
                 signal_check_interval=5,validation_routes='auto',validation_route=case['route'],
                 instruction=case.get('instruction',f"Turn {case['route']} at the intersection." if case['route'] in ('left','right') else 'Continue straight through the intersection.'))
-            for key in ('route_spec','scene_policy','traffic_light_state','mission','hold_visual_stop'):
+            for key in ('route_spec','scene_policy','traffic_light_state','mission','hold_visual_stop','traffic'):
                 if key in case:options[key]=copy.deepcopy(case[key])
+            traffic_trajectory_generation(case)  # Validate before starting capture.
             config['instruction']=options['instruction']
-            if args.speed_cap_mps is not None:
-                options['controller_speed_cap_mps']=args.speed_cap_mps
+            if args.async_inference:
+                options['async_inference']=True
+                if args.async_max_pending_sim_s is not None:
+                    options['async_max_pending_sim_s']=args.async_max_pending_sim_s
+                if args.async_retention_age_s:
+                    options['async_retention_age_s']=args.async_retention_age_s
+                if args.async_revalidate_delayed_plans:
+                    options['async_revalidate_delayed_plans']=True
+                if args.async_fresh_planning_interval_s is not None:
+                    options['async_fresh_planning_interval_s']=args.async_fresh_planning_interval_s
+                if args.async_motion_commitment_s is not None:
+                    options['async_motion_commitment_s']=args.async_motion_commitment_s
+                if args.async_rest_planning_interval_s is not None:
+                    options['async_rest_planning_interval_s']=args.async_rest_planning_interval_s
+                if args.async_fine_planning_interval_s is not None:
+                    options['async_fine_planning_interval_s']=args.async_fine_planning_interval_s
+                if args.async_fine_planning_signal_only:
+                    options['async_fine_planning_signal_only']=True
+                if args.async_deceleration_planning_interval_s is not None:
+                    options['async_deceleration_planning_interval_s']=args.async_deceleration_planning_interval_s
+                if args.async_max_pending_heading_deg is not None:
+                    options['async_max_pending_heading_deg']=args.async_max_pending_heading_deg
+            speed_cap = declared_traffic_speed_cap(case, args.speed_cap_mps)
+            if speed_cap is not None:
+                options['controller_speed_cap_mps']=speed_cap
             if args.steering_gain != 1.:
                 options['steering_gain']=args.steering_gain
             if args.cache_age_s:
@@ -108,9 +256,14 @@ def main():
             config_path,options_path=out/(name+'.yaml'),out/(name+'-options.json')
             config_path.write_text(yaml.safe_dump(config,sort_keys=False))
             options_path.write_text(json.dumps(options,indent=2)+'\n')
-            command=[sys.executable,'-m','local.experiments.projected_probe','capture',
+            module='local.experiments.async_projected_probe' if args.async_inference else 'local.experiments.projected_probe'
+            if case.get('traffic'):
+                module='local.experiments.traffic_probe'
+            command=[sys.executable,'-m',module,'capture',
                 '--config',str(config_path),'--options',str(options_path),'--duration',str(case['duration_s']),
-                '--capture-frames','0','--output',str(out/name)]
+                '--capture-frames',*([str(i) for i in range(math.ceil(case['duration_s']/.1)+1)]
+                                    if args.capture_all_native_inputs else ['0']),
+                '--output',str(out/name)]
             jobs.append((name,command))
     status['queue']=[n for n,_ in jobs]
     save()
@@ -143,13 +296,15 @@ def main():
             capture=out/name
             if list(capture.glob('control_*.json')):
                 with (out/(name+'-audit.log')).open('w') as stream:
-                    audited=subprocess.run([sys.executable,'-m','local.experiments.audit_projection',str(capture)],
+                    options=json.loads((out/(name+'-options.json')).read_text())
+                    audit_module='local.experiments.audit_traffic' if options.get('traffic') else 'local.experiments.audit_projection'
+                    audited=subprocess.run([sys.executable,'-m',audit_module,str(capture)],
                         cwd=root,stdout=stream,stderr=subprocess.STDOUT)
                 result['audit_returncode']=audited.returncode
-                report=capture/'projection-audit.json'
+                report=capture/('traffic-audit.json' if options.get('traffic') else 'projection-audit.json')
                 if report.exists():
                     data=json.loads(report.read_text())
-                    result['audit']={k:v for k,v in data.items() if k not in ('projection_trace','near_stop_times_s','body_departure_times_s')}
+                    result['audit']={k:v for k,v in data.items() if k not in ('projection_trace','near_stop_times_s','body_departure_times_s','geometric_audit')}
                 source=capture/'000_verifai/overhead.mp4'
                 video=out/(name+'-review.mp4')
                 if source.exists():
