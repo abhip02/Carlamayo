@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIELDS = ("distance_before_intersection_m", "lateral_offset_m", "speed_mps", "heading_offset_deg")
 
 
-def sampling_settings(config, limit=None):
+def sampling_settings(config, limit=None, *, require_ranges=True):
     """Validate the shared sampling configuration without importing VerifAI."""
     if not isinstance(config, dict) or "sampling" not in config:
         raise ValueError("Config must contain a sampling block")
@@ -36,6 +36,8 @@ def sampling_settings(config, limit=None):
         if type(limit) is not int or limit < 1:
             raise ValueError("--limit must be a positive integer")
         count = min(count, limit)
+    if not require_ranges:
+        return count, seed, None
     ranges = sampling.get("ranges")
     if not isinstance(ranges, dict) or set(ranges) != set(FIELDS):
         raise ValueError(f"sampling.ranges must contain exactly: {', '.join(FIELDS)}")

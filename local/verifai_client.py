@@ -7,6 +7,8 @@ from pathlib import Path
 import signal
 import socket
 
+from local.rollout_trace import load_rollout_result
+
 
 def receive_json(connection):
     with connection.makefile("rb") as stream:
@@ -21,7 +23,7 @@ def send_json(connection, message):
 
 
 def run_client(port, simulate, timeout=1200):
-    """Receive one sample per connection; keep the simulation/model session alive."""
+    """Send a {summary, trace} result per sample, keeping the model session alive."""
     index = 0
     while True:
         with socket.create_connection(("127.0.0.1", port), timeout=timeout) as connection:
@@ -29,13 +31,14 @@ def run_client(port, simulate, timeout=1200):
             if request.get("index") != index or type(request.get("last")) is not bool:
                 raise ValueError("Unexpected episode request from VerifAI")
             try:
-                summary = simulate(request["spec"], index)
+                result = simulate(request["spec"], index)
+                send_json(connection, {"index": index, "summary": result["summary"],
+                                       "trace": result["trace"]})
             except Exception as exc:
                 send_json(connection, {"index": index, "summary": {
                     "termination": "error", "error": f"{type(exc).__name__}: {exc}",
-                }})
+                }, "trace": None})
                 raise
-            send_json(connection, {"index": index, "summary": summary})
         # Closing the client signals EOF to Server.receive(). Letting the client
         # close first also allows immediate reuse of the coordinator's port.
         index += 1
@@ -72,7 +75,7 @@ def main():
             summary = episode(spec, args.output / name)
             summaries.append(summary)
             write_json(args.output / "batch-summary.json", summaries)
-            return summary
+            return load_rollout_result(args.output / name, summary)
 
         count = run_client(args.verifai_port, simulate, args.timeout)
     print(f"Client finished {count} rollouts: {args.output}", flush=True)

@@ -212,8 +212,9 @@ bash local/setup_verifai.sh
 
 This creates `.runtime/verifai-venv/` with Python 3.12 and the optional dependencies;
 it does not modify the model's `.venv` or the shared ML environment. VerifAI itself
-depends on the Scenic Python package, but this launcher does not use Scenic to
-describe or run scenarios.
+depends on the Scenic Python package, but this batch launcher does not use Scenic
+to describe scenarios. The server/client launcher supports Scenic initial-state
+constraints as described below.
 
 Run the example (two eight-second rollouts):
 
@@ -294,11 +295,11 @@ and runs its two eight-second episodes. Use a new output directory for each run.
 The flow is:
 
 ```text
-VerifAI Server: sample → send initial state → wait for rollout summary
+VerifAI Server: sample → send initial state → wait for summary + full trace
                                                ↓
-CarlaMayo client: reset ego/sensors → run rollout in CARLA → return summary
+CarlaMayo client: reset ego/sensors → run rollout in CARLA → return recorded trace
                                                ↓
-VerifAI monitor: score summary → feed score into the next sample → repeat
+VerifAI monitor: evaluate result → feed score into the next sample → repeat
 ```
 
 The specification is deliberately basic: **+1 if the episode reaches its duration
@@ -315,14 +316,14 @@ inherited `run_server()` performs sampling, monitor evaluation and feedback.
 across episodes. It uses a small JSON socket protocol instead of inheriting
 `verifai.client.Client`, so VerifAI's dependencies stay in the sampler environment.
 The shared `rollout_session()` in `local/run_intersection.py` handles the model
-and CARLA session for both the new client and the original batch runner. No Scenic
-scenario scripts are needed.
+and CARLA session for both the new client and the original batch runner. Scenic
+scenario scripts are optional; see the next section.
 
 Recordings remain in `000_verifai/video.mp4`, `000_verifai/overhead.mp4`, and the
 corresponding directories for subsequent episodes. The output directory also has:
 
 - `verifai-results.jsonl`: one completed episode per line, with its exact sample,
-  score, pass/fail flag, rollout summary and timing.
+  score, pass/fail flag, rollout summary, full trace and timing.
 - `verifai-summary.json`: overall completion/error status, completed count and
   collision violation count.
 - `config.json`: sampling settings, specification and samples actually sent to
@@ -333,8 +334,161 @@ Simulator-free tests exercise real sockets and subprocesses, including feedback,
 Cross-Entropy adaptation, saved replay samples and client failures:
 
 ```bash
-.runtime/verifai-venv/bin/python -m pytest -q tests/test_verifai_sampling.py tests/test_verifai_server.py
+.runtime/verifai-venv/bin/python -m pytest -q tests/test_verifai_sampling.py tests/test_verifai_server.py tests/test_scenic_sampling.py tests/test_rollout_trace.py
 ```
+
+### Returning traces to VerifAI
+
+After each successful rollout, the client loads **every row** from `ego.csv` and
+**every record** from `predictions.jsonl` and sends their contents over the JSON
+socket. The server needs no access to the client's recording paths. Its monitor
+receives the following result, and the same `summary` and `trace` are persisted
+in that episode's `verifai-results.jsonl` entry:
+
+```python
+{
+    "summary": {...},  # termination, collision event, handover/final state, counts
+    "trace": {
+        "schema_version": 1,
+        "samples": [...],      # handover row followed by every simulation step
+        "predictions": [...],  # all logged predictions, including reasoning text
+    },
+}
+```
+
+Schema 1 preserves the fields and units of the existing intersection runner:
+
+| Record | Fields and interpretation |
+| --- | --- |
+| State/control sample | `time_s` since ego handover; CARLA `frame`; world `x`, `y`, `z` in meters; `yaw`, `pitch`, `roll` in degrees; `speed` in m/s; normalized `steer`, `throttle`, `brake`; wall-clock `inference_s`. |
+| Prediction | `time_s` and `frame` at inference start; wall-clock `inference_s`; `trajectory_ego` XYZ waypoints in meters in the ego FLU frame at prediction time; original `reasoning` and any other logged fields. |
+| Summary | Original summary, including the recorded collision event and its CARLA frame when present. |
+
+For a transition from `t` to `t + 0.1`, the prediction is timestamped `t` and
+the resulting state/control row is timestamped `t + 0.1`. That row's controls
+were applied during the preceding transition. The handover row's controls are
+the runner's zero placeholders. Warm-up is excluded. Videos and raw camera
+images remain local artifacts; this is the full recorded state/control and
+prediction trace, not a capture of every CARLA actor or sensor stream.
+
+Both the client loader and server check sample/prediction counts against the
+summary, handover and final times, ordered frames/times, prediction-to-transition
+alignment, and finite numeric data. Missing, truncated, or invalid recordings
+abort the batch as infrastructure errors before any monitor can score them.
+Exceptions return an error summary with `trace: null`; partial recordings stay
+on disk for diagnosis and are not scored. An older client returning only a
+successful summary is rejected. Completed traces are written to the results
+journal as they arrive; the server does not retain the entire batch in memory.
+
+The default monitor still scores recorded collisions. A custom VerifAI monitor
+can inspect the full trace through the `monitor=` argument to `RolloutServer`,
+for example a sampled speed-limit robustness function:
+
+```python
+from verifai.monitor import specification_monitor
+
+def speed_margin(result):
+    return min(5.0 - row["speed"] for row in result["trace"]["samples"])
+
+server = RolloutServer(
+    sampler, ranges, count,
+    monitor=specification_monitor(speed_margin),
+)
+```
+
+The returned score feeds the next sample through the existing VerifAI loop.
+This example checks recorded samples only; it makes no assertion between ticks.
+The command-line launcher retains its collision specification. No GPU or CARLA
+process is needed to test trace loading, socket transfer, monitor evaluation,
+or sampler feedback against saved recordings.
+
+## Scenic initial-state scenarios
+
+The server/client launcher accepts `--scenic FILE` to describe and constrain the
+existing ego intersection setup. It uses VerifAI's real `ScenicSampler` in the
+sampler environment, then converts each accepted scene to the same JSON initial
+state already understood by the persistent CARLAMayo client:
+
+```text
+Scenic distributions + require constraints → VerifAI sample → JSON rollout
+    → CARLAMayo simulation → summary + full trace → monitor score → next Scenic sample
+```
+
+Run `bash local/setup_verifai.sh` to install the pinned VerifAI 2.2.0 and Scenic
+3.1.1 dependencies. From the checkout root, preview the included example without
+starting CARLA, opening a coordinator socket, or loading Alpamayo:
+
+```bash
+bash local/run_verifai_server.sh --scenic local/scenarios/intersection.scenic --sample-only
+```
+
+Run it through the existing server/client interface with CARLA running:
+
+```bash
+bash local/run_verifai_server.sh --scenic local/scenarios/intersection.scenic \
+  --limit 2 --duration 1 --output outputs/scenic-intersection-demo
+```
+
+[`local/scenarios/intersection.scenic`](scenarios/intersection.scenic) samples
+distance 20–25 m, lateral offset −0.3–0.3 m, speed 3–4 m/s, and heading −5–5°.
+Its `require` statements accept only states with `distance >= 6 * speed` and
+`abs(heading) <= 4`. This creates a relationship between distance and speed that
+independent YAML ranges cannot express. Use local variables for sampled values
+referenced in requirements, and export them as parameters, for example:
+
+```scenic
+distance = Range(20, 25)
+speed = Range(3, 4)
+param distance_before_intersection_m = distance
+param lateral_offset_m = 0
+param speed_mps = speed
+param heading_offset_deg = 0
+ego = new Object
+require distance >= 6 * speed
+```
+
+The scenario must export all four parameters shown above. Distance and speed must
+be nonnegative; all four must be finite numbers. Distances are in meters, speed
+in m/s, and heading offset in degrees. Their interpretation is the existing
+runner's: distance behind the YAML `junction_entry`, lateral offset along its
+CARLA right vector, and yaw offset added to its heading. The Scenic ego Object is
+a required marker; its position, orientation, shape and other properties are
+**not** translated into CARLA. Express the actual initial state with the four
+parameters. This adapter does not load an OpenDRIVE map or check lane geometry.
+
+`--config` still selects the YAML map, junction entry, navigation instruction,
+duration, policy seed, and `sampling.count`/`sampling.seed`. Scenic replaces
+`sampling.ranges`, which can be omitted and is removed from the saved resolved
+config. `--scenic` and `--sampler` are mutually exclusive. `--scenic-max-iterations`
+bounds rejection attempts per scene (default 2000); unsatisfiable constraints
+abort the run. Only initial-state constraints are evaluated here. Additional
+actors, Scenic behaviors, runtime requirements, termination conditions and
+record statements are rejected. CARLAMayo continues to own the simulation clock,
+sensors and ego policy; its existing collision monitor supplies the score.
+
+Ordinary Scenic `Range` distributions use random sampling and do not adapt to
+scores. For adaptive search, use `VerifaiRange` for the parameters to optimize
+and add `param verifaiSamplerType = 'ce'` to the scenario. Scores from completed
+episodes reach Scenic before the next sample. A `--sample-only` preview has no
+simulation feedback, so adaptive samples can diverge from a scored run. See the
+[VerifAI sampler documentation](https://verifai.readthedocs.io/en/latest/samplers.html)
+and [Scenic external parameter documentation](https://docs.scenic-lang.org/en/latest/modules/scenic.core.external_params.html).
+
+Each run saves the top-level source as `scenario.scenic`, with its original path,
+SHA-256 digest, Scenic version, seed and rejection limit in `config.json`.
+Imported Scenic/Python files are not bundled. The exact accepted states are saved
+in `rollouts` and `expanded_rollouts`; replay needs neither Scenic nor the original
+source files:
+
+```bash
+bash local/run.sh --config outputs/scenic-intersection-demo/config.json \
+  --output outputs/scenic-intersection-replay
+```
+
+Sampling tests cover the real Scenic example, repeatability, constraints, invalid
+scenarios, bounded rejection, replay artifacts, real socket/subprocess handoff,
+and collision feedback updating Scenic's external Cross-Entropy sampler. They do
+not require CARLA or a GPU and do not validate physical simulation outcomes.
 
 ## Outputs
 
