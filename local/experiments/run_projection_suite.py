@@ -109,7 +109,14 @@ def main():
     parser.add_argument('--native-lookahead-min-m',type=float,
                         help='Explicit native-path lookahead minimum; default preserves upstream behavior')
     parser.add_argument('--cache-age-s',type=float,default=0.)
+    parser.add_argument('--seed-policy', choices=('fixed','advancing_separate','advancing_joint'), default='fixed')
+    parser.add_argument('--camera-postprocessing', choices=('on','off'))
     args=parser.parse_args()
+    if args.seed_policy != 'fixed' or args.camera_postprocessing is not None:
+        if args.steering_modes != ['native'] or args.speed_selection_attempts != 1 or args.cache_age_s or args.async_retention_age_s:
+            parser.error('Seed/camera experiments require native steering and one unselected prediction')
+        if args.seed_policy != 'fixed' and not args.async_inference:
+            parser.error('Advancing seeds require async inference request ordinals')
     if args.native_lookahead_min_m is not None:
         if args.steering_modes != ['native'] or not math.isfinite(args.native_lookahead_min_m) or not 0 < args.native_lookahead_min_m <= 12:
             parser.error('Native lookahead requires only native steering and a finite minimum in (0,12] metres')
@@ -182,6 +189,7 @@ def main():
         renderer_container=os.environ.get('CARLAMAYO_PROJECTION_CONTAINER'),
         controller_speed_cap_mps=args.speed_cap_mps,steering_gain=args.steering_gain,
         native_lookahead_min_m=args.native_lookahead_min_m,
+        seed_policy=args.seed_policy,camera_postprocessing=args.camera_postprocessing,
         projection_cache_age_s=args.cache_age_s,
         async_max_pending_sim_s=args.async_max_pending_sim_s,
         async_max_pending_heading_deg=args.async_max_pending_heading_deg,
@@ -222,6 +230,9 @@ def main():
             for key in ('route_spec','scene_policy','traffic_light_state','mission','hold_visual_stop','traffic'):
                 if key in case:options[key]=copy.deepcopy(case[key])
             traffic_trajectory_generation(case)  # Validate before starting capture.
+            options['seed_policy'] = args.seed_policy
+            if args.camera_postprocessing is not None:
+                options['camera_enable_postprocess_effects'] = args.camera_postprocessing == 'on'
             config['instruction']=options['instruction']
             if args.async_inference:
                 options['async_inference']=True

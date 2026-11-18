@@ -210,7 +210,8 @@ def test_watchdog_does_not_extend_active_work_deadline(tmp_path,monkeypatch,comp
     ['startup','pass'],['driving_failure'],['startup','startup']])
 @pytest.mark.parametrize('work_timeout',[600,900])
 @pytest.mark.parametrize('full_inputs',[False,True])
-def test_panel_retains_startup_attempts_counts_all_time_and_never_retries_driving(tmp_path,monkeypatch,outcomes,work_timeout,full_inputs):
+@pytest.mark.parametrize('policy,camera',[('fixed',None),('advancing_separate',None),('advancing_joint',None),('fixed','off')])
+def test_panel_retains_startup_attempts_counts_all_time_and_never_retries_driving(tmp_path,monkeypatch,outcomes,work_timeout,full_inputs,policy,camera):
     import contextlib
     from types import SimpleNamespace
     from local.experiments import run_async_panel as panel
@@ -219,7 +220,10 @@ def test_panel_retains_startup_attempts_counts_all_time_and_never_retries_drivin
     (presets/'ten-driving-scenes.json').write_text(json.dumps(dict(scenarios=[dict(name='04-curve-left')]*10)))
     monkeypatch.setattr(panel,'__file__',str(root/'local/experiments/run_async_panel.py'))
     output=tmp_path/'out'
-    monkeypatch.setattr(panel.sys,'argv',['run_async_panel','--output',str(output),'--container','owned','--cases','4','--case-work-timeout-s',str(work_timeout)]+(['--capture-all-native-inputs'] if full_inputs else []))
+    extra = ['--seed-policy',policy]
+    if policy!='fixed' or camera is not None: extra += ['--steering-mode','native']
+    if camera is not None: extra += ['--camera-postprocessing',camera]
+    monkeypatch.setattr(panel.sys,'argv',['run_async_panel','--output',str(output),'--container','owned','--cases','4','--case-work-timeout-s',str(work_timeout)]+(['--capture-all-native-inputs'] if full_inputs else [])+extra)
     monkeypatch.setenv('CARLAMAYO_MODEL_GPUS','model');monkeypatch.setenv('CARLAMAYO_RENDER_GPU','renderer')
     monkeypatch.setattr(panel,'acquire',lambda *a:contextlib.nullcontext())
     monkeypatch.setattr(panel,'available',lambda *a:[])
@@ -230,6 +234,9 @@ def test_panel_retains_startup_attempts_counts_all_time_and_never_retries_drivin
         returncode=None
         def __init__(self,command,**kwargs):
             assert ('--capture-all-native-inputs' in command) is full_inputs
+            assert command[command.index('--seed-policy')+1] == policy
+            assert ('--camera-postprocessing' in command) is (camera is not None)
+            if camera is not None: assert command[command.index('--camera-postprocessing')+1] == camera
             self.directory=panel.Path(command[command.index('--output')+1]);self.directory.mkdir()
             (self.directory/'04-curve-left-route.log').write_text('CARLA server 0.9.16, client 0.9.16\nSetting up cameras...\n')
             capture=self.directory/'04-curve-left-route';capture.mkdir()
@@ -264,6 +271,8 @@ def test_panel_retains_startup_attempts_counts_all_time_and_never_retries_drivin
         assert error.value.code==1
     assert json.loads((output/'protocol.json').read_text())['per_case_timeout_s']==work_timeout
     assert json.loads((output/'protocol.json').read_text())['capture_all_native_inputs'] is full_inputs
+    assert json.loads((output/'protocol.json').read_text())['seed_policy'] == policy
+    assert json.loads((output/'protocol.json').read_text())['camera_postprocessing'] == camera
     status=json.loads((output/'status.json').read_text());result=status['results'][0]
     assert len(workers)==len(outcomes)
     assert result['passed'] is (outcomes[-1]=='pass')

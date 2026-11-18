@@ -232,8 +232,11 @@ class Probe:
 
     def evaluate(self, adapter, data, context, instruction, options, label, capture=False,
                  capture_failures=False):
+        from local.experiments.native_policy import resolve_sampling
+        requested_options = options
+        options, sampling = resolve_sampling(options, context)
         source_data = data
-        self.options, self.context, self.trace = options, context, {}
+        self.options, self.context, self.trace = options, context, {'sampling_policy': sampling}
         seed = options.get("seed", context.get("seed", 42))
         random.seed(seed)
         np.random.seed(seed)
@@ -316,7 +319,7 @@ class Probe:
                           signed_velocity_mps=self.trace["candidate_velocities"][chosen],
                           acceleration_mps2=self.trace["candidate_accelerations"][chosen])
         speeds = planned_speeds(trajectory)
-        result = {"label": label, "context": context, "options": options, "seed": seed,
+        result = {"label": label, "context": context, "options": requested_options, "seed": seed,
                   "instruction": options.get("instruction", instruction),
                   "inference_seconds": time.monotonic() - started,
                   "peak_allocated_gib": [torch.cuda.max_memory_allocated(i) / 2**30 for i in range(torch.cuda.device_count())],
@@ -347,6 +350,13 @@ class Probe:
 
 
 def capture(args, output):
+    from local.experiments.native_policy import camera_postprocessing
+    options = json.loads(args.options.read_text()) if args.options else {}
+    with camera_postprocessing(runner.defaults, options):
+        return _capture(args, output)
+
+
+def _capture(args, output):
     config = yaml.safe_load(args.config.read_text())
     config["duration_s"] = args.duration
     options = json.loads(args.options.read_text()) if args.options else {}
@@ -431,6 +441,7 @@ def capture(args, output):
                            "extent": {key: getattr(bounds.extent, key) for key in ("x", "y", "z")},
                            "rotation": {key: getattr(bounds.rotation, key) for key in ("pitch", "yaw", "roll")}},
                        "render_projection": "wide_pinhole" if "camera_projection" in options else "native_pinhole",
+                       "camera_enable_postprocess_effects": runner.defaults.CAMERA_ENABLE_POSTPROCESS_EFFECTS,
                        "snapshot_frame": snapshot.frame, "seed": config.get("seed", 42),
                        "applied_control": {"steer": applied.steer, "throttle": applied.throttle,
                                            "brake": applied.brake, "reverse": applied.reverse},
@@ -595,6 +606,7 @@ def main():
             "module/inference.py", "module/adapters/alpamayo_1_5.py",
             "local/run_intersection.py", "local/run_driving.py",
             "local/experiments/inference_probe.py", "local/experiments/camera_projection.py",
+            "local/experiments/native_policy.py", "module/carla_interface.py",
             "local/experiments/candidate_selection.py", "local/experiments/frame_sync.py",
             "local/experiments/acknowledged_preroll.py", "local/experiments/validated_probe.py",
             "local/experiments/validated_selection.py", "local/experiments/retained_probe.py",

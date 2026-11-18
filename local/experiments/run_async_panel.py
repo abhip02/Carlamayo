@@ -186,7 +186,13 @@ def main():
     parser.add_argument('--case-work-timeout-s',type=int,choices=(600,900),default=600)
     parser.add_argument('--native-lookahead-min-m',type=float,
                         help='Explicit native-path lookahead minimum; default preserves upstream behavior')
+    parser.add_argument('--seed-policy', choices=('fixed','advancing_separate','advancing_joint'), default='fixed')
+    parser.add_argument('--camera-postprocessing', choices=('on','off'),
+                        help='Explicit capture-only appearance experiment; optics and poses stay fixed')
     args=parser.parse_args()
+    if args.seed_policy != 'fixed' or args.camera_postprocessing is not None:
+        if args.steering_mode != 'native' or args.speed_selection_attempts != 1 or args.retention_age_s:
+            parser.error('Seed/camera experiments require native steering and one unselected prediction')
     if args.native_lookahead_min_m is not None:
         if args.steering_mode != 'native' or not math.isfinite(args.native_lookahead_min_m) or not 0 < args.native_lookahead_min_m <= 12:
             parser.error('Native lookahead requires native steering and a finite minimum in (0,12] metres')
@@ -308,6 +314,9 @@ def main():
                 heading_wait='When set, pause at the heading bound using only ego pose. Keep original source anchors and the declared traffic controller.')
     protocol['steering_mode'] = args.steering_mode
     protocol['native_lookahead_min_m'] = args.native_lookahead_min_m
+    protocol['seed_policy'] = args.seed_policy
+    protocol['camera_postprocessing'] = args.camera_postprocessing
+    protocol['seed_schedule'] = 'Base scenario seed plus zero-based inference request count; fixed preserves original seeds. Separate mode also advances the base flow seed; joint mode has no flow reset. No seed search.'
     steering_gain = 1.4 if args.steering_mode == 'route' else 1.
     if args.steering_mode == 'native':
         protocol['controller'] = (f'Native predicted-path pure-pursuit steering, no map or route target projection, '
@@ -337,6 +346,9 @@ def main():
                 '--server-script','local/experiments/projected_server.sh','--steering-modes',args.steering_mode,
                 '--speed-selection-attempts',str(args.speed_selection_attempts),'--speed-cap-mps',str(speed_cap),'--steering-gain',str(steering_gain),
                 '--cache-age-s','0','--require-pass','--cases',str(number),'--output',str(output/name)]
+            command.extend(['--seed-policy', args.seed_policy])
+            if args.camera_postprocessing is not None:
+                command.extend(['--camera-postprocessing', args.camera_postprocessing])
             if args.capture_all_native_inputs:
                 command.append('--capture-all-native-inputs')
             if args.native_lookahead_min_m is not None:

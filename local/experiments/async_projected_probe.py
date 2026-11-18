@@ -246,7 +246,8 @@ class AsyncSingleSampleProbe(BASE_PROBE):
         self.event('submitted', label=label, frame=context['index'], time_s=context['time_s'], phase=self.phase)
         return dict(frame=context['index'], adapter=adapter, data=data,
                     context=copy.deepcopy(context), instruction=instruction,
-                    options={**options, 'instruction': instruction,'async_navigation_phase':self.phase}, label=label,
+                    options={**options, 'instruction': instruction,'async_navigation_phase':self.phase,
+                             'inference_index':self.request_count - 1}, label=label,
                     capture=capture, phase=self.phase, respawn_revision=0,
                     submitted_wall=self.last_submit_wall)
 
